@@ -40,6 +40,8 @@ jobs:
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v7
+        with:
+          version: "0.10.11"
 
       - name: Install commitizen
         run: uv tool install commitizen
@@ -104,6 +106,8 @@ jobs:
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v7
+        with:
+          version: "0.10.11"
 
       - name: Build package
         run: uv build
@@ -146,6 +150,8 @@ jobs:
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v7
+        with:
+          version: "0.10.11"
 
       - name: Build package
         run: uv build

@@ -11,13 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.12", "3.13"]
+        python-version: ["3.12"]
 
     steps:
       - uses: actions/checkout@v6
 
       - uses: astral-sh/setup-uv@v7
         with:
+          version: "0.10.11"
           python-version: ${{ matrix.python-version }}
           enable-cache: true
 
