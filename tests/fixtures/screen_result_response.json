@@ -1,0 +1,21 @@
+{
+  "data": {
+    "marketDataScreen": {
+      "screenName": "MarketSurge.Test.FakeScreen",
+      "elapsedTime": "0.123",
+      "numberOfInstrumentsInSource": 3,
+      "responseValues": [
+        [
+          {"value": "FAKE", "mdItem": {"mdItemID": 431, "name": "Symbol"}},
+          {"value": "Fake Corp", "mdItem": {"mdItemID": 410, "name": "CompanyName"}},
+          {"value": "99", "mdItem": {"mdItemID": 1, "name": "CompositeRating"}}
+        ],
+        [
+          {"value": "TEST", "mdItem": {"mdItemID": 431, "name": "Symbol"}},
+          {"value": "Test Inc", "mdItem": {"mdItemID": 410, "name": "CompanyName"}},
+          {"value": "85", "mdItem": {"mdItemID": 1, "name": "CompositeRating"}}
+        ]
+      ]
+    }
+  }
+}

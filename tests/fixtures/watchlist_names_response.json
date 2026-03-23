@@ -1,0 +1,18 @@
+{
+  "data": {
+    "watchlists": [
+      {
+        "id": "100000000000001",
+        "name": "My Watchlist",
+        "lastModifiedDateUtc": "2026-01-15T10:00:00.000Z",
+        "description": null
+      },
+      {
+        "id": "100000000000002",
+        "name": "Tech Stocks",
+        "lastModifiedDateUtc": "2026-02-20T14:30:00.000Z",
+        "description": "Technology sector picks"
+      }
+    ]
+  }
+}

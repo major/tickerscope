@@ -1,0 +1,127 @@
+{
+  "data": {
+    "user": {
+      "marketDataLayouts": [
+        {
+          "columns": [
+            {
+              "mdItemId": "61",
+              "name": "Current Price",
+              "width": 60,
+              "locked": false,
+              "visible": true
+            },
+            {
+              "mdItemId": "64",
+              "name": "Price % Chg",
+              "width": 60,
+              "locked": false,
+              "visible": true
+            },
+            {
+              "mdItemId": "486",
+              "name": "Volume (1000s)",
+              "width": 60,
+              "locked": false,
+              "visible": true
+            },
+            {
+              "mdItemId": "67",
+              "name": "50-Day Avg Vol (1000s)",
+              "width": 60,
+              "locked": false,
+              "visible": true
+            },
+            {
+              "mdItemId": "65",
+              "name": "Price $ Chg",
+              "width": 60,
+              "locked": false,
+              "visible": true
+            },
+            {
+              "mdItemId": "483",
+              "name": "EPS Rating",
+              "width": 60,
+              "locked": false,
+              "visible": true
+            },
+            {
+              "mdItemId": "2",
+              "name": "RS Rating",
+              "width": 60,
+              "locked": false,
+              "visible": true
+            },
+            {
+              "mdItemId": "427",
+              "name": "RS 3-Month Rating",
+              "width": 60,
+              "locked": false,
+              "visible": true
+            },
+            {
+              "mdItemId": "428",
+              "name": "RS 6-Month Rating",
+              "width": 60,
+              "locked": false,
+              "visible": true
+            },
+            {
+              "mdItemId": "512",
+              "name": "Ind Group RS",
+              "width": 60,
+              "locked": false,
+              "visible": true
+            },
+            {
+              "mdItemId": "4",
+              "name": "SMR Rating",
+              "width": 60,
+              "locked": false,
+              "visible": true
+            },
+            {
+              "mdItemId": "5",
+              "name": "A/D Rating",
+              "width": 60,
+              "locked": false,
+              "visible": true
+            },
+            {
+              "mdItemId": "6",
+              "name": "Comp Rating",
+              "width": 60,
+              "locked": false,
+              "visible": true
+            },
+            {
+              "mdItemId": "53",
+              "name": "Market Cap (mil)",
+              "width": 60,
+              "locked": false,
+              "visible": true
+            },
+            {
+              "mdItemId": "57",
+              "name": "Number of Funds",
+              "width": 60,
+              "locked": false,
+              "visible": true
+            },
+            {
+              "mdItemId": "510",
+              "name": "Funds % Increase",
+              "width": 60,
+              "locked": false,
+              "visible": true
+            }
+          ],
+          "id": "fff08008-be89-4076-9803-58cf47618552",
+          "name": "Funds Focus",
+          "site": "marketsurge"
+        }
+      ]
+    }
+  }
+}

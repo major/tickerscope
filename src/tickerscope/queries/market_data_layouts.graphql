@@ -1,0 +1,16 @@
+query MarketDataLayouts($site: Site!) {
+  user {
+    marketDataLayouts(site: $site) {
+      columns {
+        mdItemId
+        name
+        width
+        locked
+        visible
+      }
+      id
+      name
+      site
+    }
+  }
+}

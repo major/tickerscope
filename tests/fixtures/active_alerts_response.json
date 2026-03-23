@@ -1,0 +1,135 @@
+{
+  "data": {
+    "user": {
+      "followSubscriptionsWithCount": {
+        "subscriptions": [
+          {
+            "deliveryPreferences": [
+              {
+                "method": "email",
+                "type": "realtime",
+                "__typename": "DeliveryPreference"
+              },
+              {
+                "method": "web_push",
+                "type": "realtime",
+                "__typename": "DeliveryPreference"
+              },
+              {
+                "method": "push_notification",
+                "type": "realtime",
+                "__typename": "DeliveryPreference"
+              }
+            ],
+            "criteria": {
+              "criteriaId": "0b53e629ef0930d4ecb791cdd3d7f3b895016660",
+              "engine": "MarketData",
+              "product": "marketsurge",
+              "alertType": "realtime_price",
+              "term": {
+                "value": "61.70",
+                "operator": "greater_than_or_equal_to",
+                "field": "price",
+                "instrumentResult": {
+                  "djid": "13-40645566",
+                  "ticker": "VAL",
+                  "dialect": "djid",
+                  "id": "13-40645566",
+                  "chartingSymbol": "STOCK/US/XNYS/VAL",
+                  "__typename": "Instrument"
+                },
+                "__typename": "MarketDataTermCriteria"
+              },
+              "__typename": "FollowCriteria"
+            },
+            "createDate": "2026-02-04T15:58:04.380Z",
+            "note": "Alert price auto-generated based on the Cup pivot price on 02/04/2026",
+            "__typename": "FollowSubscription"
+          },
+          {
+            "deliveryPreferences": [
+              {
+                "method": "email",
+                "type": "realtime",
+                "__typename": "DeliveryPreference"
+              },
+              {
+                "method": "web_push",
+                "type": "realtime",
+                "__typename": "DeliveryPreference"
+              },
+              {
+                "method": "push_notification",
+                "type": "realtime",
+                "__typename": "DeliveryPreference"
+              }
+            ],
+            "criteria": {
+              "criteriaId": "129b59f78579507d07b13c566efcb37d156369e3",
+              "engine": "MarketData",
+              "product": "marketsurge",
+              "alertType": "realtime_price",
+              "term": {
+                "value": "117.73",
+                "operator": "greater_than_or_equal_to",
+                "field": "price",
+                "instrumentResult": {
+                  "djid": "13-289488",
+                  "ticker": "RBA",
+                  "dialect": "djid",
+                  "id": "13-289488",
+                  "chartingSymbol": "STOCK/US/XNYS/RBA",
+                  "__typename": "Instrument"
+                },
+                "__typename": "MarketDataTermCriteria"
+              },
+              "__typename": "FollowCriteria"
+            },
+            "createDate": "2026-02-04T15:54:59.945Z",
+            "note": "Alert price auto-generated based on the Cup with Handle pivot price on 02/04/2026",
+            "__typename": "FollowSubscription"
+          },
+          {
+            "deliveryPreferences": [
+              {
+                "method": "email",
+                "type": "realtime",
+                "__typename": "DeliveryPreference"
+              },
+              {
+                "method": "web_push",
+                "type": "realtime",
+                "__typename": "DeliveryPreference"
+              },
+              {
+                "method": "push_notification",
+                "type": "realtime",
+                "__typename": "DeliveryPreference"
+              }
+            ],
+            "criteria": {
+              "criteriaId": "24bde9aa899edcdc401292b6dd7b538f1f69435c",
+              "engine": "MarketData",
+              "product": "marketsurge",
+              "alertType": "market_data_event",
+              "term": {
+                "value": "breakaway_gap",
+                "operator": "equal_to",
+                "field": "event",
+                "__typename": "CompanyTermCriteria"
+              },
+              "__typename": "FollowCriteria"
+            },
+            "createDate": "2026-02-04T02:48:00.622Z",
+            "note": "",
+            "__typename": "FollowSubscription"
+          }
+        ],
+        "numSubscriptions": 3,
+        "remainingSubscriptions": 747,
+        "__typename": "ResponseFollowSubscription"
+      },
+      "__typename": "User"
+    }
+  }
+}

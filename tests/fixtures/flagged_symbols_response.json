@@ -1,0 +1,15 @@
+{
+  "data": {
+    "watchlist": {
+      "id": "100000000000001",
+      "name": "My Watchlist",
+      "lastModifiedDateUtc": "2026-01-15T10:00:00.000Z",
+      "description": null,
+      "items": [
+        {"key": "aabbcc001122334455667788", "dowJonesKey": "13-111111"},
+        {"key": "bbccdd112233445566778899", "dowJonesKey": "13-222222"},
+        {"key": "ccddeeff223344556677aabb", "dowJonesKey": "11-333333"}
+      ]
+    }
+  }
+}

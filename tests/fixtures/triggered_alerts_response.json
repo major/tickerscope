@@ -1,0 +1,124 @@
+{
+  "data": {
+    "user": {
+      "followAlerts": {
+        "cursorId": null,
+        "alerts": [
+          {
+            "alertId": "01KM5Q1077RR24AJWY7ZTE6A7P",
+            "alertType": "realtime_price",
+            "engine": "MarketData",
+            "deliveryPreferences": {
+              "method": "email",
+              "type": "realtime"
+            },
+            "term": {
+              "value": "48.60",
+              "operator": "greater_than_or_equal_to",
+              "field": "price",
+              "djKey": "13-14381691",
+              "instrumentResult": {
+                "djid": "13-14381691",
+                "ticker": "SEDG",
+                "dialect": "djid",
+                "id": "13-14381691",
+                "chartingSymbol": "STOCK/US/XNAS/SEDG"
+              }
+            },
+            "criteriaId": "3ecf47c58a42c87a3ef95088bccace6b2abbbad0",
+            "payload": {
+              "summary": "SEDG crossed above $48.60",
+              "symbol": "SEDG",
+              "change": "2.9400",
+              "display_exchange_name": "NASDAQ",
+              "flashline": "STOCK ALERT",
+              "change_percent": "6.4389",
+              "price": "48.6000",
+              "company_name": "SolarEdge Technologies Inc.",
+              "time": "Friday March 20, 2026 9:30 a.m EST",
+              "operation": "greater_than_or_equal_to"
+            },
+            "product": "marketsurge",
+            "delivered": false,
+            "viewed": false,
+            "deleted": false,
+            "digest": false,
+            "createDate": "2026-03-20T13:30:15.656Z",
+            "lastModifiedDate": "2026-03-20T13:30:15.656Z",
+            "ttl": 1776605415
+          },
+          {
+            "alertId": "01KM5Q1301MV5TDG14QMDSBYMK",
+            "alertType": "market_data_event",
+            "engine": "MarketData",
+            "deliveryPreferences": {
+              "method": "push_notification",
+              "type": "realtime"
+            },
+            "term": {
+              "value": "breaking_out_today",
+              "operator": "equal_to",
+              "field": "event"
+            },
+            "criteriaId": "6091ae8c8deafb86a1c15df1dbcd86e15bf4a1ad",
+            "payload": {
+              "summary": "SEDG added to Breaking Out Today",
+              "symbol": "SEDG",
+              "change": "2.9400",
+              "display_exchange_name": "NASDAQ",
+              "flashline": "STOCK ALERT",
+              "change_percent": "6.4389",
+              "price": "48.6000",
+              "company_name": "SolarEdge Technologies Inc.",
+              "time": "Friday March 20, 2026 9:30 a.m EST",
+              "operation": "greater_than"
+            },
+            "product": "marketsurge",
+            "delivered": false,
+            "viewed": false,
+            "deleted": false,
+            "digest": false,
+            "createDate": "2026-03-20T13:30:18.497Z",
+            "lastModifiedDate": "2026-03-20T13:30:18.497Z",
+            "ttl": 1776605418
+          },
+          {
+            "alertId": "01KM5Q0Z7ZM401B10CHBDSPZ3G",
+            "alertType": "market_data_event",
+            "engine": "MarketData",
+            "deliveryPreferences": {
+              "method": "web_push",
+              "type": "realtime"
+            },
+            "term": {
+              "value": "breakaway_gap",
+              "operator": "equal_to",
+              "field": "event"
+            },
+            "criteriaId": "24bde9aa899edcdc401292b6dd7b538f1f69435c",
+            "payload": {
+              "summary": "SEDG added to Breakaway Gap",
+              "symbol": "SEDG",
+              "change": "2.9400",
+              "display_exchange_name": "NASDAQ",
+              "flashline": "STOCK ALERT",
+              "change_percent": "6.4389",
+              "price": "48.6000",
+              "company_name": "SolarEdge Technologies Inc.",
+              "time": "Friday March 20, 2026 9:30 a.m EST",
+              "operation": null
+            },
+            "product": "marketsurge",
+            "delivered": false,
+            "viewed": true,
+            "deleted": false,
+            "digest": false,
+            "createDate": "2026-03-20T13:30:14.655Z",
+            "lastModifiedDate": "2026-03-20T13:30:14.655Z",
+            "ttl": 1776605414
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,123 @@
+{
+  "data": {
+    "marketData": [
+      {
+        "id": "202490156",
+        "originRequest": {
+          "fromDialect": "DJ_KEY",
+          "symbol": "13-457050"
+        },
+        "pricing": {
+          "timeSeries": {
+            "period": "P1D",
+            "dataPoints": [
+              {
+                "startDateTime": "2021-12-02T00:00:00.000-05:00",
+                "endDateTime": "2021-12-02T23:59:59.000-05:00",
+                "volume": {
+                  "value": 29194839.5912722
+                },
+                "last": {
+                  "value": 142.966002001524
+                },
+                "low": {
+                  "value": 140.214501963003
+                },
+                "high": {
+                  "value": 143.864502014103
+                },
+                "open": {
+                  "value": 141.2500019775
+                }
+              },
+              {
+                "startDateTime": "2021-12-03T00:00:00.000-05:00",
+                "endDateTime": "2021-12-03T23:59:59.000-05:00",
+                "volume": {
+                  "value": 41230159.4227778
+                },
+                "last": {
+                  "value": 142.001501988021
+                },
+                "low": {
+                  "value": 140.301001964214
+                },
+                "high": {
+                  "value": 144.4000020216
+                },
+                "open": {
+                  "value": 143.681002011534
+                }
+              },
+              {
+                "startDateTime": "2021-12-06T00:00:00.000-05:00",
+                "endDateTime": "2021-12-06T23:59:59.000-05:00",
+                "volume": {
+                  "value": 30618099.5713466
+                },
+                "last": {
+                  "value": 143.15500200417
+                },
+                "low": {
+                  "value": 140.1500019621
+                },
+                "high": {
+                  "value": 143.852552013936
+                },
+                "open": {
+                  "value": 143.040502002567
+                }
+              }
+            ]
+          },
+          "quote": {
+            "tradeDateTime": "2026-03-20T17:05:20.717-04:00",
+            "timeliness": "DELAYED",
+            "quoteType": "REGULAR_SESSION",
+            "volume": {
+              "value": 10133392227,
+              "formattedValue": "10,133,392,227"
+            },
+            "percentChange": {
+              "value": -0.0151,
+              "formattedValue": "-1.51%"
+            },
+            "netChange": {
+              "value": -100.01,
+              "formattedValue": "-100.01"
+            },
+            "last": {
+              "value": 6506.48,
+              "formattedValue": "6,506.48"
+            }
+          },
+          "premarketQuote": null,
+          "postmarketQuote": null,
+          "currentMarketState": "CLOSED"
+        }
+      }
+    ],
+    "exchangeData": {
+      "city": "",
+      "countryCode": "",
+      "exchangeISO": "ARCX",
+      "id": "400",
+      "holidays": [
+        {
+          "name": "Presidents' Day",
+          "holidayType": "FULL_DAY",
+          "description": "Presidents' Day",
+          "startDateTime": "2026-02-16T00:00:00.000Z",
+          "endDateTime": "2026-02-16T23:59:59.999Z"
+        },
+        {
+          "name": "Martin Luther King Jr. Day",
+          "holidayType": "FULL_DAY",
+          "description": "Martin Luther King Jr. Day",
+          "startDateTime": "2026-01-19T00:00:00.000Z",
+          "endDateTime": "2026-01-19T23:59:59.999Z"
+        }
+      ]
+    }
+  }
+}

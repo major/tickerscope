@@ -1,0 +1,232 @@
+{
+  "symbol": "TEST",
+  "ratings": {
+    "composite": 95,
+    "eps": 93,
+    "rs": 92,
+    "smr": "A",
+    "ad": "C"
+  },
+  "company": {
+    "name": "Alphabet, Inc.",
+    "industry": "Internet-Content",
+    "sector": "INTERNET",
+    "industry_group_rank": 160,
+    "industry_group_rs": 20,
+    "industry_group_rs_letter": "D",
+    "description": "Operates as a holding company with interests in google search, network, advertising and cloud services",
+    "website": "http://www.abc.xyz",
+    "address": "NA",
+    "address2": "1600 Amphitheatre Parkway",
+    "phone": "+1.650.253.0000",
+    "ipo_date": "2004-08-19",
+    "ipo_price": 85,
+    "ipo_price_formatted": "85.00"
+  },
+  "pricing": {
+    "market_cap": 3707738502258.3,
+    "market_cap_formatted": "3,707,738,502,258.30",
+    "avg_dollar_volume_50d": 10832680150,
+    "avg_dollar_volume_50d_formatted": "$10,832,680,150",
+    "up_down_volume_ratio": 0.65,
+    "up_down_volume_ratio_formatted": "0.65",
+    "atr_percent_21d": 0.023809999999999998,
+    "atr_percent_21d_formatted": "2.38%",
+    "short_interest_percent_float": 1.3,
+    "short_interest_percent_float_formatted": "1.30",
+    "blue_dot_daily_dates": [
+      "2026-01-08"
+    ],
+    "blue_dot_weekly_dates": [
+      "2026-01-08"
+    ],
+    "price_percent_changes": {
+      "ytd": -0.0383,
+      "mtd": -0.0345,
+      "qtd": -0.0383,
+      "wtd": -0.0042,
+      "vs_1d": -0.02,
+      "vs_1m": -0.0444,
+      "vs_3m": -0.0154,
+      "vs_year_high": -0.1375,
+      "vs_year_low": 1.1419
+    },
+    "volume_percent_change_vs_50d": 0.2173
+  },
+  "financials": {
+    "eps_due_date": "2026-04-28",
+    "eps_due_date_status": "PROJECTED",
+    "eps_last_reported_date": "2026-02-04",
+    "eps_growth_rate": 0.33,
+    "sales_growth_rate_3y": 0.13,
+    "pre_tax_margin": 0.3431,
+    "after_tax_margin": 0.3022,
+    "gross_margin": 0.5985,
+    "return_on_equity": 0.357,
+    "earnings_stability": 15
+  },
+  "corporate_actions": {
+    "next_ex_dividend_date": "2026-03-09",
+    "dividends": [
+      {
+        "ex_date": "2024-06-10",
+        "amount": "$0.20",
+        "change_indicator": "UNKNOWN"
+      },
+      {
+        "ex_date": "2024-09-09",
+        "amount": "$0.20",
+        "change_indicator": "UNKNOWN"
+      },
+      {
+        "ex_date": "2024-12-09",
+        "amount": "$0.20",
+        "change_indicator": "UNKNOWN"
+      },
+      {
+        "ex_date": "2025-03-10",
+        "amount": "$0.20",
+        "change_indicator": "UNKNOWN"
+      },
+      {
+        "ex_date": "2025-06-09",
+        "amount": "$0.21",
+        "change_indicator": "UNKNOWN"
+      },
+      {
+        "ex_date": "2025-09-08",
+        "amount": "$0.21",
+        "change_indicator": "UNKNOWN"
+      },
+      {
+        "ex_date": "2025-12-08",
+        "amount": "$0.21",
+        "change_indicator": "UNKNOWN"
+      },
+      {
+        "ex_date": "2026-03-09",
+        "amount": "$0.21",
+        "change_indicator": "UNKNOWN"
+      }
+    ],
+    "splits": [
+      "2014-04-03",
+      "2022-07-18"
+    ],
+    "spinoffs": []
+  },
+  "industry": {
+    "name": "Internet-Content",
+    "sector": "INTERNET",
+    "code": 3334,
+    "number_of_stocks": 65
+  },
+  "ownership": {
+    "funds_float_pct": 0.4387,
+    "funds_float_pct_formatted": "43.87%"
+  },
+  "fundamentals": {
+    "r_and_d_percent_last_qtr": 0.1516,
+    "r_and_d_percent_last_qtr_formatted": "15.2%",
+    "debt_percent_formatted": "14.8%",
+    "new_ceo_date": "2019-12-03"
+  },
+  "patterns": [
+    {
+      "type": "Cup With Handle",
+      "stage": "1",
+      "base_number": 1,
+      "status": "COMPLETE",
+      "pivot_price": 106.59,
+      "pivot_price_formatted": "$106.59",
+      "pivot_date": "2023-04-06",
+      "base_start_date": "2023-02-08",
+      "base_end_date": "2023-04-05",
+      "base_length": 40
+    },
+    {
+      "type": "Cup With Handle",
+      "stage": "2a",
+      "base_number": 2,
+      "status": "COMPLETE",
+      "pivot_price": 127.1,
+      "pivot_price_formatted": "$127.10",
+      "pivot_date": "2023-07-26",
+      "base_start_date": "2023-06-07",
+      "base_end_date": "2023-07-25",
+      "base_length": 33
+    },
+    {
+      "type": "Cup With Handle",
+      "stage": "2b",
+      "base_number": 3,
+      "status": "COMPLETE",
+      "pivot_price": 139.42,
+      "pivot_price_formatted": "$139.42",
+      "pivot_date": "2023-12-20",
+      "base_start_date": "2023-10-12",
+      "base_end_date": "2023-12-19",
+      "base_length": 48
+    },
+    {
+      "type": "Cup With Handle",
+      "stage": "3",
+      "base_number": 5,
+      "status": "COMPLETE",
+      "pivot_price": 182.49,
+      "pivot_price_formatted": "$182.49",
+      "pivot_date": "2024-12-10",
+      "base_start_date": "2024-07-11",
+      "base_end_date": "2024-12-09",
+      "base_length": 106
+    },
+    {
+      "type": "Cup With Handle",
+      "stage": "1",
+      "base_number": 1,
+      "status": "COMPLETE",
+      "pivot_price": 181.23,
+      "pivot_price_formatted": "$181.23",
+      "pivot_date": "2025-07-11",
+      "base_start_date": "2025-02-05",
+      "base_end_date": "2025-07-10",
+      "base_length": 107
+    },
+    {
+      "type": "Consolidation",
+      "stage": "2c",
+      "base_number": 4,
+      "status": "COMPLETE",
+      "pivot_price": 153.78,
+      "pivot_price_formatted": "$153.78",
+      "pivot_date": "2024-04-01",
+      "base_start_date": "2024-01-30",
+      "base_end_date": "2024-03-28",
+      "base_length": 42
+    },
+    {
+      "type": "Consolidation",
+      "stage": "1",
+      "base_number": 1,
+      "status": "FORMING",
+      "pivot_price": 349,
+      "pivot_price_formatted": "$349.00",
+      "pivot_date": "0001-01-01",
+      "base_start_date": "2026-02-03",
+      "base_end_date": "2026-03-19",
+      "base_length": 32
+    },
+    {
+      "type": "Flat Base",
+      "stage": "2",
+      "base_number": 2,
+      "status": "COMPLETE",
+      "pivot_price": 328.83,
+      "pivot_price_formatted": "$328.83",
+      "pivot_date": "2026-01-08",
+      "base_start_date": "2025-11-26",
+      "base_end_date": "2026-01-07",
+      "base_length": 28
+    }
+  ]
+}

@@ -1,0 +1,318 @@
+{
+  "data": {
+    "marketData": [
+      {
+        "financials": {
+          "consensusFinancials": {
+            "eps": {
+              "reportedEarnings": [
+                {
+                  "value": {
+                    "formattedValue": "10.81",
+                    "value": 10.81
+                  },
+                  "percentChangeYOY": {
+                    "formattedValue": "34.45%",
+                    "value": 0.3445
+                  },
+                  "periodOffset": "P1Y_AGO",
+                  "periodEndDate": {
+                    "value": "2025-12-31"
+                  }
+                },
+                {
+                  "value": {
+                    "formattedValue": "8.04",
+                    "value": 8.04
+                  },
+                  "percentChangeYOY": {
+                    "formattedValue": "38.62%",
+                    "value": 0.3862
+                  },
+                  "periodOffset": "P2Y_AGO",
+                  "periodEndDate": {
+                    "value": "2024-12-31"
+                  }
+                },
+                {
+                  "value": {
+                    "formattedValue": "5.80",
+                    "value": 5.8
+                  },
+                  "percentChangeYOY": {
+                    "formattedValue": "27.19%",
+                    "value": 0.2719
+                  },
+                  "periodOffset": "P3Y_AGO",
+                  "periodEndDate": {
+                    "value": "2023-12-31"
+                  }
+                },
+                {
+                  "value": {
+                    "formattedValue": "4.56",
+                    "value": 4.56
+                  },
+                  "percentChangeYOY": {
+                    "formattedValue": "-18.72%",
+                    "value": -0.1872
+                  },
+                  "periodOffset": "P4Y_AGO",
+                  "periodEndDate": {
+                    "value": "2022-12-31"
+                  }
+                },
+                {
+                  "value": {
+                    "formattedValue": "5.61",
+                    "value": 5.61
+                  },
+                  "percentChangeYOY": {
+                    "formattedValue": "91.43%",
+                    "value": 0.9143
+                  },
+                  "periodOffset": "P5Y_AGO",
+                  "periodEndDate": {
+                    "value": "2021-12-31"
+                  }
+                },
+                {
+                  "value": {
+                    "formattedValue": "2.93",
+                    "value": 2.9305
+                  },
+                  "percentChangeYOY": {
+                    "formattedValue": "19.22%",
+                    "value": 0.1922
+                  },
+                  "periodOffset": "P6Y_AGO",
+                  "periodEndDate": {
+                    "value": "2020-12-31"
+                  }
+                },
+                {
+                  "value": {
+                    "formattedValue": "2.46",
+                    "value": 2.458
+                  },
+                  "percentChangeYOY": {
+                    "formattedValue": "12.49%",
+                    "value": 0.1249
+                  },
+                  "periodOffset": "P7Y_AGO",
+                  "periodEndDate": {
+                    "value": "2019-12-31"
+                  }
+                }
+              ]
+            },
+            "sales": {
+              "reportedSales": [
+                {
+                  "value": {
+                    "formattedValue": "402,836.00",
+                    "value": 402836
+                  },
+                  "percentChangeYOY": {
+                    "formattedValue": "15.20%",
+                    "value": 0.152
+                  },
+                  "periodEndDate": {
+                    "value": "2025-12-31"
+                  },
+                  "periodOffset": "P1Y_AGO"
+                },
+                {
+                  "value": {
+                    "formattedValue": "350,018.00",
+                    "value": 350018
+                  },
+                  "percentChangeYOY": {
+                    "formattedValue": "13.89%",
+                    "value": 0.1389
+                  },
+                  "periodEndDate": {
+                    "value": "2024-12-31"
+                  },
+                  "periodOffset": "P2Y_AGO"
+                },
+                {
+                  "value": {
+                    "formattedValue": "307,394.00",
+                    "value": 307394
+                  },
+                  "percentChangeYOY": {
+                    "formattedValue": "9.36%",
+                    "value": 0.0936
+                  },
+                  "periodEndDate": {
+                    "value": "2023-12-31"
+                  },
+                  "periodOffset": "P3Y_AGO"
+                },
+                {
+                  "value": {
+                    "formattedValue": "282,836.00",
+                    "value": 282836
+                  },
+                  "percentChangeYOY": {
+                    "formattedValue": "9.08%",
+                    "value": 0.0908
+                  },
+                  "periodEndDate": {
+                    "value": "2022-12-31"
+                  },
+                  "periodOffset": "P4Y_AGO"
+                },
+                {
+                  "value": {
+                    "formattedValue": "257,637.00",
+                    "value": 257637
+                  },
+                  "percentChangeYOY": {
+                    "formattedValue": "41.21%",
+                    "value": 0.4121
+                  },
+                  "periodEndDate": {
+                    "value": "2021-12-31"
+                  },
+                  "periodOffset": "P5Y_AGO"
+                },
+                {
+                  "value": {
+                    "formattedValue": "182,527.00",
+                    "value": 182527
+                  },
+                  "percentChangeYOY": {
+                    "formattedValue": "12.98%",
+                    "value": 0.1298
+                  },
+                  "periodEndDate": {
+                    "value": "2020-12-31"
+                  },
+                  "periodOffset": "P6Y_AGO"
+                },
+                {
+                  "value": {
+                    "formattedValue": "161,857.00",
+                    "value": 161857
+                  },
+                  "percentChangeYOY": {
+                    "formattedValue": "17.85%",
+                    "value": 0.1785
+                  },
+                  "periodEndDate": {
+                    "value": "2019-12-31"
+                  },
+                  "periodOffset": "P7Y_AGO"
+                }
+              ]
+            }
+          },
+          "estimates": {
+            "epsEstimates": [
+              {
+                "value": {
+                  "value": 11.453513,
+                  "formattedValue": "11.45"
+                },
+                "percentChangeYOY": {
+                  "value": 0.0595,
+                  "formattedValue": "5.95%"
+                },
+                "periodOffset": "P1Y_FUTURE",
+                "period": "P1Y",
+                "revisionDirection": "UP"
+              },
+              {
+                "value": {
+                  "value": 13.433323,
+                  "formattedValue": "13.43"
+                },
+                "percentChangeYOY": {
+                  "value": 0.1729,
+                  "formattedValue": "17.29%"
+                },
+                "periodOffset": "P2Y_FUTURE",
+                "period": "P1Y",
+                "revisionDirection": "UP"
+              }
+            ],
+            "salesEstimates": [
+              {
+                "value": {
+                  "value": 470195.643285,
+                  "formattedValue": "470,195.64"
+                },
+                "percentChangeYOY": {
+                  "value": 0.1672,
+                  "formattedValue": "16.72%"
+                },
+                "periodOffset": "P1Y_FUTURE",
+                "period": "P1Y"
+              },
+              {
+                "value": {
+                  "value": 540673.096824,
+                  "formattedValue": "540,673.10"
+                },
+                "percentChangeYOY": {
+                  "value": 0.1499,
+                  "formattedValue": "14.99%"
+                },
+                "periodOffset": "P2Y_FUTURE",
+                "period": "P1Y"
+              }
+            ]
+          }
+        },
+        "id": "202490156",
+        "symbology": {
+          "company": [
+            {
+              "companyName": "Alphabet, Inc."
+            }
+          ],
+          "instrument": [
+            {
+              "symbols": [
+                {
+                  "value": "202490156",
+                  "type": "VARASTO"
+                },
+                {
+                  "value": "US:GOOGL",
+                  "type": "TICKER"
+                },
+                {
+                  "value": "STOCK/US/XNAS/GOOGL",
+                  "type": "CHARTING"
+                },
+                {
+                  "value": "13-457050",
+                  "type": "DJ_KEY"
+                },
+                {
+                  "value": "42368",
+                  "type": "OSID"
+                },
+                {
+                  "value": "4999",
+                  "type": "MSID"
+                },
+                {
+                  "value": "GOOGL",
+                  "type": "DJN"
+                },
+                {
+                  "value": "GOOG",
+                  "type": "FCODE"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

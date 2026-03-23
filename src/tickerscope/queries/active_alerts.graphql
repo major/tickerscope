@@ -1,0 +1,36 @@
+query ActiveAlerts($product: FollowProductInput) {
+  user {
+    followSubscriptionsWithCount(product: $product) {
+      subscriptions {
+        deliveryPreferences {
+          method
+          type
+        }
+        criteria {
+          criteriaId
+          engine
+          product
+          alertType
+          term {
+            value
+            operator
+            field
+            ... on MarketDataTermCriteria {
+              instrumentResult {
+                ... on Instrument {
+                  djid
+                  ticker
+                  chartingSymbol
+                }
+              }
+            }
+          }
+        }
+        createDate
+        note
+      }
+      numSubscriptions
+      remainingSubscriptions
+    }
+  }
+}

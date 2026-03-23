@@ -1,0 +1,34 @@
+{
+  "data": {
+    "user": {
+      "screens": [
+        {
+          "site": "marketsurge",
+          "id": "01AAAAAAAAAAAAAAAAAAAAAAAA",
+          "name": "My Growth Screen",
+          "type": "StockScreen",
+          "source": {
+            "id": "100000000000001",
+            "type": "WATCHLIST",
+            "pub": "msr"
+          },
+          "updatedAt": "2026-01-10T08:00:00.000Z",
+          "filterCriteria": null,
+          "description": "High growth stocks",
+          "createdAt": "2025-12-01T12:00:00.000Z"
+        },
+        {
+          "site": "marketsurge",
+          "id": "01BBBBBBBBBBBBBBBBBBBBBBBB",
+          "name": "IBD 50",
+          "type": "StockScreen",
+          "source": null,
+          "updatedAt": "2026-02-01T09:00:00.000Z",
+          "filterCriteria": null,
+          "description": null,
+          "createdAt": "2025-11-15T10:00:00.000Z"
+        }
+      ]
+    }
+  }
+}

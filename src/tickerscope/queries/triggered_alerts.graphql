@@ -1,0 +1,43 @@
+query TriggeredAlerts {
+  user {
+    followAlerts {
+      cursorId
+      alerts {
+        alertId
+        alertType
+        engine
+        deliveryPreferences {
+          method
+          type
+        }
+        term {
+          value
+          operator
+          field
+          ... on MarketDataTermCriteria {
+            djKey
+            instrumentResult {
+              ... on Instrument {
+                djid
+                ticker
+                dialect
+                id
+                chartingSymbol
+              }
+            }
+          }
+        }
+        criteriaId
+        payload
+        product
+        delivered
+        viewed
+        deleted
+        digest
+        createDate
+        lastModifiedDate
+        ttl
+      }
+    }
+  }
+}
