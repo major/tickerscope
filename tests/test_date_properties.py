@@ -26,7 +26,6 @@ from tickerscope._models import (
     ReportedPeriod,
     Screen,
     TriggeredAlert,
-    TriggeredAlertTerm,
     WatchlistDetail,
     WatchlistSummary,
 )
