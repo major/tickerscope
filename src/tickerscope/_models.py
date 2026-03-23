@@ -4,43 +4,13 @@ from __future__ import annotations
 
 import datetime
 import json
-from dataclasses import dataclass, fields
-from typing import Any, cast
+from dataclasses import dataclass
+from typing import Any
 
 from mashumaro.config import BaseConfig  # pyright: ignore[reportMissingImports]
 from mashumaro.mixins.dict import DataClassDictMixin  # pyright: ignore[reportMissingImports]
 
 from tickerscope._dates import parse_date, parse_date_list, parse_datetime
-
-
-def _serialize_value(value: Any) -> Any:
-    """Recursively serialize nested values."""
-    if isinstance(value, list):
-        return [_serialize_value(item) for item in value]
-    if isinstance(value, dict):
-        return {k: _serialize_value(v) for k, v in value.items()}
-
-    to_dict = getattr(value, "to_dict", None)
-    if callable(to_dict):
-        return to_dict()
-
-    return value
-
-
-def _to_dict_omit_none(instance: Any) -> dict[str, Any]:
-    """Serialize dataclass instance while omitting None fields."""
-    data: dict[str, Any] = {}
-    for field in fields(instance):
-        value = getattr(instance, field.name)
-        if value is None:
-            continue
-        data[field.name] = _serialize_value(value)
-
-    post_serialize = instance.__class__.__dict__.get("__post_serialize__")
-    if post_serialize is not None:
-        data = cast(dict[str, Any], post_serialize(instance, data))
-
-    return data
 
 
 @dataclass(frozen=True, slots=True)
@@ -127,10 +97,6 @@ class Pricing(DataClassDictMixin):
     class Config(BaseConfig):
         omit_none = True
 
-    def to_dict(self) -> dict[str, Any]:
-        """Serialize this dataclass to a dictionary."""
-        return _to_dict_omit_none(self)
-
     def to_json(self) -> str:
         """Serialize this dataclass to a JSON string."""
         return json.dumps(self.to_dict())
@@ -160,7 +126,7 @@ class Pricing(DataClassDictMixin):
     short_interest_percent_float_formatted: str | None
     blue_dot_daily_dates: list[str | None]
     blue_dot_weekly_dates: list[str | None]
-    price_percent_changes: PricePercentChanges
+    price_percent_changes: PricePercentChanges | None
     volume_percent_change_vs_50d: float | None
 
     @property
@@ -364,23 +330,19 @@ class StockData(DataClassDictMixin):
     class Config(BaseConfig):
         omit_none = True
 
-    def to_dict(self) -> dict[str, Any]:
-        """Serialize this dataclass to a dictionary."""
-        return _to_dict_omit_none(self)
-
     def to_json(self) -> str:
         """Serialize this dataclass to a JSON string."""
         return json.dumps(self.to_dict())
 
     symbol: str
-    ratings: Ratings
-    company: Company
-    pricing: Pricing
-    financials: Financials
-    corporate_actions: CorporateActions
-    industry: Industry
-    ownership: BasicOwnership
-    fundamentals: Fundamentals
+    ratings: Ratings | None
+    company: Company | None
+    pricing: Pricing | None
+    financials: Financials | None
+    corporate_actions: CorporateActions | None
+    industry: Industry | None
+    ownership: BasicOwnership | None
+    fundamentals: Fundamentals | None
     patterns: list[Pattern]
 
     def _str_header(self) -> str:
@@ -1215,11 +1177,3 @@ class ChartMarkupList(DataClassDictMixin):
 
     cursor_id: str | None
     markups: list[ChartMarkup]
-
-
-def _runtime_safe_to_dict(self: Any) -> dict[str, Any]:
-    return _to_dict_omit_none(self)
-
-
-Pricing.to_dict = _runtime_safe_to_dict  # type: ignore[method-assign,assignment]
-StockData.to_dict = _runtime_safe_to_dict  # type: ignore[method-assign,assignment]

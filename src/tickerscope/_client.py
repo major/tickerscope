@@ -70,6 +70,23 @@ from tickerscope._queries import (
 _log = logging.getLogger("tickerscope")
 
 
+def _apply_max_points(chart: ChartData, max_points: int | None) -> ChartData:
+    """Truncate chart data points to max_points if specified."""
+    if max_points is None:
+        return chart
+    if max_points < 0:
+        raise ValueError("max_points must be non-negative")
+    if chart.time_series is not None:
+        return replace(
+            chart,
+            time_series=replace(
+                chart.time_series,
+                data_points=chart.time_series.data_points[:max_points],
+            ),
+        )
+    return chart
+
+
 class BaseTickerScopeClient(ABC):
     """Shared behavior for sync and async TickerScope clients."""
 
@@ -492,18 +509,7 @@ class BaseTickerScopeClient(ABC):
             exchange=exchange,
         )
         result = self._graphql_and_parse(payload, parse_chart_data_response, symbol)
-        if max_points is not None:
-            if max_points < 0:
-                raise ValueError("max_points must be non-negative")
-            if result.time_series is not None:
-                result = replace(
-                    result,
-                    time_series=replace(
-                        result.time_series,
-                        data_points=result.time_series.data_points[:max_points],
-                    ),
-                )
-        return result
+        return _apply_max_points(result, max_points)
 
     def get_watchlist(self, list_id: int, *, limit: int | None = None) -> Any:
         payload = self._build_get_watchlist_payload(list_id)
@@ -815,18 +821,7 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
             )
             cached = await self._cache.get(key)
             if cached is not None:
-                if max_points is not None:
-                    if max_points < 0:
-                        raise ValueError("max_points must be non-negative")
-                    if cached.time_series is not None:
-                        cached = replace(
-                            cached,
-                            time_series=replace(
-                                cached.time_series,
-                                data_points=cached.time_series.data_points[:max_points],
-                            ),
-                        )
-                return cached
+                return _apply_max_points(cached, max_points)
         payload = self._build_get_chart_data_payload(
             symbol,
             start_date=start_date,
@@ -847,18 +842,7 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
                 exchange=exchange,
             )
             await self._cache.set(key, result)
-        if max_points is not None:
-            if max_points < 0:
-                raise ValueError("max_points must be non-negative")
-            if result.time_series is not None:
-                result = replace(
-                    result,
-                    time_series=replace(
-                        result.time_series,
-                        data_points=result.time_series.data_points[:max_points],
-                    ),
-                )
-        return result
+        return _apply_max_points(result, max_points)
 
     async def get_watchlist(
         self, list_id: int, *, limit: int | None = None
