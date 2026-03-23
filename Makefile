@@ -15,6 +15,6 @@ radon:
 		|| echo "PASS: All functions rated A or B"
 
 test:
-	uv run pytest -v --cov=tickerscope --cov-report=term-missing
+	uv run pytest --cov=tickerscope --cov-report=term-missing
 
 ci: lint typecheck radon test
