@@ -17,7 +17,7 @@ FAKE_JWT = "fake_jwt_pagination"
 @pytest.fixture
 def sync_client():
     """Create a sync TickerScopeClient with mocked authentication."""
-    with patch("tickerscope._client.authenticate", return_value=FAKE_JWT):
+    with patch("tickerscope._client.resolve_jwt", return_value=FAKE_JWT):
         c = TickerScopeClient()
     yield c
     c.close()
@@ -26,7 +26,7 @@ def sync_client():
 @pytest.fixture
 async def async_client():
     """Create an async TickerScopeClient with mocked authentication."""
-    with patch("tickerscope._client.authenticate", return_value=FAKE_JWT):
+    with patch("tickerscope._client.resolve_jwt", return_value=FAKE_JWT):
         c = AsyncTickerScopeClient()
     yield c
     await c.aclose()

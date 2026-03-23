@@ -16,7 +16,7 @@ FAKE_JWT = "fake_jwt_token_for_testing"
 @pytest.fixture
 def client(stock_response):
     """Create a TickerScopeClient with mocked authentication."""
-    with patch("tickerscope._client.authenticate", return_value=FAKE_JWT):
+    with patch("tickerscope._client.resolve_jwt", return_value=FAKE_JWT):
         c = TickerScopeClient()
     yield c
     c.close()
@@ -94,7 +94,7 @@ def test_get_ownership_returns_ownership_data(client):
 
 def test_context_manager_calls_close():
     """Test that context manager calls close() on exit."""
-    with patch("tickerscope._client.authenticate", return_value=FAKE_JWT):
+    with patch("tickerscope._client.resolve_jwt", return_value=FAKE_JWT):
         with TickerScopeClient() as client:
             assert client._http is not None
 
