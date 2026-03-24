@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import logging
+from calendar import monthrange
 from abc import ABC, abstractmethod
+from datetime import date, timedelta
 from dataclasses import replace
 from typing import Any, Awaitable, Callable
 
@@ -73,6 +75,8 @@ from tickerscope._queries import (
 
 _log = logging.getLogger("tickerscope")
 
+_VALID_LOOKBACKS = ("1W", "1M", "3M", "6M", "1Y", "YTD")
+
 
 def _apply_limit(items: list, limit: int | None) -> list:
     """Validate and apply an optional limit to a list."""
@@ -98,6 +102,124 @@ def _apply_max_points(chart: ChartData, max_points: int | None) -> ChartData:
             ),
         )
     return chart
+
+
+def _today() -> date:
+    """Return the local calendar date."""
+    return date.today()
+
+
+def _subtract_months(current: date, months: int) -> date:
+    """Subtract months from a date, clamping to month-end if needed."""
+    total_month_index = (current.year * 12) + (current.month - 1) - months
+    target_year = total_month_index // 12
+    target_month = (total_month_index % 12) + 1
+    try:
+        return current.replace(year=target_year, month=target_month)
+    except ValueError:
+        last_day = monthrange(target_year, target_month)[1]
+        return date(target_year, target_month, last_day)
+
+
+def _resolve_chart_dates(
+    *,
+    start_date: str | None,
+    end_date: str | None,
+    lookback: str | None,
+    today: date | None = None,
+) -> tuple[str, str]:
+    """Resolve chart date inputs to a concrete start and end date pair."""
+    explicit_dates = _validate_chart_date_inputs(
+        start_date=start_date,
+        end_date=end_date,
+        lookback=lookback,
+    )
+    if explicit_dates is not None:
+        return explicit_dates
+
+    assert lookback is not None
+    current = today or _today()
+    end = current.strftime("%Y-%m-%d")
+    start = _resolve_lookback_start_date(current, lookback)
+    return start.strftime("%Y-%m-%d"), end
+
+
+def _validate_chart_date_inputs(
+    *,
+    start_date: str | None,
+    end_date: str | None,
+    lookback: str | None,
+) -> tuple[str, str] | None:
+    """Validate date inputs and return explicit dates when provided."""
+    _raise_if_lookback_mixed_with_explicit_dates(
+        start_date=start_date,
+        end_date=end_date,
+        lookback=lookback,
+    )
+    explicit_dates = _resolve_explicit_dates(
+        start_date=start_date,
+        end_date=end_date,
+        lookback=lookback,
+    )
+    if explicit_dates is not None:
+        return explicit_dates
+    _validate_lookback_token(lookback)
+    return None
+
+
+def _raise_if_lookback_mixed_with_explicit_dates(
+    *,
+    start_date: str | None,
+    end_date: str | None,
+    lookback: str | None,
+) -> None:
+    """Reject lookback when explicit date bounds are also provided."""
+    if lookback is None:
+        return
+    if start_date is not None:
+        raise ValueError("lookback cannot be combined with start_date")
+    if end_date is not None:
+        raise ValueError("lookback cannot be combined with end_date")
+
+
+def _resolve_explicit_dates(
+    *,
+    start_date: str | None,
+    end_date: str | None,
+    lookback: str | None,
+) -> tuple[str, str] | None:
+    """Return explicit dates when lookback is not requested."""
+    if lookback is not None:
+        return None
+    if start_date is None and end_date is None:
+        raise ValueError("either lookback or start_date and end_date must be provided")
+    if start_date is None or end_date is None:
+        raise ValueError("start_date and end_date must both be provided")
+    return start_date, end_date
+
+
+def _validate_lookback_token(lookback: str | None) -> None:
+    """Validate the lookback token against supported values."""
+    if lookback in _VALID_LOOKBACKS:
+        return
+    valid = ", ".join(_VALID_LOOKBACKS)
+    raise ValueError(f"lookback must be one of: {valid}")
+
+
+def _resolve_lookback_start_date(current: date, lookback: str) -> date:
+    """Resolve the starting date for a validated lookback token."""
+    month_lookback = {"1M": 1, "3M": 3, "6M": 6}
+    if lookback == "1W":
+        return current - timedelta(weeks=1)
+    if lookback in month_lookback:
+        return _subtract_months(current, month_lookback[lookback])
+    if lookback == "1Y":
+        try:
+            return current.replace(year=current.year - 1)
+        except ValueError:
+            last_day = monthrange(current.year - 1, current.month)[1]
+            return date(current.year - 1, current.month, last_day)
+    return date(current.year, 1, 1)
 
 
 class BaseTickerScopeClient(ABC):
@@ -158,8 +280,24 @@ class BaseTickerScopeClient(ABC):
                     "supports_max_points": True,
                     "parameters": [
                         {"name": "symbol", "type": "str", "required": True},
-                        {"name": "start_date", "type": "str", "required": True},
-                        {"name": "end_date", "type": "str", "required": True},
+                        {
+                            "name": "start_date",
+                            "type": "str | None",
+                            "required": False,
+                            "default": None,
+                        },
+                        {
+                            "name": "end_date",
+                            "type": "str | None",
+                            "required": False,
+                            "default": None,
+                        },
+                        {
+                            "name": "lookback",
+                            "type": "str | None",
+                            "required": False,
+                            "default": None,
+                        },
                         {
                             "name": "period",
                             "type": "str",
@@ -492,16 +630,22 @@ class BaseTickerScopeClient(ABC):
         self,
         symbol: str,
         *,
-        start_date: str,
-        end_date: str,
+        start_date: str | None = None,
+        end_date: str | None = None,
+        lookback: str | None = None,
         period: str = "P1D",
         exchange: str = "NYSE",
         max_points: int | None = None,
     ) -> Any:
-        payload = self._build_get_chart_data_payload(
-            symbol,
+        resolved_start_date, resolved_end_date = _resolve_chart_dates(
             start_date=start_date,
             end_date=end_date,
+            lookback=lookback,
+        )
+        payload = self._build_get_chart_data_payload(
+            symbol,
+            start_date=resolved_start_date,
+            end_date=resolved_end_date,
             period=period,
             exchange=exchange,
         )
@@ -639,6 +783,27 @@ class TickerScopeClient(BaseTickerScopeClient):
                 message=message,
             ) from exc
         return resp.json()
+
+    def get_chart_data(
+        self,
+        symbol: str,
+        *,
+        start_date: str | None = None,
+        end_date: str | None = None,
+        lookback: str | None = None,
+        period: str = "P1D",
+        exchange: str = "NYSE",
+        max_points: int | None = None,
+    ) -> ChartData:
+        return super().get_chart_data(
+            symbol,
+            start_date=start_date,
+            end_date=end_date,
+            lookback=lookback,
+            period=period,
+            exchange=exchange,
+            max_points=max_points,
+        )
 
     def get_watchlist_by_name(self, name: str) -> WatchlistDetail:
         """Look up a watchlist by name and return its full details.
@@ -778,16 +943,22 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         self,
         symbol: str,
         *,
-        start_date: str,
-        end_date: str,
+        start_date: str | None = None,
+        end_date: str | None = None,
+        lookback: str | None = None,
         period: str = "P1D",
         exchange: str = "NYSE",
         max_points: int | None = None,
     ) -> ChartData:
-        payload = self._build_get_chart_data_payload(
-            symbol,
+        resolved_start_date, resolved_end_date = _resolve_chart_dates(
             start_date=start_date,
             end_date=end_date,
+            lookback=lookback,
+        )
+        payload = self._build_get_chart_data_payload(
+            symbol,
+            start_date=resolved_start_date,
+            end_date=resolved_end_date,
             period=period,
             exchange=exchange,
         )
