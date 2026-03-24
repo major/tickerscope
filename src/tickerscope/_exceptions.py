@@ -8,17 +8,35 @@ from typing import Any
 class TickerScopeError(Exception):
     """Base exception for all TickerScope library errors."""
 
+    @property
+    def user_message(self) -> str:
+        """Return a user-friendly error message."""
+        return "An unexpected error occurred."
+
     def to_dict(self) -> dict[str, Any]:
         """Return a structured dict representation of this error."""
-        return {"error_type": "tickerscope_error", "message": str(self)}
+        return {
+            "error_type": "tickerscope_error",
+            "message": str(self),
+            "user_message": self.user_message,
+        }
 
 
 class AuthenticationError(TickerScopeError):
     """Raised when authentication fails (cookie extraction or JWT exchange)."""
 
+    @property
+    def user_message(self) -> str:
+        """Return a user-friendly error message."""
+        return "Authentication failed. Check your credentials and try again."
+
     def to_dict(self) -> dict[str, Any]:
         """Return a structured dict representation of this error."""
-        return {"error_type": "authentication_error", "message": str(self)}
+        return {
+            "error_type": "authentication_error",
+            "message": str(self),
+            "user_message": self.user_message,
+        }
 
 
 class CookieExtractionError(AuthenticationError):
@@ -38,12 +56,21 @@ class CookieExtractionError(AuthenticationError):
         super().__init__(message)
         self.browser = browser
 
+    @property
+    def user_message(self) -> str:
+        """Return a user-friendly error message."""
+        if self.browser is not None:
+            return f"Could not extract cookies from {self.browser}. Log into MarketSurge in {self.browser} first."
+        return (
+            "No browser cookies found. Log into MarketSurge in Firefox or Chrome first."
+        )
+
     def to_dict(self) -> dict[str, Any]:
         """Return a structured dict representation of this error."""
         d: dict[str, Any] = {
             "error_type": "cookie_extraction_error",
             "message": str(self),
-            "suggestion": "Ensure the specified browser is installed and you're logged into MarketSurge",
+            "user_message": self.user_message,
         }
         if self.browser is not None:
             d["browser"] = self.browser
@@ -67,12 +94,17 @@ class TokenExpiredError(AuthenticationError):
         super().__init__(message)
         self.status_code = status_code
 
+    @property
+    def user_message(self) -> str:
+        """Return a user-friendly error message."""
+        return "Authentication token expired. Re-authenticate to continue."
+
     def to_dict(self) -> dict[str, Any]:
         """Return a structured dict representation of this error."""
         d: dict[str, Any] = {
             "error_type": "token_expired",
             "message": str(self),
-            "suggestion": "Obtain a fresh JWT token and reinitialize the client",
+            "user_message": self.user_message,
         }
         if self.status_code is not None:
             d["status_code"] = self.status_code
@@ -96,12 +128,18 @@ class APIError(TickerScopeError):
         super().__init__(message)
         self.errors = errors or []
 
+    @property
+    def user_message(self) -> str:
+        """Return a user-friendly error message."""
+        return f"MarketSurge API error: {str(self)}"
+
     def to_dict(self) -> dict[str, Any]:
         """Return a structured dict representation of this error."""
         return {
             "error_type": "api_error",
             "message": str(self),
             "errors": self.errors,
+            "user_message": self.user_message,
         }
 
 
@@ -129,12 +167,19 @@ class SymbolNotFoundError(APIError):
         super().__init__(message, errors=errors)
         self.symbol = symbol
 
+    @property
+    def user_message(self) -> str:
+        """Return a user-friendly error message."""
+        if self.symbol is not None:
+            return f"Symbol '{self.symbol}' not found. Check the ticker spelling."
+        return "Symbol not found. Check the ticker spelling."
+
     def to_dict(self) -> dict[str, Any]:
         """Return a structured dict representation of this error."""
         d: dict[str, Any] = {
             "error_type": "symbol_not_found",
             "message": str(self),
-            "suggestion": "Check the ticker symbol spelling or try a different symbol",
+            "user_message": self.user_message,
         }
         if self.symbol is not None:
             d["symbol"] = self.symbol
@@ -169,6 +214,11 @@ class HTTPError(TickerScopeError):
         self.response_body = response_body
         self.message = message
 
+    @property
+    def user_message(self) -> str:
+        """Return a user-friendly error message."""
+        return f"MarketSurge returned an HTTP {self.status_code} error."
+
     def to_dict(self) -> dict[str, Any]:
         """Return a structured dict representation of this error."""
         return {
@@ -176,4 +226,5 @@ class HTTPError(TickerScopeError):
             "status_code": self.status_code,
             "message": self.message,
             "response_body": self.response_body,
+            "user_message": self.user_message,
         }
