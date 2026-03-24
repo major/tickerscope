@@ -1,145 +1,15 @@
 """Tests for __str__ methods on StockData, WatchlistEntry, FundamentalData, ChartData."""
 
 from tickerscope._models import (
-    BasicOwnership,
     ChartData,
-    Company,
-    CorporateActions,
     DataPoint,
     EstimatePeriod,
-    Financials,
     FundamentalData,
-    Fundamentals,
-    Industry,
-    Pattern,
-    PricePercentChanges,
-    Pricing,
     Quote,
-    Ratings,
     ReportedPeriod,
-    StockData,
     TimeSeries,
     WatchlistEntry,
 )
-
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-
-def _full_stock() -> StockData:
-    """Build a fully-populated StockData for str output tests."""
-    return StockData(
-        symbol="AAPL",
-        ratings=Ratings(composite=95, eps=99, rs=89, smr="A", ad="B+"),
-        company=Company(
-            name="Apple Inc.",
-            industry="Computer Software-Desktop",
-            sector="Technology",
-            industry_group_rank=42,
-            industry_group_rs=None,
-            industry_group_rs_letter=None,
-            description=None,
-            website=None,
-            address=None,
-            address2=None,
-            phone=None,
-            ipo_date=None,
-            ipo_price=None,
-            ipo_price_formatted=None,
-        ),
-        pricing=Pricing(
-            market_cap=3.2e12,
-            market_cap_formatted="$3.2T",
-            avg_dollar_volume_50d=1.25e10,
-            avg_dollar_volume_50d_formatted="$12.5B",
-            up_down_volume_ratio=None,
-            up_down_volume_ratio_formatted=None,
-            atr_percent_21d=None,
-            atr_percent_21d_formatted=None,
-            short_interest_percent_float=None,
-            short_interest_percent_float_formatted=None,
-            blue_dot_daily_dates=[],
-            blue_dot_weekly_dates=[],
-            price_percent_changes=PricePercentChanges(
-                ytd=None,
-                mtd=None,
-                qtd=None,
-                wtd=None,
-                vs_1d=None,
-                vs_1m=None,
-                vs_3m=None,
-                vs_year_high=None,
-                vs_year_low=None,
-            ),
-            volume_percent_change_vs_50d=None,
-        ),
-        financials=Financials(
-            eps_due_date=None,
-            eps_due_date_status=None,
-            eps_last_reported_date=None,
-            eps_growth_rate=15.2,
-            sales_growth_rate_3y=8.1,
-            pre_tax_margin=None,
-            after_tax_margin=None,
-            gross_margin=None,
-            return_on_equity=None,
-            earnings_stability=None,
-        ),
-        corporate_actions=CorporateActions(
-            next_ex_dividend_date=None,
-            dividends=[],
-            splits=[],
-            spinoffs=[],
-        ),
-        industry=Industry(
-            name="Computer Software-Desktop",
-            sector="Technology",
-            code=None,
-            number_of_stocks=None,
-        ),
-        ownership=BasicOwnership(
-            funds_float_pct=None,
-            funds_float_pct_formatted=None,
-        ),
-        fundamentals=Fundamentals(
-            r_and_d_percent_last_qtr=None,
-            r_and_d_percent_last_qtr_formatted=None,
-            debt_percent_formatted=None,
-            new_ceo_date=None,
-        ),
-        patterns=[
-            Pattern(
-                type="Cup With Handle",
-                stage=2,
-                base_number=1,
-                status="COMPLETE",
-                pivot_price=198.45,
-                pivot_price_formatted="$198.45",
-                pivot_date="2024-06-15",
-                base_start_date="2024-01-10",
-                base_end_date="2024-06-14",
-                base_length=110,
-            ),
-        ],
-    )
-
-
-def _minimal_stock() -> StockData:
-    """Build a StockData with None for all optional nested objects."""
-    return StockData(
-        symbol="TEST",
-        ratings=Ratings(composite=None, eps=None, rs=None, smr=None, ad=None),
-        company=None,  # type: ignore[arg-type]
-        pricing=None,  # type: ignore[arg-type]
-        financials=None,  # type: ignore[arg-type]
-        corporate_actions=None,  # type: ignore[arg-type]
-        industry=None,  # type: ignore[arg-type]
-        ownership=None,  # type: ignore[arg-type]
-        fundamentals=None,  # type: ignore[arg-type]
-        patterns=[],
-    )
 
 
 # ---------------------------------------------------------------------------
@@ -150,75 +20,65 @@ def _minimal_stock() -> StockData:
 class TestStockDataStr:
     """Tests for StockData.__str__ output."""
 
-    def test_contains_symbol(self) -> None:
+    def test_contains_symbol(self, full_stock) -> None:
         """str(stock_data) includes the ticker symbol."""
-        stock = _full_stock()
-        assert "AAPL" in str(stock)
+        assert "AAPL" in str(full_stock)
 
-    def test_contains_company_name(self) -> None:
+    def test_contains_company_name(self, full_stock) -> None:
         """str(stock_data) includes the company name."""
-        stock = _full_stock()
-        assert "Apple Inc." in str(stock)
+        assert "Apple Inc." in str(full_stock)
 
-    def test_contains_ratings(self) -> None:
+    def test_contains_ratings(self, full_stock) -> None:
         """str(stock_data) includes formatted ratings line."""
-        stock = _full_stock()
-        output = str(stock)
+        output = str(full_stock)
         assert "Comp 95" in output
         assert "EPS 99" in output
         assert "RS 89" in output
         assert "SMR A" in output
         assert "A/D B+" in output
 
-    def test_contains_industry_with_rank(self) -> None:
+    def test_contains_industry_with_rank(self, full_stock) -> None:
         """str(stock_data) includes industry name and group rank."""
-        stock = _full_stock()
-        output = str(stock)
+        output = str(full_stock)
         assert "Computer Software-Desktop" in output
         assert "Rank #42" in output
 
-    def test_contains_pricing(self) -> None:
+    def test_contains_pricing(self, full_stock) -> None:
         """str(stock_data) includes market cap and avg volume."""
-        stock = _full_stock()
-        output = str(stock)
+        output = str(full_stock)
         assert "$3.2T" in output
         assert "$12.5B" in output
 
-    def test_contains_financials(self) -> None:
+    def test_contains_financials(self, full_stock) -> None:
         """str(stock_data) includes EPS and sales growth rates."""
-        stock = _full_stock()
-        output = str(stock)
+        output = str(full_stock)
         assert "EPS Growth 15.2%" in output
         assert "Sales Growth 8.1%" in output
 
-    def test_contains_pattern(self) -> None:
+    def test_contains_pattern(self, full_stock) -> None:
         """str(stock_data) includes first pattern info."""
-        stock = _full_stock()
-        output = str(stock)
+        output = str(full_stock)
         assert "Cup With Handle" in output
         assert "Stage 2" in output
         assert "$198.45" in output
 
-    def test_none_fields_no_crash(self) -> None:
+    def test_none_fields_no_crash(self, minimal_stock_empty) -> None:
         """StockData with all-None nested fields doesn't crash on str()."""
-        stock = _minimal_stock()
-        output = str(stock)
+        output = str(minimal_stock_empty)
         assert "TEST" in output
         # Should not raise, and should still produce readable output
 
-    def test_none_fields_skip_lines(self) -> None:
+    def test_none_fields_skip_lines(self, minimal_stock_empty) -> None:
         """When nested fields are None, their lines are omitted entirely."""
-        stock = _minimal_stock()
-        output = str(stock)
+        output = str(minimal_stock_empty)
         assert "Industry:" not in output
         assert "Price:" not in output
         assert "Financials:" not in output
         assert "Pattern:" not in output
 
-    def test_multiline_output(self) -> None:
+    def test_multiline_output(self, full_stock) -> None:
         """Full StockData produces multi-line output."""
-        stock = _full_stock()
-        lines = str(stock).strip().split("\n")
+        lines = str(full_stock).strip().split("\n")
         assert len(lines) >= 4
 
 

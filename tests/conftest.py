@@ -7,6 +7,7 @@ from unittest.mock import patch
 import pytest
 
 from tickerscope._client import AsyncTickerScopeClient, TickerScopeClient
+from tickerscope._models import Pricing, Ratings, StockData
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
@@ -59,3 +60,185 @@ async def async_client():
         client = AsyncTickerScopeClient()
     yield client
     await client.aclose()
+
+
+# ---------------------------------------------------------------------------
+# Model builder fixtures
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def minimal_pricing():
+    """Return a factory callable for building Pricing instances with optional overrides."""
+
+    def _build(**overrides: object) -> Pricing:
+        defaults: dict = dict(
+            market_cap=None,
+            market_cap_formatted=None,
+            avg_dollar_volume_50d=None,
+            avg_dollar_volume_50d_formatted=None,
+            up_down_volume_ratio=None,
+            up_down_volume_ratio_formatted=None,
+            atr_percent_21d=None,
+            atr_percent_21d_formatted=None,
+            short_interest_percent_float=None,
+            short_interest_percent_float_formatted=None,
+            blue_dot_daily_dates=[],
+            blue_dot_weekly_dates=[],
+            price_percent_changes=None,
+            volume_percent_change_vs_50d=None,
+        )
+        defaults.update(overrides)
+        return Pricing(**defaults)
+
+    return _build
+
+
+@pytest.fixture
+def minimal_stock():
+    """Return a factory callable for building StockData with actual ratings, overridable per-field."""
+
+    def _build(**overrides: object) -> StockData:
+        defaults: dict = dict(
+            symbol="TEST",
+            ratings=Ratings(composite=95, eps=99, rs=89, smr="A", ad="B+"),
+            company=None,
+            pricing=None,
+            financials=None,
+            corporate_actions=None,
+            industry=None,
+            ownership=None,
+            fundamentals=None,
+            patterns=[],
+        )
+        defaults.update(overrides)
+        return StockData(**defaults)
+
+    return _build
+
+
+@pytest.fixture
+def minimal_stock_empty() -> StockData:
+    """Build a StockData with None for all ratings (all-None ratings variant)."""
+    return StockData(
+        symbol="TEST",
+        ratings=Ratings(composite=None, eps=None, rs=None, smr=None, ad=None),
+        company=None,
+        pricing=None,
+        financials=None,
+        corporate_actions=None,
+        industry=None,
+        ownership=None,
+        fundamentals=None,
+        patterns=[],
+    )
+
+
+@pytest.fixture
+def full_stock() -> StockData:
+    """Build a fully-populated StockData for str output tests."""
+    from tickerscope._models import (
+        BasicOwnership,
+        Company,
+        CorporateActions,
+        Financials,
+        Fundamentals,
+        Industry,
+        Pattern,
+        PricePercentChanges,
+    )
+
+    return StockData(
+        symbol="AAPL",
+        ratings=Ratings(composite=95, eps=99, rs=89, smr="A", ad="B+"),
+        company=Company(
+            name="Apple Inc.",
+            industry="Computer Software-Desktop",
+            sector="Technology",
+            industry_group_rank=42,
+            industry_group_rs=None,
+            industry_group_rs_letter=None,
+            description=None,
+            website=None,
+            address=None,
+            address2=None,
+            phone=None,
+            ipo_date=None,
+            ipo_price=None,
+            ipo_price_formatted=None,
+        ),
+        pricing=Pricing(
+            market_cap=3.2e12,
+            market_cap_formatted="$3.2T",
+            avg_dollar_volume_50d=1.25e10,
+            avg_dollar_volume_50d_formatted="$12.5B",
+            up_down_volume_ratio=None,
+            up_down_volume_ratio_formatted=None,
+            atr_percent_21d=None,
+            atr_percent_21d_formatted=None,
+            short_interest_percent_float=None,
+            short_interest_percent_float_formatted=None,
+            blue_dot_daily_dates=[],
+            blue_dot_weekly_dates=[],
+            price_percent_changes=PricePercentChanges(
+                ytd=None,
+                mtd=None,
+                qtd=None,
+                wtd=None,
+                vs_1d=None,
+                vs_1m=None,
+                vs_3m=None,
+                vs_year_high=None,
+                vs_year_low=None,
+            ),
+            volume_percent_change_vs_50d=None,
+        ),
+        financials=Financials(
+            eps_due_date=None,
+            eps_due_date_status=None,
+            eps_last_reported_date=None,
+            eps_growth_rate=15.2,
+            sales_growth_rate_3y=8.1,
+            pre_tax_margin=None,
+            after_tax_margin=None,
+            gross_margin=None,
+            return_on_equity=None,
+            earnings_stability=None,
+        ),
+        corporate_actions=CorporateActions(
+            next_ex_dividend_date=None,
+            dividends=[],
+            splits=[],
+            spinoffs=[],
+        ),
+        industry=Industry(
+            name="Computer Software-Desktop",
+            sector="Technology",
+            code=None,
+            number_of_stocks=None,
+        ),
+        ownership=BasicOwnership(
+            funds_float_pct=None,
+            funds_float_pct_formatted=None,
+        ),
+        fundamentals=Fundamentals(
+            r_and_d_percent_last_qtr=None,
+            r_and_d_percent_last_qtr_formatted=None,
+            debt_percent_formatted=None,
+            new_ceo_date=None,
+        ),
+        patterns=[
+            Pattern(
+                type="Cup With Handle",
+                stage=2,
+                base_number=1,
+                status="COMPLETE",
+                pivot_price=198.45,
+                pivot_price_formatted="$198.45",
+                pivot_date="2024-06-15",
+                base_start_date="2024-01-10",
+                base_end_date="2024-06-14",
+                base_length=110,
+            ),
+        ],
+    )

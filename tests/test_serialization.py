@@ -8,57 +8,10 @@ from tickerscope._models import (
     EstimatePeriod,
     Fundamentals,
     Pattern,
-    Pricing,
     PricePercentChanges,
     Ratings,
     ReportedPeriod,
-    StockData,
 )
-
-
-# ---------------------------------------------------------------------------
-# Helpers to reduce repetitive kwarg noise
-# ---------------------------------------------------------------------------
-
-
-def _minimal_pricing(**overrides: object) -> Pricing:
-    """Build a Pricing instance with sane defaults, overridable per-field."""
-    defaults: dict = dict(
-        market_cap=None,
-        market_cap_formatted=None,
-        avg_dollar_volume_50d=None,
-        avg_dollar_volume_50d_formatted=None,
-        up_down_volume_ratio=None,
-        up_down_volume_ratio_formatted=None,
-        atr_percent_21d=None,
-        atr_percent_21d_formatted=None,
-        short_interest_percent_float=None,
-        short_interest_percent_float_formatted=None,
-        blue_dot_daily_dates=[],
-        blue_dot_weekly_dates=[],
-        price_percent_changes=None,
-        volume_percent_change_vs_50d=None,
-    )
-    defaults.update(overrides)
-    return Pricing(**defaults)
-
-
-def _minimal_stock(**overrides: object) -> StockData:
-    """Build a StockData instance with only symbol+ratings required, rest None."""
-    defaults: dict = dict(
-        symbol="TEST",
-        ratings=Ratings(composite=95, eps=99, rs=89, smr="A", ad="B+"),
-        company=None,
-        pricing=None,
-        financials=None,
-        corporate_actions=None,
-        industry=None,
-        ownership=None,
-        fundamentals=None,
-        patterns=[],
-    )
-    defaults.update(overrides)
-    return StockData(**defaults)
 
 
 # ---------------------------------------------------------------------------
@@ -111,16 +64,16 @@ class TestNoneOmission:
 class TestNestedSerialization:
     """Verify nested dataclass instances are recursively serialized."""
 
-    def test_nested_dataclass_serialized_as_dict(self) -> None:
+    def test_nested_dataclass_serialized_as_dict(self, minimal_stock) -> None:
         """A nested Ratings inside StockData becomes a nested plain dict."""
-        stock = _minimal_stock()
+        stock = minimal_stock()
         d = stock.to_dict()
         assert isinstance(d["ratings"], dict)
         assert d["ratings"]["composite"] == 95
 
-    def test_none_nested_omitted(self) -> None:
+    def test_none_nested_omitted(self, minimal_stock) -> None:
         """Nested fields that are None are excluded from the top-level dict."""
-        stock = _minimal_stock()
+        stock = minimal_stock()
         d = stock.to_dict()
         assert "company" not in d
         assert "pricing" not in d
@@ -135,7 +88,7 @@ class TestNestedSerialization:
 class TestListSerialization:
     """Verify lists of dataclasses serialize into lists of dicts."""
 
-    def test_list_of_dataclasses_serialized(self) -> None:
+    def test_list_of_dataclasses_serialized(self, minimal_stock) -> None:
         """A list[Pattern] becomes a list[dict] in the serialized output."""
         p = Pattern(
             type="Cup",
@@ -149,15 +102,15 @@ class TestListSerialization:
             base_end_date="2024-01-01",
             base_length=30,
         )
-        stock = _minimal_stock(patterns=[p])
+        stock = minimal_stock(patterns=[p])
         d = stock.to_dict()
         assert isinstance(d["patterns"], list)
         assert len(d["patterns"]) == 1
         assert isinstance(d["patterns"][0], dict)
 
-    def test_empty_list_included(self) -> None:
+    def test_empty_list_included(self, minimal_stock) -> None:
         """An empty patterns list still appears in the output dict."""
-        stock = _minimal_stock(patterns=[])
+        stock = minimal_stock(patterns=[])
         d = stock.to_dict()
         assert d["patterns"] == []
 
@@ -170,23 +123,23 @@ class TestListSerialization:
 class TestFormattedSuffixDrop:
     """Verify raw fields are dropped when their _formatted counterpart exists."""
 
-    def test_raw_dropped_when_formatted_present(self) -> None:
+    def test_raw_dropped_when_formatted_present(self, minimal_pricing) -> None:
         """market_cap is kept when market_cap_formatted is non-None."""
-        p = _minimal_pricing(market_cap=3.2e12, market_cap_formatted="$3.2T")
+        p = minimal_pricing(market_cap=3.2e12, market_cap_formatted="$3.2T")
         d = p.to_dict()
         assert "market_cap" in d
         assert d.get("market_cap_formatted") == "$3.2T"
 
-    def test_raw_kept_when_formatted_none(self) -> None:
+    def test_raw_kept_when_formatted_none(self, minimal_pricing) -> None:
         """market_cap is kept when market_cap_formatted is None (omitted)."""
-        p = _minimal_pricing(market_cap=3.2e12, market_cap_formatted=None)
+        p = minimal_pricing(market_cap=3.2e12, market_cap_formatted=None)
         d = p.to_dict()
         assert "market_cap" in d
         assert "market_cap_formatted" not in d
 
-    def test_all_5_pricing_pairs_dropped(self) -> None:
+    def test_all_5_pricing_pairs_dropped(self, minimal_pricing) -> None:
         """All 5 raw/formatted pairs in Pricing keep both raw and formatted values."""
-        p = _minimal_pricing(
+        p = minimal_pricing(
             market_cap=3.2e12,
             market_cap_formatted="$3.2T",
             avg_dollar_volume_50d=1.25e10,
@@ -371,9 +324,9 @@ class TestToJson:
         assert "eps" not in parsed
         assert "smr" not in parsed
 
-    def test_to_json_nested_stock_data(self) -> None:
+    def test_to_json_nested_stock_data(self, minimal_stock) -> None:
         """StockData.to_json() serializes nested structures correctly."""
-        stock = _minimal_stock()
+        stock = minimal_stock()
         parsed = json.loads(stock.to_json())
         assert parsed["symbol"] == "TEST"
         assert isinstance(parsed["ratings"], dict)
@@ -447,9 +400,9 @@ class TestOmitNoneParameter:
         assert "eps" in j
         assert j["eps"] is None
 
-    def test_nested_propagation_with_real_model(self) -> None:
+    def test_nested_propagation_with_real_model(self, minimal_stock) -> None:
         """StockData.to_dict(omit_none=False) propagates nulls to nested Ratings."""
-        s = _minimal_stock(
+        s = minimal_stock(
             ratings=Ratings(composite=99, eps=None, rs=None, smr=None, ad=None),
         )
         d = s.to_dict(omit_none=False)
