@@ -1,5 +1,9 @@
 """Tests for __str__ methods on StockData, WatchlistEntry, FundamentalData, ChartData."""
 
+from __future__ import annotations
+
+import pytest
+
 from tickerscope._models import (
     ChartData,
     DataPoint,
@@ -20,57 +24,35 @@ from tickerscope._models import (
 class TestStockDataStr:
     """Tests for StockData.__str__ output."""
 
-    def test_contains_symbol(self, full_stock) -> None:
-        """str(stock_data) includes the ticker symbol."""
-        assert "AAPL" in str(full_stock)
+    @pytest.mark.parametrize(
+        "expected",
+        [
+            "AAPL",
+            "Apple Inc.",
+            "Comp 95",
+            "EPS 99",
+            "RS 89",
+            "SMR A",
+            "A/D B+",
+            "Computer Software-Desktop",
+            "Rank #42",
+            "$3.2T",
+            "$12.5B",
+            "EPS Growth 15.2%",
+            "Sales Growth 8.1%",
+            "Cup With Handle",
+            "Stage 2",
+            "$198.45",
+        ],
+    )
+    def test_str_contains(self, full_stock, expected: str) -> None:
+        """str(stock_data) includes key field values from the populated model."""
+        assert expected in str(full_stock)
 
-    def test_contains_company_name(self, full_stock) -> None:
-        """str(stock_data) includes the company name."""
-        assert "Apple Inc." in str(full_stock)
-
-    def test_contains_ratings(self, full_stock) -> None:
-        """str(stock_data) includes formatted ratings line."""
-        output = str(full_stock)
-        assert "Comp 95" in output
-        assert "EPS 99" in output
-        assert "RS 89" in output
-        assert "SMR A" in output
-        assert "A/D B+" in output
-
-    def test_contains_industry_with_rank(self, full_stock) -> None:
-        """str(stock_data) includes industry name and group rank."""
-        output = str(full_stock)
-        assert "Computer Software-Desktop" in output
-        assert "Rank #42" in output
-
-    def test_contains_pricing(self, full_stock) -> None:
-        """str(stock_data) includes market cap and avg volume."""
-        output = str(full_stock)
-        assert "$3.2T" in output
-        assert "$12.5B" in output
-
-    def test_contains_financials(self, full_stock) -> None:
-        """str(stock_data) includes EPS and sales growth rates."""
-        output = str(full_stock)
-        assert "EPS Growth 15.2%" in output
-        assert "Sales Growth 8.1%" in output
-
-    def test_contains_pattern(self, full_stock) -> None:
-        """str(stock_data) includes first pattern info."""
-        output = str(full_stock)
-        assert "Cup With Handle" in output
-        assert "Stage 2" in output
-        assert "$198.45" in output
-
-    def test_none_fields_no_crash(self, minimal_stock_empty) -> None:
-        """StockData with all-None nested fields doesn't crash on str()."""
+    def test_none_fields_handled(self, minimal_stock_empty) -> None:
+        """StockData with all-None nested fields shows symbol but omits section labels."""
         output = str(minimal_stock_empty)
         assert "TEST" in output
-        # Should not raise, and should still produce readable output
-
-    def test_none_fields_skip_lines(self, minimal_stock_empty) -> None:
-        """When nested fields are None, their lines are omitted entirely."""
-        output = str(minimal_stock_empty)
         assert "Industry:" not in output
         assert "Price:" not in output
         assert "Financials:" not in output
