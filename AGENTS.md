@@ -47,16 +47,14 @@ marketsurge/
 | authenticate / async_authenticate | Func | _auth.py:22/163 | Cookie extraction + JWT exchange |
 | parse_stock_response | Func | _parsing.py:99 | Largest parser (~200 lines), extracts StockData |
 | MethodCache | Class | _cache.py:8 | Optional aiocache wrapper with TTL |
+| SerializableDataclass | Class | _serialization.py:15 | Base class for dict/JSON serialization (to_dict, from_dict, to_json) |
 
 ## CONVENTIONS
 
 - **`from __future__ import annotations`** in every module
 - **Private modules**: underscore prefix (`_client.py`, not `client.py`)
-- **Models**: frozen dataclasses with mashumaro `DataClassDictMixin`
-  - Every model has `Config` inner class with `omit_none = True`
-  - Every model has `to_json()` method
+- **Models**: frozen dataclasses with `SerializableDataclass`
   - Date string fields get `_dt` property counterparts (e.g., `ipo_date` -> `ipo_date_dt`)
-- **Serialization helpers**: `__post_serialize__` for removing `None`/empty values
 - **Logger**: module-level `_log = logging.getLogger("tickerscope")`
 - **Type checker**: `ty` (in Makefile), pyright inline ignores in code (`# pyright: ignore[...]`)
 - **`# noqa: F401`**: on imports kept solely for test patching

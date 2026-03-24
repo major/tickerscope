@@ -4,7 +4,7 @@
 
 ## OVERVIEW
 
-Private module package (`_*` prefix) wrapping MarketSurge GraphQL API. Frozen dataclass models with mashumaro serialization, async-first client with optional caching, and defensive parsing from opaque JSON responses.
+Private module package (`_*` prefix) wrapping MarketSurge GraphQL API. Frozen dataclass models with SerializableDataclass, async-first client with optional caching, and defensive parsing from opaque JSON responses.
 
 ## WHERE TO LOOK
 
@@ -13,7 +13,7 @@ Private module package (`_*` prefix) wrapping MarketSurge GraphQL API. Frozen da
 | Add API endpoint | `_queries.py` + `queries/*.graphql` | load_query() |
 | Add endpoint handler | `_client.py` | BaseTickerScopeClient._build_*_payload |
 | Add response parser | `_parsing.py` | parse_*_response functions |
-| Add data model | `_models.py` | Frozen dataclass + DataClassDictMixin |
+| Add data model | `_models.py` | Frozen dataclass + SerializableDataclass |
 | Handle dates | `_dates.py` | parse_datetime (always tz-aware) |
 | Auth/JWT flow | `_auth.py` | resolve_jwt chain |
 | Caching layer | `_cache.py` | MethodCache (optional aiocache) |
@@ -35,9 +35,8 @@ Private module package (`_*` prefix) wrapping MarketSurge GraphQL API. Frozen da
 ## CONVENTIONS
 
 - **Private modules**: underscore prefix (`_client.py`, not `client.py`)
-- **Models**: frozen dataclass + DataClassDictMixin + Config(omit_none=True) + to_json()
+- **Models**: frozen dataclass + SerializableDataclass (inherits to_dict/to_json/from_dict)
 - **Date fields**: string field + `_dt` property (e.g., `ipo_date` -> `ipo_date_dt`)
-- **Serialization**: `__post_serialize__` removes None/empty values
 - **Logger**: `_log = logging.getLogger('tickerscope')` per module
 - **Type checking**: pyright inline ignores (`# pyright: ignore[...]`), no `as any` equivalents
 
