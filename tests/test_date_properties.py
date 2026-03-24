@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+# pyright: reportMissingImports=false
+
 import datetime
 
 import pytest
@@ -182,303 +184,166 @@ class TestParseDateListFunction:
 # ---------------------------------------------------------------------------
 
 
-class TestCompanyDtProperty:
-    """Tests for Company.ipo_date_dt property."""
-
-    def test_valid_ipo_date(self) -> None:
-        """Valid ipo_date string parses to date object."""
-        c = Company(
-            name="Alphabet",
-            industry=None,
-            sector=None,
-            industry_group_rank=None,
-            industry_group_rs=None,
-            industry_group_rs_letter=None,
-            description=None,
-            website=None,
-            address=None,
-            address2=None,
-            phone=None,
-            ipo_date="2004-08-19",
-            ipo_price=85.0,
-            ipo_price_formatted="85.00",
-        )
-        assert c.ipo_date_dt == datetime.date(2004, 8, 19)
-
-    def test_none_ipo_date(self) -> None:
-        """None ipo_date yields None from property."""
-        c = Company(
-            name="Test",
-            industry=None,
-            sector=None,
-            industry_group_rank=None,
-            industry_group_rs=None,
-            industry_group_rs_letter=None,
-            description=None,
-            website=None,
-            address=None,
-            address2=None,
-            phone=None,
-            ipo_date=None,
-            ipo_price=None,
-            ipo_price_formatted=None,
-        )
-        assert c.ipo_date_dt is None
-
-    def test_to_dict_excludes_dt(self) -> None:
-        """to_dict() output does NOT contain ipo_date_dt key."""
-        c = Company(
-            name="Test",
-            industry=None,
-            sector=None,
-            industry_group_rank=None,
-            industry_group_rs=None,
-            industry_group_rs_letter=None,
-            description=None,
-            website=None,
-            address=None,
-            address2=None,
-            phone=None,
-            ipo_date="2004-08-19",
-            ipo_price=None,
-            ipo_price_formatted=None,
-        )
-        d = c.to_dict()
-        assert "ipo_date_dt" not in d
+def _assert_dt_property(
+    model_class: type[object],
+    constructor_kwargs: dict[str, object],
+    field_name: str,
+    input_value: str | None,
+    expected: datetime.date | datetime.datetime | None,
+) -> None:
+    """Assert that a *_dt model property parses a date/datetime field correctly."""
+    kwargs = dict(constructor_kwargs)
+    kwargs[field_name] = input_value
+    obj = model_class(**kwargs)  # pyright: ignore[reportCallIssue]
+    result = getattr(obj, f"{field_name}_dt")
+    assert result == expected
 
 
-class TestFinancialsDtProperties:
-    """Tests for Financials._dt properties."""
+_COMPANY_NULLABLE_FIELDS = (
+    "industry",
+    "sector",
+    "industry_group_rank",
+    "industry_group_rs",
+    "industry_group_rs_letter",
+    "description",
+    "website",
+    "address",
+    "address2",
+    "phone",
+)
 
-    def test_eps_due_date_dt(self) -> None:
-        """Valid eps_due_date string parses to date object."""
-        f = Financials(
-            eps_due_date="2026-04-28",
-            eps_due_date_status="PROJECTED",
-            eps_last_reported_date=None,
-            eps_growth_rate=None,
-            sales_growth_rate_3y=None,
-            pre_tax_margin=None,
-            after_tax_margin=None,
-            gross_margin=None,
-            return_on_equity=None,
-            earnings_stability=None,
-        )
-        assert f.eps_due_date_dt == datetime.date(2026, 4, 28)
+_COMPANY_KWARGS: dict[str, object] = {
+    "name": "Alphabet",
+    "ipo_date": None,
+    "ipo_price": 85.0,
+    "ipo_price_formatted": "85.00",
+    **dict.fromkeys(_COMPANY_NULLABLE_FIELDS, None),
+}
+_FINANCIALS_KWARGS: dict[str, object] = {
+    "eps_due_date": None,
+    "eps_due_date_status": "PROJECTED",
+    "eps_last_reported_date": None,
+    **dict.fromkeys(
+        [
+            "eps_growth_rate",
+            "sales_growth_rate_3y",
+            "pre_tax_margin",
+            "after_tax_margin",
+            "gross_margin",
+            "return_on_equity",
+            "earnings_stability",
+        ],
+        None,
+    ),
+}
+_DIVIDEND_KWARGS: dict[str, object] = {
+    "ex_date": None,
+    "amount": "$0.20",
+    "change_indicator": "UNKNOWN",
+}
+_CORPORATE_ACTIONS_KWARGS: dict[str, object] = {
+    "next_ex_dividend_date": None,
+    "dividends": [],
+    "splits": [],
+    "spinoffs": [],
+}
+_PATTERN_KWARGS: dict[str, object] = {
+    "type": "Cup With Handle",
+    "stage": 1,
+    "base_number": 1,
+    "status": "COMPLETE",
+    "pivot_price": 106.59,
+    "pivot_price_formatted": "$106.59",
+    "pivot_date": None,
+    "base_start_date": None,
+    "base_end_date": None,
+    "base_length": 40,
+}
+_FUNDAMENTALS_KWARGS: dict[str, object] = {
+    **dict.fromkeys(
+        [
+            "r_and_d_percent_last_qtr",
+            "r_and_d_percent_last_qtr_formatted",
+            "debt_percent_formatted",
+        ],
+        None,
+    ),
+    "new_ceo_date": None,
+}
+_QUARTERLY_FUND_OWNERSHIP_KWARGS: dict[str, object] = {"date": None, "count": "245"}
+_REPORTED_PERIOD_KWARGS: dict[str, object] = {
+    "value": 2.81,
+    "formatted_value": "$2.81",
+    "pct_change_yoy": 0.33,
+    "formatted_pct_change": "+33%",
+    "period_offset": "Y0",
+    "period_end_date": None,
+}
 
-    def test_eps_last_reported_date_dt(self) -> None:
-        """Valid eps_last_reported_date string parses to date object."""
-        f = Financials(
-            eps_due_date=None,
-            eps_due_date_status=None,
-            eps_last_reported_date="2026-02-04",
-            eps_growth_rate=None,
-            sales_growth_rate_3y=None,
-            pre_tax_margin=None,
-            after_tax_margin=None,
-            gross_margin=None,
-            return_on_equity=None,
-            earnings_stability=None,
-        )
-        assert f.eps_last_reported_date_dt == datetime.date(2026, 2, 4)
-
-    def test_none_dates(self) -> None:
-        """None date fields yield None from properties."""
-        f = Financials(
-            eps_due_date=None,
-            eps_due_date_status=None,
-            eps_last_reported_date=None,
-            eps_growth_rate=None,
-            sales_growth_rate_3y=None,
-            pre_tax_margin=None,
-            after_tax_margin=None,
-            gross_margin=None,
-            return_on_equity=None,
-            earnings_stability=None,
-        )
-        assert f.eps_due_date_dt is None
-        assert f.eps_last_reported_date_dt is None
-
-    def test_to_dict_excludes_dt(self) -> None:
-        """to_dict() output does NOT contain _dt keys."""
-        f = Financials(
-            eps_due_date="2026-04-28",
-            eps_due_date_status=None,
-            eps_last_reported_date="2026-02-04",
-            eps_growth_rate=None,
-            sales_growth_rate_3y=None,
-            pre_tax_margin=None,
-            after_tax_margin=None,
-            gross_margin=None,
-            return_on_equity=None,
-            earnings_stability=None,
-        )
-        d = f.to_dict()
-        assert "eps_due_date_dt" not in d
-        assert "eps_last_reported_date_dt" not in d
-
-
-class TestDividendDtProperty:
-    """Tests for Dividend.ex_date_dt property."""
-
-    def test_valid_ex_date(self) -> None:
-        """Valid ex_date string parses to date object."""
-        div = Dividend(ex_date="2024-06-10", amount="$0.20", change_indicator="UNKNOWN")
-        assert div.ex_date_dt == datetime.date(2024, 6, 10)
-
-    def test_none_ex_date(self) -> None:
-        """None ex_date yields None from property."""
-        div = Dividend(ex_date=None, amount=None, change_indicator=None)
-        assert div.ex_date_dt is None
-
-
-class TestCorporateActionsDtProperty:
-    """Tests for CorporateActions.next_ex_dividend_date_dt property."""
-
-    def test_valid_date(self) -> None:
-        """Valid next_ex_dividend_date parses to date object."""
-        ca = CorporateActions(
-            next_ex_dividend_date="2026-03-09",
-            dividends=[],
-            splits=[],
-            spinoffs=[],
-        )
-        assert ca.next_ex_dividend_date_dt == datetime.date(2026, 3, 9)
-
-    def test_none_date(self) -> None:
-        """None next_ex_dividend_date yields None from property."""
-        ca = CorporateActions(
-            next_ex_dividend_date=None,
-            dividends=[],
-            splits=[],
-            spinoffs=[],
-        )
-        assert ca.next_ex_dividend_date_dt is None
-
-
-class TestPatternDtProperties:
-    """Tests for Pattern._dt properties (pivot, base_start, base_end)."""
-
-    def test_all_dates_valid(self) -> None:
-        """All three date properties parse valid strings."""
-        p = Pattern(
-            type="Cup With Handle",
-            stage=1,
-            base_number=1,
-            status="COMPLETE",
-            pivot_price=106.59,
-            pivot_price_formatted="$106.59",
-            pivot_date="2023-04-06",
-            base_start_date="2023-02-08",
-            base_end_date="2023-04-05",
-            base_length=40,
-        )
-        assert p.pivot_date_dt == datetime.date(2023, 4, 6)
-        assert p.base_start_date_dt == datetime.date(2023, 2, 8)
-        assert p.base_end_date_dt == datetime.date(2023, 4, 5)
-
-    def test_sentinel_pivot_date(self) -> None:
-        """Sentinel '0001-01-01' pivot_date yields None (forming pattern)."""
-        p = Pattern(
-            type="Consolidation",
-            stage=1,
-            base_number=1,
-            status="FORMING",
-            pivot_price=349.0,
-            pivot_price_formatted="$349.00",
-            pivot_date="0001-01-01",
-            base_start_date="2026-02-03",
-            base_end_date="2026-03-19",
-            base_length=32,
-        )
-        assert p.pivot_date_dt is None
-        # base dates still parse fine
-        assert p.base_start_date_dt == datetime.date(2026, 2, 3)
-
-    def test_to_dict_excludes_dt(self) -> None:
-        """to_dict() output does NOT contain _dt keys."""
-        p = Pattern(
-            type="Flat Base",
-            stage=2,
-            base_number=2,
-            status="COMPLETE",
-            pivot_price=328.83,
-            pivot_price_formatted="$328.83",
-            pivot_date="2026-01-08",
-            base_start_date="2025-11-26",
-            base_end_date="2026-01-07",
-            base_length=28,
-        )
-        d = p.to_dict()
-        assert "pivot_date_dt" not in d
-        assert "base_start_date_dt" not in d
-        assert "base_end_date_dt" not in d
+_PARSE_DATE_DT_CASES = [
+    (Company, _COMPANY_KWARGS, "ipo_date", "2004-08-19"),
+    (Company, _COMPANY_KWARGS, "ipo_date", None),
+    (Financials, _FINANCIALS_KWARGS, "eps_due_date", "2026-04-28"),
+    (Financials, _FINANCIALS_KWARGS, "eps_due_date", None),
+    (Financials, _FINANCIALS_KWARGS, "eps_last_reported_date", "2026-02-04"),
+    (Financials, _FINANCIALS_KWARGS, "eps_last_reported_date", None),
+    (Dividend, _DIVIDEND_KWARGS, "ex_date", "2024-06-10"),
+    (Dividend, _DIVIDEND_KWARGS, "ex_date", None),
+    (
+        CorporateActions,
+        _CORPORATE_ACTIONS_KWARGS,
+        "next_ex_dividend_date",
+        "2026-03-09",
+    ),
+    (CorporateActions, _CORPORATE_ACTIONS_KWARGS, "next_ex_dividend_date", None),
+    (Pattern, _PATTERN_KWARGS, "pivot_date", "2023-04-06"),
+    (Pattern, _PATTERN_KWARGS, "pivot_date", None),
+    (Pattern, _PATTERN_KWARGS, "pivot_date", "0001-01-01"),
+    (Pattern, _PATTERN_KWARGS, "base_start_date", "2023-02-08"),
+    (Pattern, _PATTERN_KWARGS, "base_start_date", None),
+    (Pattern, _PATTERN_KWARGS, "base_end_date", "2023-04-05"),
+    (Pattern, _PATTERN_KWARGS, "base_end_date", None),
+    (Fundamentals, _FUNDAMENTALS_KWARGS, "new_ceo_date", "2019-12-03"),
+    (Fundamentals, _FUNDAMENTALS_KWARGS, "new_ceo_date", None),
+    (QuarterlyFundOwnership, _QUARTERLY_FUND_OWNERSHIP_KWARGS, "date", "2025-12-31"),
+    (QuarterlyFundOwnership, _QUARTERLY_FUND_OWNERSHIP_KWARGS, "date", None),
+    (ReportedPeriod, _REPORTED_PERIOD_KWARGS, "period_end_date", "2025-12-31"),
+    (ReportedPeriod, _REPORTED_PERIOD_KWARGS, "period_end_date", None),
+]
 
 
-class TestFundamentalsDtProperty:
-    """Tests for Fundamentals.new_ceo_date_dt property."""
-
-    def test_valid_date(self) -> None:
-        """Valid new_ceo_date parses to date object."""
-        f = Fundamentals(
-            r_and_d_percent_last_qtr=None,
-            r_and_d_percent_last_qtr_formatted=None,
-            debt_percent_formatted=None,
-            new_ceo_date="2019-12-03",
-        )
-        assert f.new_ceo_date_dt == datetime.date(2019, 12, 3)
-
-    def test_none_date(self) -> None:
-        """None new_ceo_date yields None from property."""
-        f = Fundamentals(
-            r_and_d_percent_last_qtr=None,
-            r_and_d_percent_last_qtr_formatted=None,
-            debt_percent_formatted=None,
-            new_ceo_date=None,
-        )
-        assert f.new_ceo_date_dt is None
+@pytest.mark.parametrize(
+    ("model_cls", "kwargs", "field_name", "input_value"),
+    _PARSE_DATE_DT_CASES,
+)
+def test_parse_date_dt_properties(
+    model_cls: type[object],
+    kwargs: dict[str, object],
+    field_name: str,
+    input_value: str | None,
+) -> None:
+    """Date-backed *_dt model properties delegate to parse_date() correctly."""
+    _assert_dt_property(
+        model_cls, kwargs, field_name, input_value, parse_date(input_value)
+    )
 
 
-class TestQuarterlyFundOwnershipDtProperty:
-    """Tests for QuarterlyFundOwnership.date_dt property."""
-
-    def test_valid_date(self) -> None:
-        """Valid date string parses to date object."""
-        q = QuarterlyFundOwnership(date="2025-12-31", count="245")
-        assert q.date_dt == datetime.date(2025, 12, 31)
-
-    def test_none_date(self) -> None:
-        """None date yields None from property."""
-        q = QuarterlyFundOwnership(date=None, count=None)
-        assert q.date_dt is None
-
-
-class TestReportedPeriodDtProperty:
-    """Tests for ReportedPeriod.period_end_date_dt property."""
-
-    def test_valid_date(self) -> None:
-        """Valid period_end_date string parses to date object."""
-        rp = ReportedPeriod(
-            value=2.81,
-            formatted_value="$2.81",
-            pct_change_yoy=0.33,
-            formatted_pct_change="+33%",
-            period_offset="Y0",
-            period_end_date="2025-12-31",
-        )
-        assert rp.period_end_date_dt == datetime.date(2025, 12, 31)
-
-    def test_none_date(self) -> None:
-        """None period_end_date yields None from property."""
-        rp = ReportedPeriod(
-            value=None,
-            formatted_value=None,
-            pct_change_yoy=None,
-            formatted_pct_change=None,
-            period_offset="Y0",
-            period_end_date=None,
-        )
-        assert rp.period_end_date_dt is None
+def test_pattern_pivot_date_sentinel_preserves_other_date_parsing() -> None:
+    """Sentinel pivot_date maps to None while base_start_date still parses."""
+    p = Pattern(
+        type="Consolidation",
+        stage=1,
+        base_number=1,
+        status="FORMING",
+        pivot_price=349.0,
+        pivot_price_formatted="$349.00",
+        pivot_date="0001-01-01",
+        base_start_date="2026-02-03",
+        base_end_date="2026-03-19",
+        base_length=32,
+    )
+    assert p.pivot_date_dt is None
+    assert p.base_start_date_dt == datetime.date(2026, 2, 3)
 
 
 # ---------------------------------------------------------------------------
@@ -554,321 +419,172 @@ class TestPricingDtProperties:
 # ---------------------------------------------------------------------------
 
 
-class TestDataPointDtProperties:
-    """Tests for DataPoint._dt properties."""
+_DATAPOINT_KWARGS: dict[str, object] = {
+    "start_date_time": "2021-12-02T00:00:00.000-05:00",
+    "end_date_time": "2021-12-02T23:59:59.000-05:00",
+    **{"open": 100.0, "high": 105.0, "low": 99.0, "close": 103.0},
+    "volume": 1000000.0,
+}
+_QUOTE_KWARGS: dict[str, object] = {
+    "trade_date_time": None,
+    **dict.fromkeys(["timeliness", "quote_type"], None),
+    "last": 150.0,
+    "volume": 50000.0,
+    **dict.fromkeys(["percent_change", "net_change"], None),
+}
+_EXCHANGE_HOLIDAY_KWARGS: dict[str, object] = {
+    "name": "Market Holiday",
+    "holiday_type": "FULL",
+    "description": None,
+    "start_date_time": "2026-01-01T00:00:00.000+00:00",
+    "end_date_time": "2026-01-01T23:59:59.000+00:00",
+}
+_WATCHLIST_SUMMARY_KWARGS: dict[str, object] = {
+    "id": 100,
+    "name": "My List",
+    "last_modified": None,
+    "description": None,
+}
+_WATCHLIST_DETAIL_KWARGS: dict[str, object] = {
+    "id": "wl-456",
+    "name": "Detail List",
+    "last_modified": None,
+    "description": None,
+    "items": [],
+}
+_SCREEN_KWARGS: dict[str, object] = {
+    "id": "scr-1",
+    "name": "My Screen",
+    "type": "USER",
+    **dict.fromkeys(["source", "description", "filter_criteria"], None),
+    "created_at": None,
+    "updated_at": None,
+}
+_ALERT_SUBSCRIPTION_KWARGS: dict[str, object] = {
+    "delivery_preferences": [DeliveryPreference(method="EMAIL", type="IMMEDIATE")],
+    "criteria": None,
+    "create_date": None,
+    "note": None,
+}
+_TRIGGERED_ALERT_KWARGS: dict[str, object] = {
+    "alert_id": "alert-001",
+    "alert_type": "PRICE",
+    "engine": "STREAMING",
+    **dict.fromkeys(["delivery_preference", "term", "criteria_id"], None),
+    "payload": {},
+    "product": None,
+    "delivered": True,
+    "viewed": False,
+    "deleted": False,
+    "create_date": None,
+    "ttl": None,
+}
+_CHART_MARKUP_KWARGS: dict[str, object] = {
+    "id": "cm-1",
+    "name": "My Markup",
+    "data": "{}",
+    "frequency": "DAILY",
+    "site": "MS",
+    "created_at": None,
+    "updated_at": None,
+}
 
-    def test_start_and_end_dt(self) -> None:
-        """Valid RFC 3339 strings parse into timezone-aware datetimes."""
-        dp = DataPoint(
-            start_date_time="2021-12-02T00:00:00.000-05:00",
-            end_date_time="2021-12-02T23:59:59.000-05:00",
-            open=100.0,
-            high=105.0,
-            low=99.0,
-            close=103.0,
-            volume=1000000.0,
+_PARSE_DATETIME_DT_CASES = [
+    (DataPoint, _DATAPOINT_KWARGS, "start_date_time", "2021-12-02T00:00:00.000-05:00"),
+    (DataPoint, _DATAPOINT_KWARGS, "end_date_time", "2021-12-02T23:59:59.000-05:00"),
+    (Quote, _QUOTE_KWARGS, "trade_date_time", "2026-03-20T16:00:00.000Z"),
+    (Quote, _QUOTE_KWARGS, "trade_date_time", None),
+    (
+        ExchangeHoliday,
+        _EXCHANGE_HOLIDAY_KWARGS,
+        "start_date_time",
+        "2026-01-01T00:00:00.000+00:00",
+    ),
+    (
+        ExchangeHoliday,
+        _EXCHANGE_HOLIDAY_KWARGS,
+        "end_date_time",
+        "2026-01-01T23:59:59.000+00:00",
+    ),
+    (
+        WatchlistSummary,
+        _WATCHLIST_SUMMARY_KWARGS,
+        "last_modified",
+        "2026-03-15T10:30:00.000Z",
+    ),
+    (WatchlistSummary, _WATCHLIST_SUMMARY_KWARGS, "last_modified", None),
+    (
+        WatchlistDetail,
+        _WATCHLIST_DETAIL_KWARGS,
+        "last_modified",
+        "2026-03-15T10:30:00.000Z",
+    ),
+    (WatchlistDetail, _WATCHLIST_DETAIL_KWARGS, "last_modified", None),
+    (Screen, _SCREEN_KWARGS, "created_at", "2026-01-10T08:00:00.000Z"),
+    (Screen, _SCREEN_KWARGS, "created_at", None),
+    (Screen, _SCREEN_KWARGS, "updated_at", "2026-03-20T14:00:00.000Z"),
+    (Screen, _SCREEN_KWARGS, "updated_at", None),
+    (
+        AlertSubscription,
+        _ALERT_SUBSCRIPTION_KWARGS,
+        "create_date",
+        "2026-03-20T13:30:15.656Z",
+    ),
+    (AlertSubscription, _ALERT_SUBSCRIPTION_KWARGS, "create_date", None),
+    (
+        TriggeredAlert,
+        _TRIGGERED_ALERT_KWARGS,
+        "create_date",
+        "2026-03-20T13:30:15.656Z",
+    ),
+    (TriggeredAlert, _TRIGGERED_ALERT_KWARGS, "create_date", None),
+    (ChartMarkup, _CHART_MARKUP_KWARGS, "created_at", "2026-01-10T08:00:00.000Z"),
+    (ChartMarkup, _CHART_MARKUP_KWARGS, "created_at", None),
+    (ChartMarkup, _CHART_MARKUP_KWARGS, "updated_at", "2026-03-20T14:00:00.000Z"),
+    (ChartMarkup, _CHART_MARKUP_KWARGS, "updated_at", None),
+]
+
+
+@pytest.mark.parametrize(
+    ("model_cls", "kwargs", "field_name", "input_value"),
+    _PARSE_DATETIME_DT_CASES,
+)
+def test_parse_datetime_dt_properties(
+    model_cls: type[object],
+    kwargs: dict[str, object],
+    field_name: str,
+    input_value: str | None,
+) -> None:
+    """Datetime-backed *_dt model properties delegate to parse_datetime() correctly."""
+    _assert_dt_property(
+        model_cls,
+        kwargs,
+        field_name,
+        input_value,
+        parse_datetime(input_value),
+    )
+
+
+class TestToDictExcludesDt:
+    """Representative checks that computed *_dt properties are not serialized."""
+
+    def test_company_to_dict_excludes_ipo_date_dt(self) -> None:
+        """Company.to_dict() excludes computed ipo_date_dt field."""
+        company = Company(**{**_COMPANY_KWARGS, "ipo_date": "2004-08-19"})
+        assert "ipo_date_dt" not in company.to_dict()
+
+    def test_screen_to_dict_excludes_created_and_updated_dt(self) -> None:
+        """Screen.to_dict() excludes created_at_dt and updated_at_dt fields."""
+        screen = Screen(
+            **{
+                **_SCREEN_KWARGS,
+                "created_at": "2026-01-10T08:00:00.000Z",
+                "updated_at": "2026-03-20T14:00:00.000Z",
+            }
         )
-        assert dp.start_date_time_dt is not None
-        assert dp.start_date_time_dt.tzinfo is not None
-        assert dp.end_date_time_dt is not None
-        assert dp.end_date_time_dt.tzinfo is not None
-
-    def test_to_dict_excludes_dt(self) -> None:
-        """to_dict() output does NOT contain _dt keys."""
-        dp = DataPoint(
-            start_date_time="2021-12-02T00:00:00.000-05:00",
-            end_date_time="2021-12-02T23:59:59.000-05:00",
-            open=None,
-            high=None,
-            low=None,
-            close=None,
-            volume=None,
-        )
-        d = dp.to_dict()
-        assert "start_date_time_dt" not in d
-        assert "end_date_time_dt" not in d
-
-
-class TestQuoteDtProperty:
-    """Tests for Quote.trade_date_time_dt property."""
-
-    def test_valid_datetime(self) -> None:
-        """Valid trade_date_time parses into timezone-aware datetime."""
-        q = Quote(
-            trade_date_time="2026-03-20T16:00:00.000Z",
-            timeliness=None,
-            quote_type=None,
-            last=150.0,
-            volume=50000.0,
-            percent_change=None,
-            net_change=None,
-        )
-        result = q.trade_date_time_dt
-        assert result is not None
-        assert result.tzinfo is not None
-        assert result.year == 2026
-
-    def test_none_datetime(self) -> None:
-        """None trade_date_time yields None from property."""
-        q = Quote(
-            trade_date_time=None,
-            timeliness=None,
-            quote_type=None,
-            last=None,
-            volume=None,
-            percent_change=None,
-            net_change=None,
-        )
-        assert q.trade_date_time_dt is None
-
-
-class TestExchangeHolidayDtProperties:
-    """Tests for ExchangeHoliday._dt properties."""
-
-    def test_both_datetimes(self) -> None:
-        """Both start and end datetimes parse as timezone-aware."""
-        eh = ExchangeHoliday(
-            name="Market Holiday",
-            holiday_type="FULL",
-            description=None,
-            start_date_time="2026-01-01T00:00:00.000+00:00",
-            end_date_time="2026-01-01T23:59:59.000+00:00",
-        )
-        assert eh.start_date_time_dt is not None
-        assert eh.start_date_time_dt.tzinfo is not None
-        assert eh.end_date_time_dt is not None
-
-
-class TestWatchlistSummaryDtProperty:
-    """Tests for WatchlistSummary.last_modified_dt property."""
-
-    def test_valid_datetime(self) -> None:
-        """Valid last_modified parses into timezone-aware datetime."""
-        ws = WatchlistSummary(
-            id="wl-123",
-            name="My List",
-            last_modified="2026-03-15T10:30:00.000Z",
-            description=None,
-        )
-        result = ws.last_modified_dt
-        assert result is not None
-        assert result.tzinfo is not None
-
-    def test_none_datetime(self) -> None:
-        """None last_modified yields None from property."""
-        ws = WatchlistSummary(id=None, name=None, last_modified=None, description=None)
-        assert ws.last_modified_dt is None
-
-    def test_to_dict_excludes_dt(self) -> None:
-        """to_dict() output does NOT contain last_modified_dt key."""
-        ws = WatchlistSummary(
-            id="wl-123",
-            name="My List",
-            last_modified="2026-03-15T10:30:00.000Z",
-            description=None,
-        )
-        d = ws.to_dict()
-        assert "last_modified_dt" not in d
-
-
-class TestWatchlistDetailDtProperty:
-    """Tests for WatchlistDetail.last_modified_dt property."""
-
-    def test_valid_datetime(self) -> None:
-        """Valid last_modified parses into timezone-aware datetime."""
-        wd = WatchlistDetail(
-            id="wl-456",
-            name="Detail List",
-            last_modified="2026-03-15T10:30:00.000Z",
-            description=None,
-            items=[],
-        )
-        result = wd.last_modified_dt
-        assert result is not None
-        assert result.tzinfo is not None
-
-    def test_none_datetime(self) -> None:
-        """None last_modified yields None from property."""
-        wd = WatchlistDetail(
-            id=None,
-            name=None,
-            last_modified=None,
-            description=None,
-            items=[],
-        )
-        assert wd.last_modified_dt is None
-
-
-class TestScreenDtProperties:
-    """Tests for Screen.created_at_dt and updated_at_dt properties."""
-
-    def test_both_datetimes(self) -> None:
-        """Both created_at and updated_at parse as timezone-aware datetimes."""
-        s = Screen(
-            id="scr-1",
-            name="My Screen",
-            type="USER",
-            source=None,
-            description=None,
-            filter_criteria=None,
-            created_at="2026-01-10T08:00:00.000Z",
-            updated_at="2026-03-20T14:00:00.000Z",
-        )
-        assert s.created_at_dt is not None
-        assert s.created_at_dt.tzinfo is not None
-        assert s.updated_at_dt is not None
-        assert s.updated_at_dt.year == 2026
-
-    def test_none_datetimes(self) -> None:
-        """None timestamp fields yield None from properties."""
-        s = Screen(
-            id=None,
-            name=None,
-            type=None,
-            source=None,
-            description=None,
-            filter_criteria=None,
-            created_at=None,
-            updated_at=None,
-        )
-        assert s.created_at_dt is None
-        assert s.updated_at_dt is None
-
-    def test_to_dict_excludes_dt(self) -> None:
-        """to_dict() output does NOT contain _dt keys."""
-        s = Screen(
-            id="scr-1",
-            name="Test",
-            type="USER",
-            source=None,
-            description=None,
-            filter_criteria=None,
-            created_at="2026-01-10T08:00:00.000Z",
-            updated_at="2026-03-20T14:00:00.000Z",
-        )
-        d = s.to_dict()
-        assert "created_at_dt" not in d
-        assert "updated_at_dt" not in d
-
-
-class TestAlertSubscriptionDtProperty:
-    """Tests for AlertSubscription.create_date_dt property."""
-
-    def test_valid_datetime(self) -> None:
-        """Valid create_date parses into timezone-aware datetime."""
-        sub = AlertSubscription(
-            delivery_preferences=[DeliveryPreference(method="EMAIL", type="IMMEDIATE")],
-            criteria=None,
-            create_date="2026-03-20T13:30:15.656Z",
-            note=None,
-        )
-        result = sub.create_date_dt
-        assert result is not None
-        assert result.tzinfo is not None
-        assert result.second == 15
-
-    def test_none_datetime(self) -> None:
-        """None create_date yields None from property."""
-        sub = AlertSubscription(
-            delivery_preferences=[],
-            criteria=None,
-            create_date=None,
-            note=None,
-        )
-        assert sub.create_date_dt is None
-
-
-class TestTriggeredAlertDtProperty:
-    """Tests for TriggeredAlert.create_date_dt property."""
-
-    def test_valid_datetime(self) -> None:
-        """Valid create_date parses into timezone-aware datetime."""
-        ta = TriggeredAlert(
-            alert_id="alert-001",
-            alert_type="PRICE",
-            engine="STREAMING",
-            delivery_preference=None,
-            term=None,
-            criteria_id=None,
-            payload={},
-            product=None,
-            delivered=True,
-            viewed=False,
-            deleted=False,
-            create_date="2026-03-20T13:30:15.656Z",
-            ttl=None,
-        )
-        result = ta.create_date_dt
-        assert result is not None
-        assert result.tzinfo is not None
-        assert result.microsecond == 656000
-
-    def test_none_datetime(self) -> None:
-        """None create_date yields None from property."""
-        ta = TriggeredAlert(
-            alert_id="alert-002",
-            alert_type=None,
-            engine=None,
-            delivery_preference=None,
-            term=None,
-            criteria_id=None,
-            payload={},
-            product=None,
-            delivered=False,
-            viewed=False,
-            deleted=False,
-            create_date=None,
-            ttl=None,
-        )
-        assert ta.create_date_dt is None
-
-
-class TestChartMarkupDtProperties:
-    """Tests for ChartMarkup.created_at_dt and updated_at_dt properties."""
-
-    def test_both_datetimes(self) -> None:
-        """Both created_at and updated_at parse as timezone-aware datetimes."""
-        cm = ChartMarkup(
-            id="cm-1",
-            name="My Markup",
-            data="{}",
-            frequency="DAILY",
-            site="MS",
-            created_at="2026-01-10T08:00:00.000Z",
-            updated_at="2026-03-20T14:00:00.000Z",
-        )
-        assert cm.created_at_dt is not None
-        assert cm.created_at_dt.tzinfo is not None
-        assert cm.updated_at_dt is not None
-
-    def test_none_datetimes(self) -> None:
-        """None timestamp fields yield None from properties."""
-        cm = ChartMarkup(
-            id="cm-2",
-            name=None,
-            data="{}",
-            frequency=None,
-            site=None,
-            created_at=None,
-            updated_at=None,
-        )
-        assert cm.created_at_dt is None
-        assert cm.updated_at_dt is None
-
-    def test_to_dict_excludes_dt(self) -> None:
-        """to_dict() output does NOT contain _dt keys."""
-        cm = ChartMarkup(
-            id="cm-3",
-            name="Test",
-            data="{}",
-            frequency=None,
-            site=None,
-            created_at="2026-01-10T08:00:00.000Z",
-            updated_at="2026-03-20T14:00:00.000Z",
-        )
-        d = cm.to_dict()
-        assert "created_at_dt" not in d
-        assert "updated_at_dt" not in d
+        data = screen.to_dict()
+        assert "created_at_dt" not in data
+        assert "updated_at_dt" not in data
 
 
 # ---------------------------------------------------------------------------
