@@ -96,6 +96,37 @@ def _to_float(value) -> float | None:
         return None
 
 
+def _check_graphql_errors(raw: dict, context: str) -> None:
+    """Raise APIError if the GraphQL response contains errors.
+
+    Args:
+        raw: The raw GraphQL response dict.
+        context: Description of the request for the error message
+            (e.g. "symbol 'AAPL'", "watchlist request").
+    """
+    if raw.get("errors"):
+        raise APIError(f"GraphQL errors for {context}", errors=raw["errors"])
+
+
+def _extract_market_data(raw: dict, symbol: str) -> dict:
+    """Extract the first marketData entry from a GraphQL response.
+
+    Args:
+        raw: The raw GraphQL response dict.
+        symbol: The stock symbol that was queried.
+
+    Raises:
+        SymbolNotFoundError: If marketData is empty for the symbol.
+
+    Returns:
+        The first dict in the marketData list.
+    """
+    market_data = raw.get("data", {}).get("marketData", [])
+    if not market_data:
+        raise SymbolNotFoundError(f"Symbol not found: {symbol!r}", symbol=symbol)
+    return market_data[0]
+
+
 def parse_stock_response(raw: dict, symbol: str) -> StockData:
     """Parse an OtherMarketData GraphQL response into a StockData dataclass.
 
@@ -110,17 +141,8 @@ def parse_stock_response(raw: dict, symbol: str) -> StockData:
     Returns:
         StockData with all available fields populated.
     """
-    if raw.get("errors"):
-        raise APIError(
-            f"GraphQL errors for symbol {symbol!r}",
-            errors=raw["errors"],
-        )
-
-    market_data = raw.get("data", {}).get("marketData", [])
-    if not market_data:
-        raise SymbolNotFoundError(f"Symbol not found: {symbol!r}", symbol=symbol)
-
-    item = market_data[0]
+    _check_graphql_errors(raw, f"symbol {symbol!r}")
+    item = _extract_market_data(raw, symbol)
     ratings = item.get("ratings", {})
     pricing = item.get("pricingStatistics", {})
     pricing_eod = pricing.get("endOfDayStatistics", {})
@@ -316,8 +338,7 @@ def parse_watchlist_response(raw: dict) -> list[WatchlistEntry]:
     Returns:
         A list of WatchlistEntry rows, or an empty list when no data is present.
     """
-    if raw.get("errors"):
-        raise APIError("GraphQL errors for watchlist request", errors=raw["errors"])
+    _check_graphql_errors(raw, "watchlist request")
 
     response_values = (
         raw.get("data", {}).get("marketDataAdhocScreen", {}).get("responseValues", [])
@@ -374,18 +395,9 @@ def parse_ownership_response(raw: dict, symbol: str) -> OwnershipData:
     Returns:
         OwnershipData with funds-float percentage and quarterly fund history.
     """
-    if raw.get("errors"):
-        raise APIError(
-            f"GraphQL errors for symbol {symbol!r}",
-            errors=raw["errors"],
-        )
-
-    market_data = raw.get("data", {}).get("marketData", [])
-    if not market_data:
-        _log.debug("No ownership marketData returned for symbol %s", symbol)
-        raise SymbolNotFoundError(f"Symbol not found: {symbol!r}", symbol=symbol)
-
-    ownership = market_data[0].get("ownership", {})
+    _check_graphql_errors(raw, f"symbol {symbol!r}")
+    item = _extract_market_data(raw, symbol)
+    ownership = item.get("ownership", {})
     quarterly = ownership.get("fundOwnershipSummary", [])
 
     return OwnershipData(
@@ -415,10 +427,7 @@ def parse_watchlist_names_response(raw: dict) -> list[WatchlistSummary]:
     Returns:
         List of WatchlistSummary, or empty list when no watchlists exist.
     """
-    if raw.get("errors"):
-        raise APIError(
-            "GraphQL errors for watchlist names request", errors=raw["errors"]
-        )
+    _check_graphql_errors(raw, "watchlist names request")
 
     items = raw.get("data", {}).get("watchlists", []) or []
     return [
@@ -444,8 +453,7 @@ def parse_screens_response(raw: dict) -> list[Screen]:
     Returns:
         List of Screen objects, or empty list when no screens exist.
     """
-    if raw.get("errors"):
-        raise APIError("GraphQL errors for screens request", errors=raw["errors"])
+    _check_graphql_errors(raw, "screens request")
 
     items = raw.get("data", {}).get("user", {}).get("screens", []) or []
     screens: list[Screen] = []
@@ -488,11 +496,7 @@ def parse_watchlist_detail_response(raw: dict, watchlist_id: str) -> WatchlistDe
     Returns:
         WatchlistDetail with all items populated.
     """
-    if raw.get("errors"):
-        raise APIError(
-            f"GraphQL errors for watchlist {watchlist_id!r}",
-            errors=raw["errors"],
-        )
+    _check_graphql_errors(raw, f"watchlist {watchlist_id!r}")
 
     watchlist = raw.get("data", {}).get("watchlist")
     if not watchlist:
@@ -525,8 +529,7 @@ def parse_screen_result_response(raw: dict) -> ScreenResult:
     Returns:
         ScreenResult with metadata and dynamic row data.
     """
-    if raw.get("errors"):
-        raise APIError("GraphQL errors for screen result request", errors=raw["errors"])
+    _check_graphql_errors(raw, "screen result request")
 
     screen_data = raw.get("data", {}).get("marketDataScreen")
     if not screen_data:
@@ -559,17 +562,8 @@ def parse_chart_data_response(raw: dict, symbol: str) -> ChartData:
     Returns:
         ChartData with available chart/time-series fields populated.
     """
-    if raw.get("errors"):
-        raise APIError(
-            f"GraphQL errors for symbol {symbol!r}",
-            errors=raw["errors"],
-        )
-
-    market_data = raw.get("data", {}).get("marketData", [])
-    if not market_data:
-        raise SymbolNotFoundError(f"Symbol not found: {symbol!r}", symbol=symbol)
-
-    item = market_data[0]
+    _check_graphql_errors(raw, f"symbol {symbol!r}")
+    item = _extract_market_data(raw, symbol)
     pricing = item.get("pricing", {})
     raw_time_series = pricing.get("timeSeries")
 
@@ -655,17 +649,8 @@ def parse_fundamentals_response(raw: dict, symbol: str) -> FundamentalData:
     Returns:
         FundamentalData with reported earnings/sales and estimates.
     """
-    if raw.get("errors"):
-        raise APIError(
-            f"GraphQL errors for symbol {symbol!r}",
-            errors=raw["errors"],
-        )
-
-    market_data = raw.get("data", {}).get("marketData", [])
-    if not market_data:
-        raise SymbolNotFoundError(f"Symbol not found: {symbol!r}", symbol=symbol)
-
-    item = market_data[0]
+    _check_graphql_errors(raw, f"symbol {symbol!r}")
+    item = _extract_market_data(raw, symbol)
     financials = item.get("financials", {})
     consensus = financials.get("consensusFinancials", {})
     estimates = financials.get("estimates", {})
@@ -752,8 +737,7 @@ def parse_active_alerts_response(raw: dict) -> AlertSubscriptionList:
     Returns:
         AlertSubscriptionList with subscriptions and quota counts.
     """
-    if raw.get("errors"):
-        raise APIError("GraphQL errors for active alerts request", errors=raw["errors"])
+    _check_graphql_errors(raw, "active alerts request")
 
     container = (
         raw.get("data", {}).get("user", {}).get("followSubscriptionsWithCount", {})
@@ -828,10 +812,7 @@ def parse_triggered_alerts_response(raw: dict) -> TriggeredAlertList:
     Returns:
         TriggeredAlertList with alerts and cursor.
     """
-    if raw.get("errors"):
-        raise APIError(
-            "GraphQL errors for triggered alerts request", errors=raw["errors"]
-        )
+    _check_graphql_errors(raw, "triggered alerts request")
 
     container = raw.get("data", {}).get("user", {}).get("followAlerts", {})
     raw_alerts = container.get("alerts", [])
@@ -903,8 +884,7 @@ def parse_layouts_response(raw: dict) -> list[Layout]:
     Returns:
         List of Layout objects, or empty list when no layouts exist.
     """
-    if raw.get("errors"):
-        raise APIError("GraphQL errors for layouts request", errors=raw["errors"])
+    _check_graphql_errors(raw, "layouts request")
 
     items = raw.get("data", {}).get("user", {}).get("marketDataLayouts", []) or []
     layouts: list[Layout] = []
@@ -942,8 +922,7 @@ def parse_chart_markups_response(raw: dict) -> ChartMarkupList:
     Returns:
         ChartMarkupList with markups and cursor_id.
     """
-    if raw.get("errors"):
-        raise APIError("GraphQL errors for chart markups request", errors=raw["errors"])
+    _check_graphql_errors(raw, "chart markups request")
 
     container = raw.get("data", {}).get("user", {}).get("chartMarkups", {})
     raw_markups = container.get("chartMarkups", [])
