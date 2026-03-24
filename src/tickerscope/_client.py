@@ -69,6 +69,15 @@ from tickerscope._queries import (
 _log = logging.getLogger("tickerscope")
 
 
+def _apply_limit(items: list, limit: int | None) -> list:
+    """Validate and apply an optional limit to a list."""
+    if limit is None:
+        return items
+    if limit < 0:
+        raise ValueError("limit must be non-negative")
+    return items[:limit]
+
+
 def _apply_max_points(chart: ChartData, max_points: int | None) -> ChartData:
     """Truncate chart data points to max_points if specified."""
     if max_points is None:
@@ -497,11 +506,7 @@ class BaseTickerScopeClient(ABC):
     def get_watchlist(self, list_id: int, *, limit: int | None = None) -> Any:
         payload = self._build_get_watchlist_payload(list_id)
         result = self._graphql_and_parse(payload, parse_watchlist_response)
-        if limit is not None:
-            if limit < 0:
-                raise ValueError("limit must be non-negative")
-            result = result[:limit]
-        return result
+        return _apply_limit(result, limit)
 
     def get_ownership(self, symbol: str) -> Any:
         payload = self._build_get_ownership_payload(symbol)
@@ -510,11 +515,7 @@ class BaseTickerScopeClient(ABC):
     def get_watchlist_names(self, *, limit: int | None = None) -> Any:
         payload = self._build_get_watchlist_names_payload()
         result = self._graphql_and_parse(payload, parse_watchlist_names_response)
-        if limit is not None:
-            if limit < 0:
-                raise ValueError("limit must be non-negative")
-            result = result[:limit]
-        return result
+        return _apply_limit(result, limit)
 
     def get_watchlist_items(self, watchlist_id: str) -> Any:
         payload = self._build_get_watchlist_items_payload(watchlist_id)
@@ -533,11 +534,7 @@ class BaseTickerScopeClient(ABC):
             screen_type=screen_type, sort_dir=sort_dir
         )
         result = self._graphql_and_parse(payload, parse_screens_response)
-        if limit is not None:
-            if limit < 0:
-                raise ValueError("limit must be non-negative")
-            result = result[:limit]
-        return result
+        return _apply_limit(result, limit)
 
     def run_screen(
         self,
@@ -555,28 +552,22 @@ class BaseTickerScopeClient(ABC):
         payload = self._build_get_active_alerts_payload()
         result = self._graphql_and_parse(payload, parse_active_alerts_response)
         if limit is not None:
-            if limit < 0:
-                raise ValueError("limit must be non-negative")
-            result = replace(result, subscriptions=result.subscriptions[:limit])
+            result = replace(
+                result, subscriptions=_apply_limit(result.subscriptions, limit)
+            )
         return result
 
     def get_triggered_alerts(self, *, limit: int | None = None) -> Any:
         payload = self._build_get_triggered_alerts_payload()
         result = self._graphql_and_parse(payload, parse_triggered_alerts_response)
         if limit is not None:
-            if limit < 0:
-                raise ValueError("limit must be non-negative")
-            result = replace(result, alerts=result.alerts[:limit])
+            result = replace(result, alerts=_apply_limit(result.alerts, limit))
         return result
 
     def get_layouts(self, *, limit: int | None = None) -> Any:
         payload = self._build_get_layouts_payload()
         result = self._graphql_and_parse(payload, parse_layouts_response)
-        if limit is not None:
-            if limit < 0:
-                raise ValueError("limit must be non-negative")
-            result = result[:limit]
-        return result
+        return _apply_limit(result, limit)
 
     def get_chart_markups(
         self,
@@ -593,9 +584,7 @@ class BaseTickerScopeClient(ABC):
         )
         result = self._graphql_and_parse(payload, parse_chart_markups_response)
         if limit is not None:
-            if limit < 0:
-                raise ValueError("limit must be non-negative")
-            result = replace(result, markups=result.markups[:limit])
+            result = replace(result, markups=_apply_limit(result.markups, limit))
         return result
 
 
@@ -783,11 +772,7 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
     ) -> list[WatchlistEntry]:
         payload = self._build_get_watchlist_payload(list_id)
         result = await self._graphql_and_parse(payload, parse_watchlist_response)
-        if limit is not None:
-            if limit < 0:
-                raise ValueError("limit must be non-negative")
-            result = result[:limit]
-        return result
+        return _apply_limit(result, limit)
 
     async def get_ownership(self, symbol: str) -> OwnershipData:
         payload = self._build_get_ownership_payload(symbol)
@@ -798,11 +783,7 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
     ) -> list[WatchlistSummary]:
         payload = self._build_get_watchlist_names_payload()
         result = await self._graphql_and_parse(payload, parse_watchlist_names_response)
-        if limit is not None:
-            if limit < 0:
-                raise ValueError("limit must be non-negative")
-            result = result[:limit]
-        return result
+        return _apply_limit(result, limit)
 
     async def get_watchlist_items(self, watchlist_id: str) -> WatchlistDetail:
         payload = self._build_get_watchlist_items_payload(watchlist_id)
@@ -823,11 +804,7 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
             screen_type=screen_type, sort_dir=sort_dir
         )
         result = await self._graphql_and_parse(payload, parse_screens_response)
-        if limit is not None:
-            if limit < 0:
-                raise ValueError("limit must be non-negative")
-            result = result[:limit]
-        return result
+        return _apply_limit(result, limit)
 
     async def run_screen(
         self,
@@ -849,9 +826,9 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         payload = self._build_get_active_alerts_payload()
         result = await self._graphql_and_parse(payload, parse_active_alerts_response)
         if limit is not None:
-            if limit < 0:
-                raise ValueError("limit must be non-negative")
-            result = replace(result, subscriptions=result.subscriptions[:limit])
+            result = replace(
+                result, subscriptions=_apply_limit(result.subscriptions, limit)
+            )
         return result
 
     async def get_triggered_alerts(
@@ -860,19 +837,13 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         payload = self._build_get_triggered_alerts_payload()
         result = await self._graphql_and_parse(payload, parse_triggered_alerts_response)
         if limit is not None:
-            if limit < 0:
-                raise ValueError("limit must be non-negative")
-            result = replace(result, alerts=result.alerts[:limit])
+            result = replace(result, alerts=_apply_limit(result.alerts, limit))
         return result
 
     async def get_layouts(self, *, limit: int | None = None) -> list[Layout]:
         payload = self._build_get_layouts_payload()
         result = await self._graphql_and_parse(payload, parse_layouts_response)
-        if limit is not None:
-            if limit < 0:
-                raise ValueError("limit must be non-negative")
-            result = result[:limit]
-        return result
+        return _apply_limit(result, limit)
 
     async def get_chart_markups(
         self,
@@ -889,9 +860,7 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         )
         result = await self._graphql_and_parse(payload, parse_chart_markups_response)
         if limit is not None:
-            if limit < 0:
-                raise ValueError("limit must be non-negative")
-            result = replace(result, markups=result.markups[:limit])
+            result = replace(result, markups=_apply_limit(result.markups, limit))
         return result
 
     async def get_watchlist_by_name(self, name: str) -> WatchlistDetail:
