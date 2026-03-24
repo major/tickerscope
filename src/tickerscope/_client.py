@@ -853,6 +853,33 @@ class TickerScopeClient(BaseTickerScopeClient):
             raise APIError(f"No screen found with name {name!r}")
         return match
 
+    def screen_watchlist_by_name(
+        self, name: str, *, limit: int | None = None
+    ) -> list[WatchlistEntry]:
+        """Look up a watchlist by name and return its screened entries.
+
+        Calls get_watchlist_names() to find the matching watchlist,
+        then get_watchlist() to fetch all entries with optional limit.
+
+        Args:
+            name: The exact name of the watchlist to look up.
+            limit: Optional maximum number of entries to return.
+
+        Returns:
+            List of WatchlistEntry objects from the named watchlist.
+
+        Raises:
+            APIError: If no watchlist matches the given name, or if the
+                watchlist has no ID.
+        """
+        summaries = self.get_watchlist_names()
+        match = next((w for w in summaries if w.name == name), None)
+        if match is None:
+            raise APIError(f"No watchlist found with name {name!r}")
+        if match.id is None:
+            raise APIError(f"Watchlist {name!r} has no ID")
+        return self.get_watchlist(match.id, limit=limit)
+
 
 class AsyncTickerScopeClient(BaseTickerScopeClient):
     """Authenticated async client for the MarketSurge GraphQL API."""
@@ -1110,3 +1137,31 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         if match is None:
             raise APIError(f"No screen found with name {name!r}")
         return match
+
+    async def screen_watchlist_by_name(
+        self, name: str, *, limit: int | None = None
+    ) -> list[WatchlistEntry]:
+        """Look up a watchlist by name and return its screened entries.
+
+        Calls get_watchlist_names() to find the matching watchlist,
+        then get_watchlist() to fetch all entries with optional limit.
+
+        Args:
+            name: The exact name of the watchlist to look up.
+            limit: Optional maximum number of entries to return.
+
+        Returns:
+            List of WatchlistEntry objects from the named watchlist.
+
+        Raises:
+            APIError: If no watchlist matches the given name, or if the
+                watchlist has no ID.
+        """
+        summaries = await self.get_watchlist_names()
+        match = next((w for w in summaries if w.name == name), None)
+        if match is None:
+            raise APIError(f"No watchlist found with name {name!r}")
+        if match.id is None:
+            raise APIError(f"Watchlist {name!r} has no ID")
+        return await self.get_watchlist(match.id, limit=limit)
+
