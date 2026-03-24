@@ -37,8 +37,8 @@ def test_get_stock_returns_stock_data(client, stock_response):
 
 
 @respx.mock
-def test_get_watchlist_returns_entries(client):
-    """Test that get_watchlist() parses GraphQL response into WatchlistEntry list."""
+def test_screen_watchlist_returns_entries(client):
+    """Test that screen_watchlist() parses GraphQL response into WatchlistEntry list."""
     mock_response = {
         "data": {
             "marketDataAdhocScreen": {
@@ -56,7 +56,7 @@ def test_get_watchlist_returns_entries(client):
         return_value=httpx.Response(200, json=mock_response)
     )
 
-    entries = client.get_watchlist(12345)
+    entries = client.screen_watchlist(12345)
 
     assert len(entries) == 1
     assert entries[0].symbol == "AAPL"
@@ -118,7 +118,7 @@ def test_client_api_surface():
 
     methods = [m for m in dir(TickerScopeClient) if not m.startswith("_")]
     assert "get_stock" in methods
-    assert "get_watchlist" in methods
+    assert "screen_watchlist" in methods
     assert "get_ownership" in methods
     assert "close" in methods
 

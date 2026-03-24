@@ -47,7 +47,7 @@ from tickerscope._models import (
     TriggeredAlertTerm,
     WatchlistDetail,
     WatchlistEntry,
-    WatchlistItem,
+    WatchlistSymbol,
     WatchlistSummary,
 )
 
@@ -415,7 +415,7 @@ def parse_ownership_response(raw: dict, symbol: str) -> OwnershipData:
     )
 
 
-def parse_watchlist_names_response(raw: dict) -> list[WatchlistSummary]:
+def parse_watchlists_response(raw: dict) -> list[WatchlistSummary]:
     """Parse a GetAllWatchlistNames GraphQL response into WatchlistSummary list.
 
     Args:
@@ -508,7 +508,7 @@ def parse_watchlist_detail_response(raw: dict, watchlist_id: str) -> WatchlistDe
         last_modified=watchlist.get("lastModifiedDateUtc"),
         description=watchlist.get("description"),
         items=[
-            WatchlistItem(
+            WatchlistSymbol(
                 key=item.get("key"),
                 dow_jones_key=item.get("dowJonesKey"),
             )

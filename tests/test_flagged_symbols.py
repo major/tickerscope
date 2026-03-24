@@ -5,7 +5,7 @@ from dataclasses import FrozenInstanceError
 import pytest
 
 from tickerscope._exceptions import APIError
-from tickerscope._models import WatchlistDetail, WatchlistItem
+from tickerscope._models import WatchlistDetail, WatchlistSymbol
 from tickerscope._parsing import parse_watchlist_detail_response
 
 
@@ -39,8 +39,8 @@ def test_parse_watchlist_detail_graphql_errors() -> None:
 
 
 def test_watchlist_item_frozen() -> None:
-    """WatchlistItem is immutable (frozen dataclass)."""
-    item = WatchlistItem(key="abc123", dow_jones_key="13-111111")
+    """WatchlistSymbol is immutable (frozen dataclass)."""
+    item = WatchlistSymbol(key="abc123", dow_jones_key="13-111111")
 
     with pytest.raises(FrozenInstanceError):
         item.key = "changed"  # type: ignore[misc]

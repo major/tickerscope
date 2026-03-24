@@ -36,8 +36,8 @@ async def test_async_get_stock(async_client, stock_response):
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_async_get_watchlist(async_client):
-    """Test async get_watchlist returns list of WatchlistEntry."""
+async def test_async_screen_watchlist(async_client):
+    """Test async screen_watchlist returns list of WatchlistEntry."""
     mock_response = {
         "data": {
             "marketDataAdhocScreen": {
@@ -53,7 +53,7 @@ async def test_async_get_watchlist(async_client):
     respx.post("https://shared-data.dowjones.io/gateway/graphql").mock(
         return_value=httpx.Response(200, json=mock_response)
     )
-    entries = await async_client.get_watchlist(12345)
+    entries = await async_client.screen_watchlist(12345)
     assert len(entries) == 1
     assert entries[0].symbol == "AAPL"
 
@@ -94,6 +94,6 @@ async def test_async_context_manager():
 def test_async_client_methods_are_coroutines():
     """Test that all public methods are coroutines (async def)."""
     assert inspect.iscoroutinefunction(AsyncTickerScopeClient.get_stock)
-    assert inspect.iscoroutinefunction(AsyncTickerScopeClient.get_watchlist)
+    assert inspect.iscoroutinefunction(AsyncTickerScopeClient.screen_watchlist)
     assert inspect.iscoroutinefunction(AsyncTickerScopeClient.get_ownership)
     assert inspect.iscoroutinefunction(AsyncTickerScopeClient.aclose)

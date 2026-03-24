@@ -32,12 +32,12 @@ def test_get_watchlist_by_name_returns_detail(sync_client):
     mock_summary.id = "abc123"
     mock_detail = MagicMock(spec=WatchlistDetail)
 
-    sync_client.get_watchlist_names = MagicMock(return_value=[mock_summary])
-    sync_client.get_watchlist_items = MagicMock(return_value=mock_detail)
+    sync_client.get_watchlists = MagicMock(return_value=[mock_summary])
+    sync_client.get_watchlist_symbols = MagicMock(return_value=mock_detail)
 
     result = sync_client.get_watchlist_by_name("My Watchlist")
     assert result is mock_detail
-    sync_client.get_watchlist_items.assert_called_once_with("abc123")
+    sync_client.get_watchlist_symbols.assert_called_once_with("abc123")
 
 
 def test_get_watchlist_by_name_raises_on_not_found(sync_client):
@@ -48,7 +48,7 @@ def test_get_watchlist_by_name_raises_on_not_found(sync_client):
     mock_summary.name = "Other Watchlist"
     mock_summary.id = "abc123"
 
-    sync_client.get_watchlist_names = MagicMock(return_value=[mock_summary])
+    sync_client.get_watchlists = MagicMock(return_value=[mock_summary])
 
     with pytest.raises(APIError, match="No watchlist found with name"):
         sync_client.get_watchlist_by_name("Missing Watchlist")
@@ -62,7 +62,7 @@ def test_get_watchlist_by_name_raises_on_none_id(sync_client):
     mock_summary.name = "My Watchlist"
     mock_summary.id = None
 
-    sync_client.get_watchlist_names = MagicMock(return_value=[mock_summary])
+    sync_client.get_watchlists = MagicMock(return_value=[mock_summary])
 
     with pytest.raises(APIError, match="has no ID"):
         sync_client.get_watchlist_by_name("My Watchlist")
@@ -113,12 +113,12 @@ async def test_async_get_watchlist_by_name_returns_detail():
     mock_summary.id = "abc123"
     mock_detail = MagicMock(spec=WatchlistDetail)
 
-    client.get_watchlist_names = AsyncMock(return_value=[mock_summary])
-    client.get_watchlist_items = AsyncMock(return_value=mock_detail)
+    client.get_watchlists = AsyncMock(return_value=[mock_summary])
+    client.get_watchlist_symbols = AsyncMock(return_value=mock_detail)
 
     result = await client.get_watchlist_by_name("My Watchlist")
     assert result is mock_detail
-    client.get_watchlist_items.assert_called_once_with("abc123")
+    client.get_watchlist_symbols.assert_called_once_with("abc123")
     await client.aclose()
 
 
@@ -134,7 +134,7 @@ async def test_async_get_watchlist_by_name_raises_on_not_found():
     mock_summary.name = "Other Watchlist"
     mock_summary.id = "abc123"
 
-    client.get_watchlist_names = AsyncMock(return_value=[mock_summary])
+    client.get_watchlists = AsyncMock(return_value=[mock_summary])
 
     with pytest.raises(APIError, match="No watchlist found with name"):
         await client.get_watchlist_by_name("Missing Watchlist")

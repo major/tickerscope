@@ -56,7 +56,7 @@ from tickerscope._models import (
     TriggeredAlertTerm,
     WatchlistDetail,
     WatchlistEntry,
-    WatchlistItem,
+    WatchlistSymbol,
     WatchlistSummary,
 )
 
@@ -110,7 +110,7 @@ __all__ = [
     "ChartMarkupList",
     # Watchlist models
     "WatchlistEntry",
-    "WatchlistItem",
+    "WatchlistSymbol",
     "WatchlistDetail",
     "OwnershipData",
     "QuarterlyFundOwnership",

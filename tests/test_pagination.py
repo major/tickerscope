@@ -32,11 +32,11 @@ async def async_client():
     await c.aclose()
 
 
-# ── get_watchlist_names: plain list, fixture has 2 items ─────────────────────
+# ── get_watchlists: plain list, fixture has 2 items ─────────────────────
 
 
 class TestWatchlistNamesLimitSync:
-    """Sync limit tests for get_watchlist_names (returns plain list)."""
+    """Sync limit tests for get_watchlists (returns plain list)."""
 
     @respx.mock
     def test_default_returns_all(self, sync_client, watchlist_names_response):
@@ -44,7 +44,7 @@ class TestWatchlistNamesLimitSync:
         respx.post(GRAPHQL_URL).mock(
             return_value=httpx.Response(200, json=watchlist_names_response)
         )
-        result = sync_client.get_watchlist_names()
+        result = sync_client.get_watchlists()
         assert len(result) == 2
 
     @respx.mock
@@ -53,7 +53,7 @@ class TestWatchlistNamesLimitSync:
         respx.post(GRAPHQL_URL).mock(
             return_value=httpx.Response(200, json=watchlist_names_response)
         )
-        result = sync_client.get_watchlist_names(limit=2)
+        result = sync_client.get_watchlists(limit=2)
         assert len(result) == 2
 
     @respx.mock
@@ -62,7 +62,7 @@ class TestWatchlistNamesLimitSync:
         respx.post(GRAPHQL_URL).mock(
             return_value=httpx.Response(200, json=watchlist_names_response)
         )
-        result = sync_client.get_watchlist_names(limit=1)
+        result = sync_client.get_watchlists(limit=1)
         assert len(result) == 1
         assert result[0].name == "My Watchlist"
 
@@ -72,7 +72,7 @@ class TestWatchlistNamesLimitSync:
         respx.post(GRAPHQL_URL).mock(
             return_value=httpx.Response(200, json=watchlist_names_response)
         )
-        assert sync_client.get_watchlist_names(limit=0) == []
+        assert sync_client.get_watchlists(limit=0) == []
 
     @respx.mock
     def test_limit_exceeding_count_returns_all(
@@ -82,7 +82,7 @@ class TestWatchlistNamesLimitSync:
         respx.post(GRAPHQL_URL).mock(
             return_value=httpx.Response(200, json=watchlist_names_response)
         )
-        assert len(sync_client.get_watchlist_names(limit=100)) == 2
+        assert len(sync_client.get_watchlists(limit=100)) == 2
 
     @respx.mock
     def test_negative_limit_raises(self, sync_client, watchlist_names_response):
@@ -91,11 +91,11 @@ class TestWatchlistNamesLimitSync:
             return_value=httpx.Response(200, json=watchlist_names_response)
         )
         with pytest.raises(ValueError, match="limit must be non-negative"):
-            sync_client.get_watchlist_names(limit=-1)
+            sync_client.get_watchlists(limit=-1)
 
 
 class TestWatchlistNamesLimitAsync:
-    """Async limit tests for get_watchlist_names (returns plain list)."""
+    """Async limit tests for get_watchlists (returns plain list)."""
 
     @respx.mock
     async def test_default_returns_all(self, async_client, watchlist_names_response):
@@ -103,7 +103,7 @@ class TestWatchlistNamesLimitAsync:
         respx.post(GRAPHQL_URL).mock(
             return_value=httpx.Response(200, json=watchlist_names_response)
         )
-        result = await async_client.get_watchlist_names()
+        result = await async_client.get_watchlists()
         assert len(result) == 2
 
     @respx.mock
@@ -112,7 +112,7 @@ class TestWatchlistNamesLimitAsync:
         respx.post(GRAPHQL_URL).mock(
             return_value=httpx.Response(200, json=watchlist_names_response)
         )
-        result = await async_client.get_watchlist_names(limit=2)
+        result = await async_client.get_watchlists(limit=2)
         assert len(result) == 2
 
     @respx.mock
@@ -121,7 +121,7 @@ class TestWatchlistNamesLimitAsync:
         respx.post(GRAPHQL_URL).mock(
             return_value=httpx.Response(200, json=watchlist_names_response)
         )
-        result = await async_client.get_watchlist_names(limit=1)
+        result = await async_client.get_watchlists(limit=1)
         assert len(result) == 1
         assert result[0].name == "My Watchlist"
 
@@ -133,7 +133,7 @@ class TestWatchlistNamesLimitAsync:
         respx.post(GRAPHQL_URL).mock(
             return_value=httpx.Response(200, json=watchlist_names_response)
         )
-        assert await async_client.get_watchlist_names(limit=0) == []
+        assert await async_client.get_watchlists(limit=0) == []
 
     @respx.mock
     async def test_limit_exceeding_count_returns_all(
@@ -143,7 +143,7 @@ class TestWatchlistNamesLimitAsync:
         respx.post(GRAPHQL_URL).mock(
             return_value=httpx.Response(200, json=watchlist_names_response)
         )
-        assert len(await async_client.get_watchlist_names(limit=100)) == 2
+        assert len(await async_client.get_watchlists(limit=100)) == 2
 
     @respx.mock
     async def test_negative_limit_raises(self, async_client, watchlist_names_response):
@@ -152,7 +152,7 @@ class TestWatchlistNamesLimitAsync:
             return_value=httpx.Response(200, json=watchlist_names_response)
         )
         with pytest.raises(ValueError, match="limit must be non-negative"):
-            await async_client.get_watchlist_names(limit=-1)
+            await async_client.get_watchlists(limit=-1)
 
 
 # ── get_active_alerts: wrapper object, fixture has 3 subscriptions ───────────

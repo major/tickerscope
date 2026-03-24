@@ -46,7 +46,7 @@ from tickerscope._parsing import (
     parse_stock_response,
     parse_triggered_alerts_response,
     parse_watchlist_detail_response,
-    parse_watchlist_names_response,
+    parse_watchlists_response,
     parse_watchlist_response,
 )
 from tickerscope._queries import (
@@ -170,7 +170,7 @@ class BaseTickerScopeClient(ABC):
                     ],
                 },
                 {
-                    "name": "get_watchlist",
+                    "name": "screen_watchlist",
                     "return_type": "list[WatchlistEntry]",
                     "supports_limit": True,
                     "parameters": [
@@ -186,13 +186,13 @@ class BaseTickerScopeClient(ABC):
                     ],
                 },
                 {
-                    "name": "get_watchlist_names",
+                    "name": "get_watchlists",
                     "return_type": "list[WatchlistSummary]",
                     "supports_limit": True,
                     "parameters": [],
                 },
                 {
-                    "name": "get_watchlist_items",
+                    "name": "get_watchlist_symbols",
                     "return_type": "WatchlistDetail",
                     "supports_limit": False,
                     "parameters": [
@@ -344,7 +344,7 @@ class BaseTickerScopeClient(ABC):
         }
 
     @staticmethod
-    def _build_get_watchlist_payload(list_id: int) -> dict[str, Any]:
+    def _build_screen_watchlist_payload(list_id: int) -> dict[str, Any]:
         return {
             "operationName": "MarketDataAdhocScreen",
             "variables": {
@@ -374,7 +374,7 @@ class BaseTickerScopeClient(ABC):
         }
 
     @staticmethod
-    def _build_get_watchlist_names_payload() -> dict[str, Any]:
+    def _build_get_watchlists_payload() -> dict[str, Any]:
         return {
             "operationName": "GetAllWatchlistNames",
             "variables": {"pub": "msr"},
@@ -382,7 +382,7 @@ class BaseTickerScopeClient(ABC):
         }
 
     @staticmethod
-    def _build_get_watchlist_items_payload(watchlist_id: str) -> dict[str, Any]:
+    def _build_get_watchlist_symbols_payload(watchlist_id: str) -> dict[str, Any]:
         return {
             "operationName": "FlaggedSymbols",
             "variables": {"pub": "msr", "watchlistId": watchlist_id},
@@ -503,8 +503,8 @@ class BaseTickerScopeClient(ABC):
         result = self._graphql_and_parse(payload, parse_chart_data_response, symbol)
         return _apply_max_points(result, max_points)
 
-    def get_watchlist(self, list_id: int, *, limit: int | None = None) -> Any:
-        payload = self._build_get_watchlist_payload(list_id)
+    def screen_watchlist(self, list_id: int, *, limit: int | None = None) -> Any:
+        payload = self._build_screen_watchlist_payload(list_id)
         result = self._graphql_and_parse(payload, parse_watchlist_response)
         return _apply_limit(result, limit)
 
@@ -512,13 +512,13 @@ class BaseTickerScopeClient(ABC):
         payload = self._build_get_ownership_payload(symbol)
         return self._graphql_and_parse(payload, parse_ownership_response, symbol)
 
-    def get_watchlist_names(self, *, limit: int | None = None) -> Any:
-        payload = self._build_get_watchlist_names_payload()
-        result = self._graphql_and_parse(payload, parse_watchlist_names_response)
+    def get_watchlists(self, *, limit: int | None = None) -> Any:
+        payload = self._build_get_watchlists_payload()
+        result = self._graphql_and_parse(payload, parse_watchlists_response)
         return _apply_limit(result, limit)
 
-    def get_watchlist_items(self, watchlist_id: str) -> Any:
-        payload = self._build_get_watchlist_items_payload(watchlist_id)
+    def get_watchlist_symbols(self, watchlist_id: str) -> Any:
+        payload = self._build_get_watchlist_symbols_payload(watchlist_id)
         return self._graphql_and_parse(
             payload, parse_watchlist_detail_response, watchlist_id
         )
@@ -626,8 +626,8 @@ class TickerScopeClient(BaseTickerScopeClient):
     def get_watchlist_by_name(self, name: str) -> WatchlistDetail:
         """Look up a watchlist by name and return its full details.
 
-        Calls get_watchlist_names() to find the matching watchlist,
-        then get_watchlist_items() to fetch all entries.
+        Calls get_watchlists() to find the matching watchlist,
+        then get_watchlist_symbols() to fetch all entries.
 
         Args:
             name: The exact name of the watchlist to look up.
@@ -639,13 +639,13 @@ class TickerScopeClient(BaseTickerScopeClient):
             APIError: If no watchlist matches the given name, or if the
                 watchlist has no ID.
         """
-        summaries = self.get_watchlist_names()
+        summaries = self.get_watchlists()
         match = next((w for w in summaries if w.name == name), None)
         if match is None:
             raise APIError(f"No watchlist found with name {name!r}")
         if match.id is None:
             raise APIError(f"Watchlist {name!r} has no ID")
-        return self.get_watchlist_items(match.id)
+        return self.get_watchlist_symbols(match.id)
 
     def get_screen_by_name(self, name: str) -> Screen:
         """Look up a saved screen by name and return its metadata.
@@ -767,10 +767,10 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         )
         return _apply_max_points(result, max_points)
 
-    async def get_watchlist(
+    async def screen_watchlist(
         self, list_id: int, *, limit: int | None = None
     ) -> list[WatchlistEntry]:
-        payload = self._build_get_watchlist_payload(list_id)
+        payload = self._build_screen_watchlist_payload(list_id)
         result = await self._graphql_and_parse(payload, parse_watchlist_response)
         return _apply_limit(result, limit)
 
@@ -778,15 +778,15 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         payload = self._build_get_ownership_payload(symbol)
         return await self._graphql_and_parse(payload, parse_ownership_response, symbol)
 
-    async def get_watchlist_names(
+    async def get_watchlists(
         self, *, limit: int | None = None
     ) -> list[WatchlistSummary]:
-        payload = self._build_get_watchlist_names_payload()
-        result = await self._graphql_and_parse(payload, parse_watchlist_names_response)
+        payload = self._build_get_watchlists_payload()
+        result = await self._graphql_and_parse(payload, parse_watchlists_response)
         return _apply_limit(result, limit)
 
-    async def get_watchlist_items(self, watchlist_id: str) -> WatchlistDetail:
-        payload = self._build_get_watchlist_items_payload(watchlist_id)
+    async def get_watchlist_symbols(self, watchlist_id: str) -> WatchlistDetail:
+        payload = self._build_get_watchlist_symbols_payload(watchlist_id)
         return await self._graphql_and_parse(
             payload,
             parse_watchlist_detail_response,
@@ -866,8 +866,8 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
     async def get_watchlist_by_name(self, name: str) -> WatchlistDetail:
         """Look up a watchlist by name and return its full details.
 
-        Calls get_watchlist_names() to find the matching watchlist,
-        then get_watchlist_items() to fetch all entries.
+        Calls get_watchlists() to find the matching watchlist,
+        then get_watchlist_symbols() to fetch all entries.
 
         Args:
             name: The exact name of the watchlist to look up.
@@ -879,13 +879,13 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
             APIError: If no watchlist matches the given name, or if the
                 watchlist has no ID.
         """
-        summaries = await self.get_watchlist_names()
+        summaries = await self.get_watchlists()
         match = next((w for w in summaries if w.name == name), None)
         if match is None:
             raise APIError(f"No watchlist found with name {name!r}")
         if match.id is None:
             raise APIError(f"Watchlist {name!r} has no ID")
-        return await self.get_watchlist_items(match.id)
+        return await self.get_watchlist_symbols(match.id)
 
     async def get_screen_by_name(self, name: str) -> Screen:
         """Look up a saved screen by name and return its metadata.

@@ -565,7 +565,7 @@ class WatchlistSummary(DataClassDictMixin):
 
 
 @dataclass(frozen=True, slots=True)
-class WatchlistItem(DataClassDictMixin):
+class WatchlistSymbol(DataClassDictMixin):
     """Single symbol entry in a watchlist (from FlaggedSymbols query)."""
 
     class Config(BaseConfig):
@@ -594,7 +594,7 @@ class WatchlistDetail(DataClassDictMixin):
     name: str | None
     last_modified: str | None
     description: str | None
-    items: list[WatchlistItem]
+    items: list[WatchlistSymbol]
 
     @property
     def last_modified_dt(self) -> datetime.datetime | None:
