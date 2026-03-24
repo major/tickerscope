@@ -15,6 +15,7 @@ from tickerscope._exceptions import (
     SymbolNotFoundError,
     TokenExpiredError,
 )
+from tickerscope._serialization import SerializableDataclass
 from tickerscope._models import (
     AlertCriteria,
     AlertInstrument,
@@ -122,6 +123,8 @@ __all__ = [
     "Screen",
     "ScreenResult",
     "ScreenSource",
+    # Serialization base
+    "SerializableDataclass",
     # Exceptions
     "TickerScopeError",
     "AuthenticationError",
