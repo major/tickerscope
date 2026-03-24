@@ -8,6 +8,11 @@ from typing import Any
 class TickerScopeError(Exception):
     """Base exception for all TickerScope library errors."""
 
+    @property
+    def user_message(self) -> str:
+        """Return a user-friendly error message."""
+        return "An unexpected error occurred."
+
     def to_dict(self) -> dict[str, Any]:
         """Return a structured dict representation of this error."""
         return {"error_type": "tickerscope_error", "message": str(self)}
@@ -15,6 +20,11 @@ class TickerScopeError(Exception):
 
 class AuthenticationError(TickerScopeError):
     """Raised when authentication fails (cookie extraction or JWT exchange)."""
+
+    @property
+    def user_message(self) -> str:
+        """Return a user-friendly error message."""
+        return "Authentication failed. Check your credentials and try again."
 
     def to_dict(self) -> dict[str, Any]:
         """Return a structured dict representation of this error."""
@@ -37,6 +47,15 @@ class CookieExtractionError(AuthenticationError):
         """
         super().__init__(message)
         self.browser = browser
+
+    @property
+    def user_message(self) -> str:
+        """Return a user-friendly error message."""
+        if self.browser is not None:
+            return f"Could not extract cookies from {self.browser}. Log into MarketSurge in {self.browser} first."
+        return (
+            "No browser cookies found. Log into MarketSurge in Firefox or Chrome first."
+        )
 
     def to_dict(self) -> dict[str, Any]:
         """Return a structured dict representation of this error."""
@@ -67,6 +86,11 @@ class TokenExpiredError(AuthenticationError):
         super().__init__(message)
         self.status_code = status_code
 
+    @property
+    def user_message(self) -> str:
+        """Return a user-friendly error message."""
+        return "Authentication token expired. Re-authenticate to continue."
+
     def to_dict(self) -> dict[str, Any]:
         """Return a structured dict representation of this error."""
         d: dict[str, Any] = {
@@ -95,6 +119,11 @@ class APIError(TickerScopeError):
         """
         super().__init__(message)
         self.errors = errors or []
+
+    @property
+    def user_message(self) -> str:
+        """Return a user-friendly error message."""
+        return f"MarketSurge API error: {str(self)}"
 
     def to_dict(self) -> dict[str, Any]:
         """Return a structured dict representation of this error."""
@@ -128,6 +157,13 @@ class SymbolNotFoundError(APIError):
         """
         super().__init__(message, errors=errors)
         self.symbol = symbol
+
+    @property
+    def user_message(self) -> str:
+        """Return a user-friendly error message."""
+        if self.symbol is not None:
+            return f"Symbol '{self.symbol}' not found. Check the ticker spelling."
+        return "Symbol not found. Check the ticker spelling."
 
     def to_dict(self) -> dict[str, Any]:
         """Return a structured dict representation of this error."""
@@ -168,6 +204,11 @@ class HTTPError(TickerScopeError):
         self.status_code = status_code
         self.response_body = response_body
         self.message = message
+
+    @property
+    def user_message(self) -> str:
+        """Return a user-friendly error message."""
+        return f"MarketSurge returned an HTTP {self.status_code} error."
 
     def to_dict(self) -> dict[str, Any]:
         """Return a structured dict representation of this error."""
