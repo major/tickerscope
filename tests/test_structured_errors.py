@@ -21,6 +21,7 @@ class TestTickerScopeErrorToDict:
         d = exc.to_dict()
         assert d["error_type"] == "tickerscope_error"
         assert d["message"] == "base error"
+        assert d["user_message"] == "An unexpected error occurred."
 
 
 class TestAuthenticationErrorToDict:
@@ -32,6 +33,10 @@ class TestAuthenticationErrorToDict:
         d = exc.to_dict()
         assert d["error_type"] == "authentication_error"
         assert d["message"] == "auth failed"
+        assert (
+            d["user_message"]
+            == "Authentication failed. Check your credentials and try again."
+        )
 
 
 class TestCookieExtractionErrorToDict:
@@ -43,7 +48,11 @@ class TestCookieExtractionErrorToDict:
         d = exc.to_dict()
         assert d["error_type"] == "cookie_extraction_error"
         assert d["browser"] == "firefox"
-        assert "suggestion" in d
+        assert "suggestion" not in d
+        assert (
+            d["user_message"]
+            == "Could not extract cookies from firefox. Log into MarketSurge in firefox first."
+        )
 
     def test_to_dict_without_browser_omits_field(self) -> None:
         """Test that browser key is omitted when None."""
@@ -62,7 +71,11 @@ class TestTokenExpiredErrorToDict:
         d = exc.to_dict()
         assert d["error_type"] == "token_expired"
         assert d["status_code"] == 401
-        assert "suggestion" in d
+        assert "suggestion" not in d
+        assert (
+            d["user_message"]
+            == "Authentication token expired. Re-authenticate to continue."
+        )
 
     def test_to_dict_without_status_code_omits_field(self) -> None:
         """Test that status_code key is omitted when None."""
@@ -82,6 +95,7 @@ class TestAPIErrorToDict:
         d = exc.to_dict()
         assert d["error_type"] == "api_error"
         assert d["errors"] == errors
+        assert "user_message" in d
 
 
 class TestSymbolNotFoundErrorToDict:
@@ -93,7 +107,10 @@ class TestSymbolNotFoundErrorToDict:
         d = exc.to_dict()
         assert d["error_type"] == "symbol_not_found"
         assert d["symbol"] == "XYZZ"
-        assert "suggestion" in d
+        assert "suggestion" not in d
+        assert (
+            d["user_message"] == "Symbol 'XYZZ' not found. Check the ticker spelling."
+        )
 
     def test_to_dict_without_symbol_omits_field(self) -> None:
         """Test that symbol key is omitted when None."""

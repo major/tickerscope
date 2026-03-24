@@ -50,6 +50,7 @@ class TestHTTPErrorToDict:
         exc = HTTPError(status_code=500, response_body="error", message="Server error")
         d = exc.to_dict()
         assert d["error_type"] == "http_error"
+        assert "user_message" in d
 
     def test_to_dict_includes_status_code(self) -> None:
         """Test that to_dict() includes status_code field."""
