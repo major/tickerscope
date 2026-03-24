@@ -41,12 +41,6 @@ def test_parse_screen_result_empty() -> None:
     assert result.screen_name == "SomeScreen"
 
 
-def test_parse_screen_result_graphql_errors() -> None:
-    """Raise APIError when response contains GraphQL errors."""
-    with pytest.raises(APIError):
-        parse_screen_result_response({"errors": [{"message": "bad screen name"}]})
-
-
 def test_parse_screen_result_null_data() -> None:
     """Raise APIError when marketDataScreen is null."""
     with pytest.raises(APIError):

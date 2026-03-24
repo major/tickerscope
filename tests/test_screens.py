@@ -4,7 +4,6 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from tickerscope._exceptions import APIError
 from tickerscope._models import Screen, ScreenSource
 from tickerscope._parsing import parse_screens_response
 
@@ -29,12 +28,6 @@ def test_parse_screens_empty() -> None:
     result = parse_screens_response({"data": {"user": {"screens": []}}})
 
     assert result == []
-
-
-def test_parse_screens_graphql_errors() -> None:
-    """Raise APIError when response contains GraphQL errors."""
-    with pytest.raises(APIError):
-        parse_screens_response({"errors": [{"message": "unauthorized"}]})
 
 
 def test_parse_screens_null_source(screens_response) -> None:

@@ -2,6 +2,8 @@
 
 # pyright: reportMissingImports=false
 
+import pytest
+
 from tickerscope._exceptions import APIError, SymbolNotFoundError
 from tickerscope._parsing import (
     _safe_date_value,
@@ -11,10 +13,50 @@ from tickerscope._parsing import (
     parse_fundamentals_response,
     parse_layouts_response,
     parse_ownership_response,
+    parse_screen_result_response,
+    parse_screens_response,
     parse_stock_response,
     parse_triggered_alerts_response,
+    parse_watchlist_detail_response,
     parse_watchlist_response,
+    parse_watchlists_response,
 )
+
+
+# ---------------------------------------------------------------------------
+# Cross-cutting: all parsers reject GraphQL error responses
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "parser,extra_args",
+    [
+        pytest.param(parse_stock_response, ("SYM",), id="stock"),
+        pytest.param(parse_chart_data_response, ("SYM",), id="chart_data"),
+        pytest.param(parse_fundamentals_response, ("SYM",), id="fundamentals"),
+        pytest.param(parse_active_alerts_response, (), id="active_alerts"),
+        pytest.param(parse_triggered_alerts_response, (), id="triggered_alerts"),
+        pytest.param(parse_layouts_response, (), id="layouts"),
+        pytest.param(parse_chart_markups_response, (), id="chart_markups"),
+        pytest.param(parse_screens_response, (), id="screens"),
+        pytest.param(parse_screen_result_response, (), id="screen_result"),
+        pytest.param(
+            parse_watchlist_detail_response, ("wl-id",), id="watchlist_detail"
+        ),
+        pytest.param(parse_watchlists_response, (), id="watchlist_names"),
+    ],
+)
+def test_graphql_errors_raise_api_error(parser, extra_args) -> None:
+    """All parsers raise APIError when the response contains GraphQL errors."""
+    errors = [{"message": "bad query"}]
+    with pytest.raises(APIError) as exc_info:
+        parser({"errors": errors}, *extra_args)
+    assert exc_info.value.errors == errors
+
+
+# ---------------------------------------------------------------------------
+# Stock parsing
+# ---------------------------------------------------------------------------
 
 
 def test_parse_stock_response_real_fixture(stock_response) -> None:
@@ -39,16 +81,6 @@ def test_parse_stock_response_empty_market_data() -> None:
         assert "FAKE" in str(exc)
     else:
         raise AssertionError("Expected SymbolNotFoundError")
-
-
-def test_parse_stock_response_graphql_errors() -> None:
-    """Raise APIError and preserve GraphQL errors from payload."""
-    try:
-        parse_stock_response({"errors": [{"message": "bad query"}]}, "X")
-    except APIError as exc:
-        assert exc.errors == [{"message": "bad query"}]
-    else:
-        raise AssertionError("Expected APIError")
 
 
 def test_parse_watchlist_response_empty() -> None:
@@ -147,16 +179,6 @@ def test_parse_chart_data_response_empty_market_data() -> None:
         raise AssertionError("Expected SymbolNotFoundError")
 
 
-def test_parse_chart_data_response_graphql_errors() -> None:
-    """Raise APIError and preserve GraphQL errors for chart data payload."""
-    try:
-        parse_chart_data_response({"errors": [{"message": "bad query"}]}, "X")
-    except APIError as exc:
-        assert exc.errors == [{"message": "bad query"}]
-    else:
-        raise AssertionError("Expected APIError")
-
-
 def test_parse_chart_data_response_null_quotes(chart_data_response) -> None:
     """Return None for pre/post-market quotes when API values are null."""
     chart = parse_chart_data_response(chart_data_response, "TEST")
@@ -195,16 +217,6 @@ def test_parse_fundamentals_response_empty_market_data() -> None:
         assert "FAKE" in str(exc)
     else:
         raise AssertionError("Expected SymbolNotFoundError")
-
-
-def test_parse_fundamentals_response_graphql_errors() -> None:
-    """Raise APIError and preserve GraphQL errors from payload."""
-    try:
-        parse_fundamentals_response({"errors": [{"message": "bad query"}]}, "X")
-    except APIError as exc:
-        assert exc.errors == [{"message": "bad query"}]
-    else:
-        raise AssertionError("Expected APIError")
 
 
 def test_parse_active_alerts_response_real_fixture(active_alerts_response) -> None:
@@ -265,16 +277,6 @@ def test_parse_active_alerts_response_empty() -> None:
     assert result.remaining_subscriptions == 750
 
 
-def test_parse_active_alerts_response_graphql_errors() -> None:
-    """Raise APIError and preserve GraphQL errors from payload."""
-    try:
-        parse_active_alerts_response({"errors": [{"message": "auth failed"}]})
-    except APIError as exc:
-        assert exc.errors == [{"message": "auth failed"}]
-    else:
-        raise AssertionError("Expected APIError")
-
-
 def test_parse_triggered_alerts_response_real_fixture(
     triggered_alerts_response,
 ) -> None:
@@ -323,16 +325,6 @@ def test_parse_triggered_alerts_response_empty() -> None:
     assert result.alerts == []
 
 
-def test_parse_triggered_alerts_response_graphql_errors() -> None:
-    """Raise APIError and preserve GraphQL errors from payload."""
-    try:
-        parse_triggered_alerts_response({"errors": [{"message": "auth failed"}]})
-    except APIError as exc:
-        assert exc.errors == [{"message": "auth failed"}]
-    else:
-        raise AssertionError("Expected APIError")
-
-
 def test_parse_layouts_response_real_fixture(layouts_response) -> None:
     """Parse the real layouts fixture into Layout list."""
     layouts = parse_layouts_response(layouts_response)
@@ -355,16 +347,6 @@ def test_parse_layouts_response_empty() -> None:
     result = parse_layouts_response({"data": {"user": {"marketDataLayouts": []}}})
 
     assert result == []
-
-
-def test_parse_layouts_response_graphql_errors() -> None:
-    """Raise APIError and preserve GraphQL errors from payload."""
-    try:
-        parse_layouts_response({"errors": [{"message": "bad query"}]})
-    except APIError as exc:
-        assert exc.errors == [{"message": "bad query"}]
-    else:
-        raise AssertionError("Expected APIError")
 
 
 def test_parse_chart_markups_response_empty(chart_markups_response) -> None:
@@ -427,16 +409,6 @@ def test_parse_chart_markups_response_with_data() -> None:
     assert markup2.name is None
     assert markup2.data == '{"type":"box"}'
     assert isinstance(markup2.data, str)
-
-
-def test_parse_chart_markups_response_graphql_errors() -> None:
-    """Raise APIError and preserve GraphQL errors from payload."""
-    try:
-        parse_chart_markups_response({"errors": [{"message": "unauthorized"}]})
-    except APIError as exc:
-        assert exc.errors == [{"message": "unauthorized"}]
-    else:
-        raise AssertionError("Expected APIError")
 
 
 class TestSafeDateValue:

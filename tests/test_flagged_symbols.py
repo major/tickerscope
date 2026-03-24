@@ -30,14 +30,6 @@ def test_parse_watchlist_detail_not_found() -> None:
         parse_watchlist_detail_response({"data": {"watchlist": None}}, "missing-id")
 
 
-def test_parse_watchlist_detail_graphql_errors() -> None:
-    """Raise APIError when response contains GraphQL errors."""
-    with pytest.raises(APIError):
-        parse_watchlist_detail_response(
-            {"errors": [{"message": "forbidden"}]}, "some-id"
-        )
-
-
 def test_watchlist_item_frozen() -> None:
     """WatchlistSymbol is immutable (frozen dataclass)."""
     item = WatchlistSymbol(key="abc123", dow_jones_key="13-111111")

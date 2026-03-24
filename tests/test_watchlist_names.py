@@ -4,7 +4,6 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from tickerscope._exceptions import APIError
 from tickerscope._parsing import parse_watchlists_response
 from tickerscope._models import WatchlistSummary
 
@@ -27,12 +26,6 @@ def test_parse_watchlist_names_empty() -> None:
     result = parse_watchlists_response({"data": {"watchlists": []}})
 
     assert result == []
-
-
-def test_parse_watchlist_names_graphql_errors() -> None:
-    """Raise APIError when response contains GraphQL errors."""
-    with pytest.raises(APIError):
-        parse_watchlists_response({"errors": [{"message": "unauthorized"}]})
 
 
 def test_watchlist_summary_frozen() -> None:
