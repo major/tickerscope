@@ -7,7 +7,6 @@ import logging
 from calendar import monthrange
 from abc import ABC, abstractmethod
 from datetime import date, timedelta
-from dataclasses import replace
 from typing import Any, Awaitable, Callable
 
 import httpx
@@ -78,32 +77,6 @@ from tickerscope._queries import (
 _log = logging.getLogger("tickerscope")
 
 _VALID_LOOKBACKS = ("1W", "1M", "3M", "6M", "1Y", "YTD")
-
-
-def _apply_limit(items: list, limit: int | None) -> list:
-    """Validate and apply an optional limit to a list."""
-    if limit is None:
-        return items
-    if limit < 0:
-        raise ValueError("limit must be non-negative")
-    return items[:limit]
-
-
-def _apply_max_points(chart: ChartData, max_points: int | None) -> ChartData:
-    """Truncate chart data points to max_points if specified."""
-    if max_points is None:
-        return chart
-    if max_points < 0:
-        raise ValueError("max_points must be non-negative")
-    if chart.time_series is not None:
-        return replace(
-            chart,
-            time_series=replace(
-                chart.time_series,
-                data_points=chart.time_series.data_points[:max_points],
-            ),
-        )
-    return chart
 
 
 def _today() -> date:
@@ -251,7 +224,7 @@ class BaseTickerScopeClient(ABC):
         """Return metadata about available client methods and API capabilities.
 
         Returns a JSON-serializable dict describing all methods, their parameters,
-        return types, and pagination support. Can be called without
+        return types, and feature metadata. Can be called without
         instantiating a client (no authentication required).
 
         Returns:
@@ -264,7 +237,6 @@ class BaseTickerScopeClient(ABC):
                 {
                     "name": "get_stock",
                     "return_type": "StockData",
-                    "supports_limit": False,
                     "parameters": [
                         {"name": "symbol", "type": "str", "required": True},
                         {
@@ -278,8 +250,6 @@ class BaseTickerScopeClient(ABC):
                 {
                     "name": "get_chart_data",
                     "return_type": "ChartData",
-                    "supports_limit": False,
-                    "supports_max_points": True,
                     "parameters": [
                         {"name": "symbol", "type": "str", "required": True},
                         {
@@ -317,7 +287,6 @@ class BaseTickerScopeClient(ABC):
                 {
                     "name": "get_watchlist",
                     "return_type": "list[WatchlistEntry]",
-                    "supports_limit": True,
                     "parameters": [
                         {"name": "list_id", "type": "int", "required": True},
                     ],
@@ -325,7 +294,6 @@ class BaseTickerScopeClient(ABC):
                 {
                     "name": "get_ownership",
                     "return_type": "OwnershipData",
-                    "supports_limit": False,
                     "parameters": [
                         {"name": "symbol", "type": "str", "required": True},
                     ],
@@ -333,13 +301,11 @@ class BaseTickerScopeClient(ABC):
                 {
                     "name": "get_watchlist_names",
                     "return_type": "list[WatchlistSummary]",
-                    "supports_limit": True,
                     "parameters": [],
                 },
                 {
                     "name": "get_watchlist_symbols",
                     "return_type": "WatchlistDetail",
-                    "supports_limit": False,
                     "parameters": [
                         {"name": "watchlist_id", "type": "str", "required": True},
                     ],
@@ -347,7 +313,6 @@ class BaseTickerScopeClient(ABC):
                 {
                     "name": "get_screens",
                     "return_type": "list[Screen]",
-                    "supports_limit": True,
                     "parameters": [
                         {
                             "name": "screen_type",
@@ -366,7 +331,6 @@ class BaseTickerScopeClient(ABC):
                 {
                     "name": "run_screen",
                     "return_type": "ScreenResult",
-                    "supports_limit": False,
                     "parameters": [
                         {"name": "screen_name", "type": "str", "required": True},
                         {
@@ -379,7 +343,6 @@ class BaseTickerScopeClient(ABC):
                 {
                     "name": "get_fundamentals",
                     "return_type": "FundamentalData",
-                    "supports_limit": False,
                     "parameters": [
                         {"name": "symbol", "type": "str", "required": True},
                     ],
@@ -387,25 +350,21 @@ class BaseTickerScopeClient(ABC):
                 {
                     "name": "get_active_alerts",
                     "return_type": "AlertSubscriptionList",
-                    "supports_limit": True,
                     "parameters": [],
                 },
                 {
                     "name": "get_triggered_alerts",
                     "return_type": "TriggeredAlertList",
-                    "supports_limit": True,
                     "parameters": [],
                 },
                 {
                     "name": "get_layouts",
                     "return_type": "list[Layout]",
-                    "supports_limit": True,
                     "parameters": [],
                 },
                 {
                     "name": "get_chart_markups",
                     "return_type": "ChartMarkupList",
-                    "supports_limit": True,
                     "parameters": [
                         {"name": "symbol", "type": "str", "required": True},
                         {
@@ -425,7 +384,6 @@ class BaseTickerScopeClient(ABC):
                 {
                     "name": "get_watchlist_by_name",
                     "return_type": "WatchlistDetail",
-                    "supports_limit": False,
                     "parameters": [
                         {"name": "name", "type": "str", "required": True},
                     ],
@@ -433,7 +391,6 @@ class BaseTickerScopeClient(ABC):
                 {
                     "name": "get_screen_by_name",
                     "return_type": "Screen",
-                    "supports_limit": False,
                     "parameters": [
                         {"name": "name", "type": "str", "required": True},
                     ],
@@ -637,7 +594,6 @@ class BaseTickerScopeClient(ABC):
         lookback: str | None = None,
         period: str = "P1D",
         exchange: str = "NYSE",
-        max_points: int | None = None,
     ) -> Any:
         resolved_start_date, resolved_end_date = _resolve_chart_dates(
             start_date=start_date,
@@ -651,22 +607,19 @@ class BaseTickerScopeClient(ABC):
             period=period,
             exchange=exchange,
         )
-        result = self._graphql_and_parse(payload, parse_chart_data_response, symbol)
-        return _apply_max_points(result, max_points)
+        return self._graphql_and_parse(payload, parse_chart_data_response, symbol)
 
-    def get_watchlist(self, list_id: int, *, limit: int | None = None) -> Any:
+    def get_watchlist(self, list_id: int) -> Any:
         payload = self._build_get_watchlist_payload(list_id)
-        result = self._graphql_and_parse(payload, parse_watchlist_response)
-        return _apply_limit(result, limit)
+        return self._graphql_and_parse(payload, parse_watchlist_response)
 
     def get_ownership(self, symbol: str) -> Any:
         payload = self._build_get_ownership_payload(symbol)
         return self._graphql_and_parse(payload, parse_ownership_response, symbol)
 
-    def get_watchlist_names(self, *, limit: int | None = None) -> Any:
+    def get_watchlist_names(self) -> Any:
         payload = self._build_get_watchlist_names_payload()
-        result = self._graphql_and_parse(payload, parse_watchlists_response)
-        return _apply_limit(result, limit)
+        return self._graphql_and_parse(payload, parse_watchlists_response)
 
     def get_watchlist_symbols(self, watchlist_id: int) -> Any:
         payload = self._build_get_watchlist_symbols_payload(str(watchlist_id))
@@ -678,14 +631,11 @@ class BaseTickerScopeClient(ABC):
         self,
         screen_type: str | None = None,
         sort_dir: str | None = None,
-        *,
-        limit: int | None = None,
     ) -> Any:
         payload = self._build_get_screens_payload(
             screen_type=screen_type, sort_dir=sort_dir
         )
-        result = self._graphql_and_parse(payload, parse_screens_response)
-        return _apply_limit(result, limit)
+        return self._graphql_and_parse(payload, parse_screens_response)
 
     def run_screen(
         self,
@@ -705,26 +655,17 @@ class BaseTickerScopeClient(ABC):
     ) -> StockAnalysis | Awaitable[StockAnalysis]:
         """Return stock plus optional fundamentals and ownership in one call."""
 
-    def get_active_alerts(self, *, limit: int | None = None) -> Any:
+    def get_active_alerts(self) -> Any:
         payload = self._build_get_active_alerts_payload()
-        result = self._graphql_and_parse(payload, parse_active_alerts_response)
-        if limit is not None:
-            result = replace(
-                result, subscriptions=_apply_limit(result.subscriptions, limit)
-            )
-        return result
+        return self._graphql_and_parse(payload, parse_active_alerts_response)
 
-    def get_triggered_alerts(self, *, limit: int | None = None) -> Any:
+    def get_triggered_alerts(self) -> Any:
         payload = self._build_get_triggered_alerts_payload()
-        result = self._graphql_and_parse(payload, parse_triggered_alerts_response)
-        if limit is not None:
-            result = replace(result, alerts=_apply_limit(result.alerts, limit))
-        return result
+        return self._graphql_and_parse(payload, parse_triggered_alerts_response)
 
-    def get_layouts(self, *, limit: int | None = None) -> Any:
+    def get_layouts(self) -> Any:
         payload = self._build_get_layouts_payload()
-        result = self._graphql_and_parse(payload, parse_layouts_response)
-        return _apply_limit(result, limit)
+        return self._graphql_and_parse(payload, parse_layouts_response)
 
     def get_chart_markups(
         self,
@@ -732,17 +673,13 @@ class BaseTickerScopeClient(ABC):
         *,
         frequency: str = "DAILY",
         sort_dir: str = "ASC",
-        limit: int | None = None,
     ) -> Any:
         payload = self._build_get_chart_markups_payload(
             symbol,
             frequency=frequency,
             sort_dir=sort_dir,
         )
-        result = self._graphql_and_parse(payload, parse_chart_markups_response)
-        if limit is not None:
-            result = replace(result, markups=_apply_limit(result.markups, limit))
-        return result
+        return self._graphql_and_parse(payload, parse_chart_markups_response)
 
 
 class TickerScopeClient(BaseTickerScopeClient):
@@ -801,7 +738,6 @@ class TickerScopeClient(BaseTickerScopeClient):
         lookback: str | None = None,
         period: str = "P1D",
         exchange: str = "NYSE",
-        max_points: int | None = None,
     ) -> ChartData:
         return super().get_chart_data(
             symbol,
@@ -810,7 +746,6 @@ class TickerScopeClient(BaseTickerScopeClient):
             lookback=lookback,
             period=period,
             exchange=exchange,
-            max_points=max_points,
         )
 
     def get_stock_analysis(self, symbol: str) -> StockAnalysis:
@@ -886,17 +821,14 @@ class TickerScopeClient(BaseTickerScopeClient):
             raise APIError(f"No screen found with name {name!r}")
         return match
 
-    def screen_watchlist_by_name(
-        self, name: str, *, limit: int | None = None
-    ) -> list[WatchlistEntry]:
+    def screen_watchlist_by_name(self, name: str) -> list[WatchlistEntry]:
         """Look up a watchlist by name and return its screened entries.
 
         Calls get_watchlist_names() to find the matching watchlist,
-        then get_watchlist() to fetch all entries with optional limit.
+        then get_watchlist() to fetch all entries.
 
         Args:
             name: The exact name of the watchlist to look up.
-            limit: Optional maximum number of entries to return.
 
         Returns:
             List of WatchlistEntry objects from the named watchlist.
@@ -911,7 +843,7 @@ class TickerScopeClient(BaseTickerScopeClient):
             raise APIError(f"No watchlist found with name {name!r}")
         if match.id is None:
             raise APIError(f"Watchlist {name!r} has no ID")
-        return self.get_watchlist(match.id, limit=limit)
+        return self.get_watchlist(match.id)
 
 
 class AsyncTickerScopeClient(BaseTickerScopeClient):
@@ -1008,7 +940,6 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         lookback: str | None = None,
         period: str = "P1D",
         exchange: str = "NYSE",
-        max_points: int | None = None,
     ) -> ChartData:
         resolved_start_date, resolved_end_date = _resolve_chart_dates(
             start_date=start_date,
@@ -1022,10 +953,7 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
             period=period,
             exchange=exchange,
         )
-        result = await self._graphql_and_parse(
-            payload, parse_chart_data_response, symbol
-        )
-        return _apply_max_points(result, max_points)
+        return await self._graphql_and_parse(payload, parse_chart_data_response, symbol)
 
     async def get_stock_analysis(self, symbol: str) -> StockAnalysis:
         """Return stock analysis, tolerating optional endpoint failures."""
@@ -1060,23 +988,17 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
             errors=errors,
         )
 
-    async def get_watchlist(
-        self, list_id: int, *, limit: int | None = None
-    ) -> list[WatchlistEntry]:
+    async def get_watchlist(self, list_id: int) -> list[WatchlistEntry]:
         payload = self._build_get_watchlist_payload(list_id)
-        result = await self._graphql_and_parse(payload, parse_watchlist_response)
-        return _apply_limit(result, limit)
+        return await self._graphql_and_parse(payload, parse_watchlist_response)
 
     async def get_ownership(self, symbol: str) -> OwnershipData:
         payload = self._build_get_ownership_payload(symbol)
         return await self._graphql_and_parse(payload, parse_ownership_response, symbol)
 
-    async def get_watchlist_names(
-        self, *, limit: int | None = None
-    ) -> list[WatchlistSummary]:
+    async def get_watchlist_names(self) -> list[WatchlistSummary]:
         payload = self._build_get_watchlist_names_payload()
-        result = await self._graphql_and_parse(payload, parse_watchlists_response)
-        return _apply_limit(result, limit)
+        return await self._graphql_and_parse(payload, parse_watchlists_response)
 
     async def get_watchlist_symbols(self, watchlist_id: int) -> WatchlistDetail:
         payload = self._build_get_watchlist_symbols_payload(str(watchlist_id))
@@ -1090,14 +1012,11 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         self,
         screen_type: str | None = None,
         sort_dir: str | None = None,
-        *,
-        limit: int | None = None,
     ) -> list[Screen]:
         payload = self._build_get_screens_payload(
             screen_type=screen_type, sort_dir=sort_dir
         )
-        result = await self._graphql_and_parse(payload, parse_screens_response)
-        return _apply_limit(result, limit)
+        return await self._graphql_and_parse(payload, parse_screens_response)
 
     async def run_screen(
         self,
@@ -1113,30 +1032,17 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
             payload, parse_fundamentals_response, symbol
         )
 
-    async def get_active_alerts(
-        self, *, limit: int | None = None
-    ) -> AlertSubscriptionList:
+    async def get_active_alerts(self) -> AlertSubscriptionList:
         payload = self._build_get_active_alerts_payload()
-        result = await self._graphql_and_parse(payload, parse_active_alerts_response)
-        if limit is not None:
-            result = replace(
-                result, subscriptions=_apply_limit(result.subscriptions, limit)
-            )
-        return result
+        return await self._graphql_and_parse(payload, parse_active_alerts_response)
 
-    async def get_triggered_alerts(
-        self, *, limit: int | None = None
-    ) -> TriggeredAlertList:
+    async def get_triggered_alerts(self) -> TriggeredAlertList:
         payload = self._build_get_triggered_alerts_payload()
-        result = await self._graphql_and_parse(payload, parse_triggered_alerts_response)
-        if limit is not None:
-            result = replace(result, alerts=_apply_limit(result.alerts, limit))
-        return result
+        return await self._graphql_and_parse(payload, parse_triggered_alerts_response)
 
-    async def get_layouts(self, *, limit: int | None = None) -> list[Layout]:
+    async def get_layouts(self) -> list[Layout]:
         payload = self._build_get_layouts_payload()
-        result = await self._graphql_and_parse(payload, parse_layouts_response)
-        return _apply_limit(result, limit)
+        return await self._graphql_and_parse(payload, parse_layouts_response)
 
     async def get_chart_markups(
         self,
@@ -1144,17 +1050,13 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         *,
         frequency: str = "DAILY",
         sort_dir: str = "ASC",
-        limit: int | None = None,
     ) -> ChartMarkupList:
         payload = self._build_get_chart_markups_payload(
             symbol,
             frequency=frequency,
             sort_dir=sort_dir,
         )
-        result = await self._graphql_and_parse(payload, parse_chart_markups_response)
-        if limit is not None:
-            result = replace(result, markups=_apply_limit(result.markups, limit))
-        return result
+        return await self._graphql_and_parse(payload, parse_chart_markups_response)
 
     async def get_watchlist_by_name(self, name: str) -> WatchlistDetail:
         """Look up a watchlist by name and return its full details.
@@ -1204,17 +1106,14 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
             raise APIError(f"No screen found with name {name!r}")
         return match
 
-    async def screen_watchlist_by_name(
-        self, name: str, *, limit: int | None = None
-    ) -> list[WatchlistEntry]:
+    async def screen_watchlist_by_name(self, name: str) -> list[WatchlistEntry]:
         """Look up a watchlist by name and return its screened entries.
 
         Calls get_watchlist_names() to find the matching watchlist,
-        then get_watchlist() to fetch all entries with optional limit.
+        then get_watchlist() to fetch all entries.
 
         Args:
             name: The exact name of the watchlist to look up.
-            limit: Optional maximum number of entries to return.
 
         Returns:
             List of WatchlistEntry objects from the named watchlist.
@@ -1229,4 +1128,4 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
             raise APIError(f"No watchlist found with name {name!r}")
         if match.id is None:
             raise APIError(f"Watchlist {name!r} has no ID")
-        return await self.get_watchlist(match.id, limit=limit)
+        return await self.get_watchlist(match.id)
