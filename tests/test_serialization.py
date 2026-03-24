@@ -1,6 +1,10 @@
 """Tests for to_dict() and to_json() serialization across all dataclass models."""
 
+from __future__ import annotations
+
 import json
+
+import pytest
 
 from tickerscope._models import (
     BasicOwnership,
@@ -13,10 +17,54 @@ from tickerscope._models import (
     ReportedPeriod,
 )
 
-
-# ---------------------------------------------------------------------------
-# 1. Basic serialization (Ratings — simplest leaf class)
-# ---------------------------------------------------------------------------
+_COMPANY_WITH_IPO = Company(
+    name="Acme",
+    industry=None,
+    sector=None,
+    industry_group_rank=None,
+    industry_group_rs=None,
+    industry_group_rs_letter=None,
+    description=None,
+    website=None,
+    address=None,
+    address2=None,
+    phone=None,
+    ipo_date=None,
+    ipo_price=25.0,
+    ipo_price_formatted="$25.00",
+)
+_CUP_PATTERN = Pattern(
+    type="Cup",
+    stage=1,
+    base_number=1,
+    status="Complete",
+    pivot_price=150.0,
+    pivot_price_formatted="$150.00",
+    pivot_date="2024-01-01",
+    base_start_date="2023-06-01",
+    base_end_date="2024-01-01",
+    base_length=30,
+)
+_BASIC_OWNERSHIP = BasicOwnership(
+    funds_float_pct=43.87, funds_float_pct_formatted="43.87%"
+)
+_REPORTED_PERIOD = ReportedPeriod(
+    value=2.5,
+    formatted_value="$2.50",
+    pct_change_yoy=15.2,
+    formatted_pct_change="15.2%",
+    period_offset="0",
+    period_end_date="2024-12-31",
+)
+_ESTIMATE_PERIOD = EstimatePeriod(
+    value=3.0,
+    formatted_value="$3.00",
+    pct_change_yoy=10.0,
+    formatted_pct_change="10.0%",
+    period_offset="1",
+    period=None,
+    revision_direction="UP",
+)
 
 
 class TestRatingsSerialize:
@@ -34,11 +82,6 @@ class TestRatingsSerialize:
         assert d == {"composite": 95, "eps": 99, "rs": 89, "smr": "A", "ad": "B+"}
 
 
-# ---------------------------------------------------------------------------
-# 2. None omission
-# ---------------------------------------------------------------------------
-
-
 class TestNoneOmission:
     """Verify that None-valued fields are excluded from to_dict() output."""
 
@@ -54,11 +97,6 @@ class TestNoneOmission:
         """When every field is None, to_dict() produces an empty dict."""
         r = Ratings(composite=None, eps=None, rs=None, smr=None, ad=None)
         assert r.to_dict() == {}
-
-
-# ---------------------------------------------------------------------------
-# 3. Nested dataclasses (StockData with nested Ratings)
-# ---------------------------------------------------------------------------
 
 
 class TestNestedSerialization:
@@ -80,29 +118,12 @@ class TestNestedSerialization:
         assert "financials" not in d
 
 
-# ---------------------------------------------------------------------------
-# 4. List of dataclasses (patterns=[Pattern(...)])
-# ---------------------------------------------------------------------------
-
-
 class TestListSerialization:
     """Verify lists of dataclasses serialize into lists of dicts."""
 
     def test_list_of_dataclasses_serialized(self, minimal_stock) -> None:
         """A list[Pattern] becomes a list[dict] in the serialized output."""
-        p = Pattern(
-            type="Cup",
-            stage=1,
-            base_number=1,
-            status="Complete",
-            pivot_price=150.0,
-            pivot_price_formatted="$150.00",
-            pivot_date="2024-01-01",
-            base_start_date="2023-06-01",
-            base_end_date="2024-01-01",
-            base_length=30,
-        )
-        stock = minimal_stock(patterns=[p])
+        stock = minimal_stock(patterns=[_CUP_PATTERN])
         d = stock.to_dict()
         assert isinstance(d["patterns"], list)
         assert len(d["patterns"]) == 1
@@ -113,11 +134,6 @@ class TestListSerialization:
         stock = minimal_stock(patterns=[])
         d = stock.to_dict()
         assert d["patterns"] == []
-
-
-# ---------------------------------------------------------------------------
-# 5. _formatted suffix drops (Pricing)
-# ---------------------------------------------------------------------------
 
 
 class TestFormattedSuffixDrop:
@@ -161,90 +177,35 @@ class TestFormattedSuffixDrop:
         ]:
             assert raw in d, f"{raw} should be present"
 
-    def test_company_ipo_price_dropped(self) -> None:
-        """Company.ipo_price is kept when ipo_price_formatted is present."""
-        c = Company(
-            name="Acme",
-            industry=None,
-            sector=None,
-            industry_group_rank=None,
-            industry_group_rs=None,
-            industry_group_rs_letter=None,
-            description=None,
-            website=None,
-            address=None,
-            address2=None,
-            phone=None,
-            ipo_date=None,
-            ipo_price=25.0,
-            ipo_price_formatted="$25.00",
-        )
-        d = c.to_dict()
-        assert "ipo_price" in d
-        assert d["ipo_price_formatted"] == "$25.00"
-
-    def test_pattern_pivot_price_dropped(self) -> None:
-        """Pattern.pivot_price is kept when pivot_price_formatted is present."""
-        p = Pattern(
-            type="Cup",
-            stage=1,
-            base_number=1,
-            status="Complete",
-            pivot_price=150.0,
-            pivot_price_formatted="$150.00",
-            pivot_date="2024-01-01",
-            base_start_date="2023-06-01",
-            base_end_date="2024-01-01",
-            base_length=30,
-        )
-        d = p.to_dict()
-        assert "pivot_price" in d
-        assert d["pivot_price_formatted"] == "$150.00"
-
-    def test_basic_ownership_funds_float_pct_dropped(self) -> None:
-        """BasicOwnership.funds_float_pct kept when formatted counterpart exists."""
-        o = BasicOwnership(funds_float_pct=43.87, funds_float_pct_formatted="43.87%")
-        d = o.to_dict()
-        assert "funds_float_pct" in d
-        assert d["funds_float_pct_formatted"] == "43.87%"
-
-
-# ---------------------------------------------------------------------------
-# 6. formatted_ prefix drops (ReportedPeriod, EstimatePeriod)
-# ---------------------------------------------------------------------------
+    @pytest.mark.parametrize(
+        ("model", "raw_field", "fmt_field", "fmt_value"),
+        [
+            (_COMPANY_WITH_IPO, "ipo_price", "ipo_price_formatted", "$25.00"),
+            (_CUP_PATTERN, "pivot_price", "pivot_price_formatted", "$150.00"),
+            (
+                _BASIC_OWNERSHIP,
+                "funds_float_pct",
+                "funds_float_pct_formatted",
+                "43.87%",
+            ),
+        ],
+    )
+    def test_formatted_field_preserved(
+        self, model, raw_field, fmt_field, fmt_value
+    ) -> None:
+        """Raw field is kept and formatted field has expected value when both are present."""
+        d = model.to_dict()
+        assert raw_field in d
+        assert d[fmt_field] == fmt_value
 
 
 class TestFormattedPrefixDrop:
     """Verify raw fields are dropped when their formatted_ prefix counterpart exists."""
 
-    def test_reported_period_drops_raw_when_formatted_present(self) -> None:
-        """ReportedPeriod keeps value and pct_change_yoy when formatted versions exist."""
-        rp = ReportedPeriod(
-            value=2.5,
-            formatted_value="$2.50",
-            pct_change_yoy=15.2,
-            formatted_pct_change="15.2%",
-            period_offset="0",
-            period_end_date="2024-12-31",
-        )
-        d = rp.to_dict()
-        assert "value" in d
-        assert "pct_change_yoy" in d
-        assert d["formatted_value"] == "$2.50"
-        assert d["formatted_pct_change"] == "15.2%"
-
-    def test_estimate_period_drops_raw_when_formatted_present(self) -> None:
-        """EstimatePeriod keeps value and pct_change_yoy when formatted versions exist."""
-        ep = EstimatePeriod(
-            value=3.0,
-            formatted_value="$3.00",
-            pct_change_yoy=10.0,
-            formatted_pct_change="10.0%",
-            period_offset="1",
-            period=None,
-            revision_direction="UP",
-        )
-        d = ep.to_dict()
+    @pytest.mark.parametrize("model", [_REPORTED_PERIOD, _ESTIMATE_PERIOD])
+    def test_raw_kept_when_formatted_present(self, model) -> None:
+        """Raw value and pct_change_yoy are kept when formatted versions exist."""
+        d = model.to_dict()
         assert "value" in d
         assert "pct_change_yoy" in d
 
@@ -263,11 +224,6 @@ class TestFormattedPrefixDrop:
         assert d["pct_change_yoy"] == 15.2
         assert "formatted_value" not in d
         assert "formatted_pct_change" not in d
-
-
-# ---------------------------------------------------------------------------
-# 7. Orphan field (Fundamentals.debt_percent_formatted)
-# ---------------------------------------------------------------------------
 
 
 class TestOrphanField:
@@ -298,29 +254,16 @@ class TestOrphanField:
         assert d == {}
 
 
-# ---------------------------------------------------------------------------
-# 8. to_json() produces valid JSON
-# ---------------------------------------------------------------------------
-
-
 class TestToJson:
     """Verify to_json() returns valid JSON strings consistent with to_dict()."""
 
-    def test_to_json_returns_string(self) -> None:
-        """to_json() return type is str."""
-        r = Ratings(composite=95, eps=99, rs=89, smr="A", ad="B+")
-        assert isinstance(r.to_json(), str)
-
-    def test_to_json_valid_json(self) -> None:
-        """to_json() output can be parsed back by json.loads."""
-        r = Ratings(composite=95, eps=99, rs=89, smr="A", ad="B+")
-        parsed = json.loads(r.to_json())
-        assert parsed == {"composite": 95, "eps": 99, "rs": 89, "smr": "A", "ad": "B+"}
-
-    def test_to_json_respects_none_omission(self) -> None:
-        """to_json() omits None fields just like to_dict()."""
+    def test_to_json_basic(self) -> None:
+        """to_json() returns valid JSON string, with correct values and None fields omitted."""
         r = Ratings(composite=95, eps=None, rs=89, smr=None, ad="B")
-        parsed = json.loads(r.to_json())
+        j = r.to_json()
+        assert isinstance(j, str)
+        parsed = json.loads(j)
+        assert parsed == {"composite": 95, "rs": 89, "ad": "B"}
         assert "eps" not in parsed
         assert "smr" not in parsed
 
@@ -331,11 +274,6 @@ class TestToJson:
         assert parsed["symbol"] == "TEST"
         assert isinstance(parsed["ratings"], dict)
         assert "company" not in parsed  # None → omitted
-
-
-# ---------------------------------------------------------------------------
-# 9. Round-trip smoke (to_dict() → from_dict())
-# ---------------------------------------------------------------------------
 
 
 class TestRoundTrip:
@@ -366,11 +304,6 @@ class TestRoundTrip:
         assert reconstructed == ppc
 
 
-# ---------------------------------------------------------------------------
-# 10. Runtime omit_none parameter
-# ---------------------------------------------------------------------------
-
-
 class TestOmitNoneParameter:
     """Tests for runtime omit_none parameter on to_dict() and to_json()."""
 
@@ -382,23 +315,20 @@ class TestOmitNoneParameter:
         assert d["composite"] == 99
         assert "eps" not in d
 
-    def test_to_dict_omit_none_false_includes_nulls(self) -> None:
-        """model.to_dict(omit_none=False) includes None fields as explicit nulls."""
+    @pytest.mark.parametrize(
+        ("method", "kwargs"),
+        [("to_dict", {"omit_none": False}), ("to_json", {"omit_none": False})],
+    )
+    def test_omit_none_false_includes_nulls(self, method, kwargs) -> None:
+        """to_dict/to_json with omit_none=False includes None fields as explicit nulls."""
         r = Ratings(composite=99, eps=None, rs=None, smr=None, ad=None)
-        d = r.to_dict(omit_none=False)
-        assert "composite" in d
-        assert d["composite"] == 99
-        assert "eps" in d
-        assert d["eps"] is None
-        assert "rs" in d
-        assert d["rs"] is None
-
-    def test_to_json_omit_none_false_includes_nulls(self) -> None:
-        """model.to_json(omit_none=False) produces JSON with explicit null values."""
-        r = Ratings(composite=99, eps=None, rs=None, smr=None, ad=None)
-        j = json.loads(r.to_json(omit_none=False))
-        assert "eps" in j
-        assert j["eps"] is None
+        result = getattr(r, method)(**kwargs)
+        if method == "to_json":
+            result = json.loads(result)
+        assert "composite" in result
+        assert result["composite"] == 99
+        assert "eps" in result
+        assert result["eps"] is None
 
     def test_nested_propagation_with_real_model(self, minimal_stock) -> None:
         """StockData.to_dict(omit_none=False) propagates nulls to nested Ratings."""
