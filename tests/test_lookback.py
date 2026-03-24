@@ -17,26 +17,6 @@ from tickerscope._client import (
     _resolve_chart_dates,
 )
 
-FAKE_JWT = "fake.jwt.lookback"
-
-
-@pytest.fixture
-def sync_client() -> TickerScopeClient:
-    """Create a sync client with mocked JWT resolution."""
-    with patch("tickerscope._client.resolve_jwt", return_value=FAKE_JWT):
-        client = TickerScopeClient(jwt=FAKE_JWT)
-    yield client
-    client.close()
-
-
-@pytest.fixture
-async def async_client() -> AsyncTickerScopeClient:
-    """Create an async client with mocked JWT resolution."""
-    with patch("tickerscope._client.resolve_jwt", return_value=FAKE_JWT):
-        client = AsyncTickerScopeClient(jwt=FAKE_JWT)
-    yield client
-    await client.aclose()
-
 
 def test_get_chart_data_signatures_include_lookback_and_optional_dates() -> None:
     """Expose lookback and optional start and end dates in all client classes."""

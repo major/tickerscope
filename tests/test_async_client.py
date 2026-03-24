@@ -1,25 +1,13 @@
 """Tests for AsyncTickerScopeClient."""
 
 import inspect
+from unittest.mock import patch
 
 import httpx
 import pytest
 import respx
-from unittest.mock import patch
 
 from tickerscope._client import AsyncTickerScopeClient
-
-
-FAKE_JWT = "fake_async_jwt_token"
-
-
-@pytest.fixture
-async def async_client():
-    """Create AsyncTickerScopeClient with mocked auth."""
-    with patch("tickerscope._client.resolve_jwt", return_value=FAKE_JWT):
-        client = AsyncTickerScopeClient()
-    yield client
-    await client.aclose()
 
 
 @pytest.mark.asyncio
@@ -85,7 +73,7 @@ async def test_async_get_ownership(async_client):
 @pytest.mark.asyncio
 async def test_async_context_manager():
     """Test that async context manager closes client on exit."""
-    with patch("tickerscope._client.resolve_jwt", return_value=FAKE_JWT):
+    with patch("tickerscope._client.resolve_jwt", return_value="fake-jwt"):
         async with AsyncTickerScopeClient() as client:
             assert client._http is not None
     assert client._http.is_closed

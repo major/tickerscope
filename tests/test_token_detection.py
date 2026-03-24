@@ -7,28 +7,7 @@ import pytest
 import respx
 
 from tickerscope._auth import GRAPHQL_URL
-from tickerscope._client import AsyncTickerScopeClient, TickerScopeClient
 from tickerscope._exceptions import AuthenticationError, TokenExpiredError
-
-FAKE_JWT = "fake.jwt.token"
-
-
-@pytest.fixture
-def sync_client():
-    """Create a sync client with mocked JWT resolution."""
-    with patch("tickerscope._client.resolve_jwt", return_value=FAKE_JWT):
-        client = TickerScopeClient(jwt=FAKE_JWT)
-    yield client
-    client.close()
-
-
-@pytest.fixture
-async def async_client():
-    """Create an async client with mocked JWT resolution."""
-    with patch("tickerscope._client.resolve_jwt", return_value=FAKE_JWT):
-        client = AsyncTickerScopeClient(jwt=FAKE_JWT)
-    yield client
-    await client.aclose()
 
 
 # ── Sync client tests ──────────────────────────────────────────────
@@ -69,7 +48,7 @@ def test_is_token_expired_property_returns_bool(sync_client):
     ) as mock_check:
         result = sync_client.is_token_expired
     assert result is True
-    mock_check.assert_called_once_with(FAKE_JWT)
+    mock_check.assert_called_once_with(sync_client._jwt)
 
 
 # ── Async client tests ─────────────────────────────────────────────

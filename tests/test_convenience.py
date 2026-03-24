@@ -2,22 +2,9 @@
 
 from __future__ import annotations
 
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
-from unittest.mock import patch, MagicMock, AsyncMock
-
-FAKE_JWT = "fake.jwt.token"
-
-
-# ── Fixtures ──────────────────────────────────────────────────────────
-
-
-@pytest.fixture
-def sync_client():
-    """Create a sync TickerScopeClient with a fake JWT."""
-    with patch("tickerscope._client.resolve_jwt", return_value=FAKE_JWT):
-        from tickerscope import TickerScopeClient
-
-        return TickerScopeClient(jwt=FAKE_JWT)
 
 
 # ── Sync: get_watchlist_by_name ───────────────────────────────────────
@@ -101,83 +88,67 @@ def test_get_screen_by_name_raises_on_not_found(sync_client):
 
 
 @pytest.mark.asyncio
-async def test_async_get_watchlist_by_name_returns_detail():
+async def test_async_get_watchlist_by_name_returns_detail(async_client):
     """Return full WatchlistDetail when a matching name is found (async)."""
-    from tickerscope import AsyncTickerScopeClient, WatchlistDetail, WatchlistSummary
-
-    with patch("tickerscope._client.resolve_jwt", return_value=FAKE_JWT):
-        client = AsyncTickerScopeClient(jwt=FAKE_JWT)
+    from tickerscope import WatchlistDetail, WatchlistSummary
 
     mock_summary = MagicMock(spec=WatchlistSummary)
     mock_summary.name = "My Watchlist"
     mock_summary.id = "abc123"
     mock_detail = MagicMock(spec=WatchlistDetail)
 
-    client.get_watchlist_names = AsyncMock(return_value=[mock_summary])
-    client.get_watchlist_symbols = AsyncMock(return_value=mock_detail)
+    async_client.get_watchlist_names = AsyncMock(return_value=[mock_summary])
+    async_client.get_watchlist_symbols = AsyncMock(return_value=mock_detail)
 
-    result = await client.get_watchlist_by_name("My Watchlist")
+    result = await async_client.get_watchlist_by_name("My Watchlist")
     assert result is mock_detail
-    client.get_watchlist_symbols.assert_called_once_with("abc123")
-    await client.aclose()
+    async_client.get_watchlist_symbols.assert_called_once_with("abc123")
 
 
 @pytest.mark.asyncio
-async def test_async_get_watchlist_by_name_raises_on_not_found():
+async def test_async_get_watchlist_by_name_raises_on_not_found(async_client):
     """Raise APIError when no watchlist matches the given name (async)."""
-    from tickerscope import AsyncTickerScopeClient, APIError, WatchlistSummary
-
-    with patch("tickerscope._client.resolve_jwt", return_value=FAKE_JWT):
-        client = AsyncTickerScopeClient(jwt=FAKE_JWT)
+    from tickerscope import APIError, WatchlistSummary
 
     mock_summary = MagicMock(spec=WatchlistSummary)
     mock_summary.name = "Other Watchlist"
     mock_summary.id = "abc123"
 
-    client.get_watchlist_names = AsyncMock(return_value=[mock_summary])
+    async_client.get_watchlist_names = AsyncMock(return_value=[mock_summary])
 
     with pytest.raises(APIError, match="No watchlist found with name"):
-        await client.get_watchlist_by_name("Missing Watchlist")
-    await client.aclose()
+        await async_client.get_watchlist_by_name("Missing Watchlist")
 
 
 # ── Async: get_screen_by_name ────────────────────────────────────────
 
 
 @pytest.mark.asyncio
-async def test_async_get_screen_by_name_returns_screen():
+async def test_async_get_screen_by_name_returns_screen(async_client):
     """Return the matching Screen object when found (async)."""
-    from tickerscope import AsyncTickerScopeClient, Screen
-
-    with patch("tickerscope._client.resolve_jwt", return_value=FAKE_JWT):
-        client = AsyncTickerScopeClient(jwt=FAKE_JWT)
+    from tickerscope import Screen
 
     mock_screen = MagicMock(spec=Screen)
     mock_screen.name = "My Growth Screen"
 
-    client.get_screens = AsyncMock(return_value=[mock_screen])
+    async_client.get_screens = AsyncMock(return_value=[mock_screen])
 
-    result = await client.get_screen_by_name("My Growth Screen")
+    result = await async_client.get_screen_by_name("My Growth Screen")
     assert result is mock_screen
-    await client.aclose()
 
 
 @pytest.mark.asyncio
-async def test_async_get_screen_by_name_raises_on_not_found():
+async def test_async_get_screen_by_name_raises_on_not_found(async_client):
     """Raise APIError when no screen matches the given name (async)."""
-    from tickerscope import AsyncTickerScopeClient, APIError, Screen
-
-    with patch("tickerscope._client.resolve_jwt", return_value=FAKE_JWT):
-        client = AsyncTickerScopeClient(jwt=FAKE_JWT)
+    from tickerscope import APIError, Screen
 
     mock_screen = MagicMock(spec=Screen)
     mock_screen.name = "Other Screen"
 
-    client.get_screens = AsyncMock(return_value=[mock_screen])
+    async_client.get_screens = AsyncMock(return_value=[mock_screen])
 
     with pytest.raises(APIError, match="No screen found with name"):
-        await client.get_screen_by_name("Missing Screen")
-    await client.aclose()
+        await async_client.get_screen_by_name("Missing Screen")
 
 
 # ── Sync: screen_watchlist_by_name ────────────────────────────────────
@@ -250,12 +221,9 @@ def test_screen_watchlist_by_name_raises_on_none_id(sync_client):
 
 
 @pytest.mark.asyncio
-async def test_async_screen_watchlist_by_name_returns_entries():
+async def test_async_screen_watchlist_by_name_returns_entries(async_client):
     """Return list of WatchlistEntry when a matching name is found (async)."""
-    from tickerscope import AsyncTickerScopeClient, WatchlistEntry, WatchlistSummary
-
-    with patch("tickerscope._client.resolve_jwt", return_value=FAKE_JWT):
-        client = AsyncTickerScopeClient(jwt=FAKE_JWT)
+    from tickerscope import WatchlistEntry, WatchlistSummary
 
     mock_summary = MagicMock(spec=WatchlistSummary)
     mock_summary.name = "My Watchlist"
@@ -263,70 +231,57 @@ async def test_async_screen_watchlist_by_name_returns_entries():
     mock_entry = MagicMock(spec=WatchlistEntry)
     mock_entries = [mock_entry]
 
-    client.get_watchlist_names = AsyncMock(return_value=[mock_summary])
-    client.get_watchlist = AsyncMock(return_value=mock_entries)
+    async_client.get_watchlist_names = AsyncMock(return_value=[mock_summary])
+    async_client.get_watchlist = AsyncMock(return_value=mock_entries)
 
-    result = await client.screen_watchlist_by_name("My Watchlist")
+    result = await async_client.screen_watchlist_by_name("My Watchlist")
     assert result is mock_entries
-    client.get_watchlist.assert_called_once_with(123, limit=None)
-    await client.aclose()
+    async_client.get_watchlist.assert_called_once_with(123, limit=None)
 
 
 @pytest.mark.asyncio
-async def test_async_screen_watchlist_by_name_with_limit():
+async def test_async_screen_watchlist_by_name_with_limit(async_client):
     """Pass limit parameter through to get_watchlist() (async)."""
-    from tickerscope import AsyncTickerScopeClient, WatchlistEntry, WatchlistSummary
-
-    with patch("tickerscope._client.resolve_jwt", return_value=FAKE_JWT):
-        client = AsyncTickerScopeClient(jwt=FAKE_JWT)
+    from tickerscope import WatchlistEntry, WatchlistSummary
 
     mock_summary = MagicMock(spec=WatchlistSummary)
     mock_summary.name = "My Watchlist"
     mock_summary.id = 123
     mock_entries = [MagicMock(spec=WatchlistEntry)]
 
-    client.get_watchlist_names = AsyncMock(return_value=[mock_summary])
-    client.get_watchlist = AsyncMock(return_value=mock_entries)
+    async_client.get_watchlist_names = AsyncMock(return_value=[mock_summary])
+    async_client.get_watchlist = AsyncMock(return_value=mock_entries)
 
-    result = await client.screen_watchlist_by_name("My Watchlist", limit=10)
+    result = await async_client.screen_watchlist_by_name("My Watchlist", limit=10)
     assert result is mock_entries
-    client.get_watchlist.assert_called_once_with(123, limit=10)
-    await client.aclose()
+    async_client.get_watchlist.assert_called_once_with(123, limit=10)
 
 
 @pytest.mark.asyncio
-async def test_async_screen_watchlist_by_name_raises_on_not_found():
+async def test_async_screen_watchlist_by_name_raises_on_not_found(async_client):
     """Raise APIError when no watchlist matches the given name (async)."""
-    from tickerscope import AsyncTickerScopeClient, APIError, WatchlistSummary
-
-    with patch("tickerscope._client.resolve_jwt", return_value=FAKE_JWT):
-        client = AsyncTickerScopeClient(jwt=FAKE_JWT)
+    from tickerscope import APIError, WatchlistSummary
 
     mock_summary = MagicMock(spec=WatchlistSummary)
     mock_summary.name = "Other Watchlist"
     mock_summary.id = 123
 
-    client.get_watchlist_names = AsyncMock(return_value=[mock_summary])
+    async_client.get_watchlist_names = AsyncMock(return_value=[mock_summary])
 
     with pytest.raises(APIError, match="No watchlist found with name"):
-        await client.screen_watchlist_by_name("Missing Watchlist")
-    await client.aclose()
+        await async_client.screen_watchlist_by_name("Missing Watchlist")
 
 
 @pytest.mark.asyncio
-async def test_async_screen_watchlist_by_name_raises_on_none_id():
+async def test_async_screen_watchlist_by_name_raises_on_none_id(async_client):
     """Raise APIError when the matching watchlist has no ID (async)."""
-    from tickerscope import AsyncTickerScopeClient, APIError, WatchlistSummary
-
-    with patch("tickerscope._client.resolve_jwt", return_value=FAKE_JWT):
-        client = AsyncTickerScopeClient(jwt=FAKE_JWT)
+    from tickerscope import APIError, WatchlistSummary
 
     mock_summary = MagicMock(spec=WatchlistSummary)
     mock_summary.name = "My Watchlist"
     mock_summary.id = None
 
-    client.get_watchlist_names = AsyncMock(return_value=[mock_summary])
+    async_client.get_watchlist_names = AsyncMock(return_value=[mock_summary])
 
     with pytest.raises(APIError, match="has no ID"):
-        await client.screen_watchlist_by_name("My Watchlist")
-    await client.aclose()
+        await async_client.screen_watchlist_by_name("My Watchlist")

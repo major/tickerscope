@@ -1,11 +1,14 @@
 """Pytest configuration and shared fixtures for MarketSurge tests."""
 
 import json
-import pathlib
+from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
-FIXTURES_DIR = pathlib.Path(__file__).parent / "fixtures"
+from tickerscope._client import AsyncTickerScopeClient, TickerScopeClient
+
+FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
 
 def _json_fixture(filename: str):
@@ -31,3 +34,28 @@ active_alerts_response = _json_fixture("active_alerts_response.json")
 triggered_alerts_response = _json_fixture("triggered_alerts_response.json")
 layouts_response = _json_fixture("layouts_response.json")
 chart_markups_response = _json_fixture("chart_markups_response.json")
+
+
+# ---------------------------------------------------------------------------
+# Client fixtures
+# ---------------------------------------------------------------------------
+
+FAKE_JWT = "fake-jwt"
+
+
+@pytest.fixture
+def sync_client():
+    """Create a sync TickerScopeClient with mocked authentication."""
+    with patch("tickerscope._client.resolve_jwt", return_value=FAKE_JWT):
+        client = TickerScopeClient()
+    yield client
+    client.close()
+
+
+@pytest.fixture
+async def async_client():
+    """Create an async TickerScopeClient with mocked authentication."""
+    with patch("tickerscope._client.resolve_jwt", return_value=FAKE_JWT):
+        client = AsyncTickerScopeClient()
+    yield client
+    await client.aclose()

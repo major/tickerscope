@@ -10,26 +10,15 @@ import respx  # pyright: ignore[reportMissingImports]
 
 from tickerscope._client import TickerScopeClient  # pyright: ignore[reportMissingImports]
 
-FAKE_JWT = "fake_jwt_token_for_testing"
-
-
-@pytest.fixture
-def client(stock_response):
-    """Create a TickerScopeClient with mocked authentication."""
-    with patch("tickerscope._client.resolve_jwt", return_value=FAKE_JWT):
-        c = TickerScopeClient()
-    yield c
-    c.close()
-
 
 @respx.mock
-def test_get_stock_returns_stock_data(client, stock_response):
+def test_get_stock_returns_stock_data(sync_client, stock_response):
     """Test that get_stock() parses GraphQL response into StockData."""
     respx.post("https://shared-data.dowjones.io/gateway/graphql").mock(
         return_value=httpx.Response(200, json=stock_response)
     )
 
-    stock = client.get_stock("TEST")
+    stock = sync_client.get_stock("TEST")
 
     assert stock.symbol == "TEST"
     assert stock.ratings is not None
@@ -37,7 +26,7 @@ def test_get_stock_returns_stock_data(client, stock_response):
 
 
 @respx.mock
-def test_get_watchlist_returns_entries(client):
+def test_get_watchlist_returns_entries(sync_client):
     """Test that get_watchlist() parses GraphQL response into WatchlistEntry list."""
     mock_response = {
         "data": {
@@ -56,14 +45,14 @@ def test_get_watchlist_returns_entries(client):
         return_value=httpx.Response(200, json=mock_response)
     )
 
-    entries = client.get_watchlist(12345)
+    entries = sync_client.get_watchlist(12345)
 
     assert len(entries) == 1
     assert entries[0].symbol == "AAPL"
 
 
 @respx.mock
-def test_get_ownership_returns_ownership_data(client):
+def test_get_ownership_returns_ownership_data(sync_client):
     """Test that get_ownership() parses GraphQL response into OwnershipData."""
     mock_response = {
         "data": {
@@ -86,7 +75,7 @@ def test_get_ownership_returns_ownership_data(client):
         return_value=httpx.Response(200, json=mock_response)
     )
 
-    ownership = client.get_ownership("AAPL")
+    ownership = sync_client.get_ownership("AAPL")
 
     assert ownership.symbol == "AAPL"
     assert ownership.funds_float_pct == "42.5%"
@@ -94,7 +83,7 @@ def test_get_ownership_returns_ownership_data(client):
 
 def test_context_manager_calls_close():
     """Test that context manager calls close() on exit."""
-    with patch("tickerscope._client.resolve_jwt", return_value=FAKE_JWT):
+    with patch("tickerscope._client.resolve_jwt", return_value="fake-jwt"):
         with TickerScopeClient() as client:
             assert client._http is not None
 
@@ -102,7 +91,7 @@ def test_context_manager_calls_close():
 
 
 @respx.mock
-def test_http_error_raises(client):
+def test_http_error_raises(sync_client):
     """Test that HTTP errors are wrapped in HTTPError."""
     from tickerscope._exceptions import HTTPError
 
@@ -111,7 +100,7 @@ def test_http_error_raises(client):
     )
 
     with pytest.raises(HTTPError):
-        client.get_stock("AAPL")
+        sync_client.get_stock("AAPL")
 
 
 def test_client_api_surface():
