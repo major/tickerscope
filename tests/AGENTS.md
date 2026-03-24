@@ -26,7 +26,6 @@ tests/
   test_str_methods.py      # __str__ implementations
   test_parsing.py          # parse_* functions
   test_caching.py          # Cache hit/miss verification
-  test_pagination.py       # Pagination logic
   test_convenience.py      # get_by_name helpers
   test_capabilities.py     # Feature detection
   test_screens.py          # Screens endpoint

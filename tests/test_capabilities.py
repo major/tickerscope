@@ -13,7 +13,6 @@ REQUIRED_METHOD_KEYS = {
     "name",
     "parameters",
     "return_type",
-    "supports_limit",
 }
 
 KNOWN_METHODS = [
@@ -67,7 +66,7 @@ class TestCapabilitiesStructure:
         assert len(caps["methods"]) >= 15
 
     def test_each_method_has_required_keys(self, caps: dict) -> None:
-        """Every method dict contains name, parameters, return_type, and supports_limit."""
+        """Every method dict contains name, parameters, and return_type."""
         for method in caps["methods"]:
             missing = REQUIRED_METHOD_KEYS - method.keys()
             assert not missing, (
@@ -79,13 +78,6 @@ class TestCapabilitiesStructure:
         for method in caps["methods"]:
             assert isinstance(method["name"], str)
             assert len(method["name"]) > 0
-
-    def test_supports_limit_is_bool(self, caps: dict) -> None:
-        """supports_limit is a boolean for every method."""
-        for method in caps["methods"]:
-            assert isinstance(method["supports_limit"], bool), (
-                f"{method['name']}: supports_limit is {type(method['supports_limit'])}"
-            )
 
     def test_return_type_is_str(self, caps: dict) -> None:
         """return_type is a non-empty string for every method."""

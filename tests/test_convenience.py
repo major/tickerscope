@@ -169,24 +169,7 @@ def test_screen_watchlist_by_name_returns_entries(sync_client):
 
     result = sync_client.screen_watchlist_by_name("My Watchlist")
     assert result is mock_entries
-    sync_client.get_watchlist.assert_called_once_with(123, limit=None)
-
-
-def test_screen_watchlist_by_name_with_limit(sync_client):
-    """Pass limit parameter through to get_watchlist()."""
-    from tickerscope import WatchlistEntry, WatchlistSummary
-
-    mock_summary = MagicMock(spec=WatchlistSummary)
-    mock_summary.name = "My Watchlist"
-    mock_summary.id = 123
-    mock_entries = [MagicMock(spec=WatchlistEntry)]
-
-    sync_client.get_watchlist_names = MagicMock(return_value=[mock_summary])
-    sync_client.get_watchlist = MagicMock(return_value=mock_entries)
-
-    result = sync_client.screen_watchlist_by_name("My Watchlist", limit=10)
-    assert result is mock_entries
-    sync_client.get_watchlist.assert_called_once_with(123, limit=10)
+    sync_client.get_watchlist.assert_called_once_with(123)
 
 
 def test_screen_watchlist_by_name_raises_on_not_found(sync_client):
@@ -236,25 +219,7 @@ async def test_async_screen_watchlist_by_name_returns_entries(async_client):
 
     result = await async_client.screen_watchlist_by_name("My Watchlist")
     assert result is mock_entries
-    async_client.get_watchlist.assert_called_once_with(123, limit=None)
-
-
-@pytest.mark.asyncio
-async def test_async_screen_watchlist_by_name_with_limit(async_client):
-    """Pass limit parameter through to get_watchlist() (async)."""
-    from tickerscope import WatchlistEntry, WatchlistSummary
-
-    mock_summary = MagicMock(spec=WatchlistSummary)
-    mock_summary.name = "My Watchlist"
-    mock_summary.id = 123
-    mock_entries = [MagicMock(spec=WatchlistEntry)]
-
-    async_client.get_watchlist_names = AsyncMock(return_value=[mock_summary])
-    async_client.get_watchlist = AsyncMock(return_value=mock_entries)
-
-    result = await async_client.screen_watchlist_by_name("My Watchlist", limit=10)
-    assert result is mock_entries
-    async_client.get_watchlist.assert_called_once_with(123, limit=10)
+    async_client.get_watchlist.assert_called_once_with(123)
 
 
 @pytest.mark.asyncio
