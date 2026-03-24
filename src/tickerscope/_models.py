@@ -885,6 +885,24 @@ class FundamentalData(DataClassDictMixin):
 
 
 @dataclass(frozen=True, slots=True)
+class StockAnalysis(DataClassDictMixin):
+    """Combined stock, fundamentals, and ownership data with partial failures."""
+
+    class Config(BaseConfig):
+        omit_none = True
+
+    def to_json(self) -> str:
+        """Serialize this dataclass to a JSON string."""
+        return json.dumps(self.to_dict())
+
+    symbol: str
+    stock: StockData
+    fundamentals: FundamentalData | None
+    ownership: OwnershipData | None
+    errors: list[str]
+
+
+@dataclass(frozen=True, slots=True)
 class AlertInstrument(DataClassDictMixin):
     """Instrument details from an alert subscription or triggered alert."""
 

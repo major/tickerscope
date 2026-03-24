@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from calendar import monthrange
 from abc import ABC, abstractmethod
@@ -35,6 +36,7 @@ from tickerscope._models import (
     OwnershipData,
     Screen,
     ScreenResult,
+    StockAnalysis,
     StockData,
     TriggeredAlertList,
     WatchlistDetail,
@@ -697,6 +699,12 @@ class BaseTickerScopeClient(ABC):
         payload = self._build_get_fundamentals_payload(symbol)
         return self._graphql_and_parse(payload, parse_fundamentals_response, symbol)
 
+    @abstractmethod
+    def get_stock_analysis(
+        self, symbol: str
+    ) -> StockAnalysis | Awaitable[StockAnalysis]:
+        """Return stock plus optional fundamentals and ownership in one call."""
+
     def get_active_alerts(self, *, limit: int | None = None) -> Any:
         payload = self._build_get_active_alerts_payload()
         result = self._graphql_and_parse(payload, parse_active_alerts_response)
@@ -803,6 +811,31 @@ class TickerScopeClient(BaseTickerScopeClient):
             period=period,
             exchange=exchange,
             max_points=max_points,
+        )
+
+    def get_stock_analysis(self, symbol: str) -> StockAnalysis:
+        """Return stock analysis with partial-failure handling for optional sections."""
+        stock = self.get_stock(symbol)
+        fundamentals = None
+        ownership = None
+        errors: list[str] = []
+
+        try:
+            fundamentals = self.get_fundamentals(symbol)
+        except Exception as exc:
+            errors.append(str(exc))
+
+        try:
+            ownership = self.get_ownership(symbol)
+        except Exception as exc:
+            errors.append(str(exc))
+
+        return StockAnalysis(
+            symbol=symbol,
+            stock=stock,
+            fundamentals=fundamentals,
+            ownership=ownership,
+            errors=errors,
         )
 
     def get_watchlist_by_name(self, name: str) -> WatchlistDetail:
@@ -994,6 +1027,39 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         )
         return _apply_max_points(result, max_points)
 
+    async def get_stock_analysis(self, symbol: str) -> StockAnalysis:
+        """Return stock analysis, tolerating optional endpoint failures."""
+        stock_result, fundamentals_result, ownership_result = await asyncio.gather(
+            self.get_stock(symbol),
+            self.get_fundamentals(symbol),
+            self.get_ownership(symbol),
+            return_exceptions=True,
+        )
+        if isinstance(stock_result, Exception):
+            raise stock_result
+
+        fundamentals = (
+            fundamentals_result
+            if not isinstance(fundamentals_result, Exception)
+            else None
+        )
+        ownership = (
+            ownership_result if not isinstance(ownership_result, Exception) else None
+        )
+        errors: list[str] = []
+        if isinstance(fundamentals_result, Exception):
+            errors.append(str(fundamentals_result))
+        if isinstance(ownership_result, Exception):
+            errors.append(str(ownership_result))
+
+        return StockAnalysis(
+            symbol=symbol,
+            stock=stock_result,
+            fundamentals=fundamentals,
+            ownership=ownership,
+            errors=errors,
+        )
+
     async def get_watchlist(
         self, list_id: int, *, limit: int | None = None
     ) -> list[WatchlistEntry]:
@@ -1164,4 +1230,3 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         if match.id is None:
             raise APIError(f"Watchlist {name!r} has no ID")
         return await self.get_watchlist(match.id, limit=limit)
-

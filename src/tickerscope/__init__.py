@@ -50,6 +50,7 @@ from tickerscope._models import (
     Screen,
     ScreenResult,
     ScreenSource,
+    StockAnalysis,
     StockData,
     TimeSeries,
     TriggeredAlert,
@@ -71,6 +72,7 @@ __all__ = [
     "is_token_expired",
     # Stock models
     "StockData",
+    "StockAnalysis",
     "Ratings",
     "Company",
     "Pricing",
