@@ -14,7 +14,7 @@ def test_parse_watchlists_response(watchlist_names_response) -> None:
     result = parse_watchlists_response(watchlist_names_response)
 
     assert len(result) == 2
-    assert result[0].id == "100000000000001"
+    assert result[0].id == 100000000000001
     assert result[0].name == "My Watchlist"
     assert result[0].last_modified == "2026-01-15T10:00:00.000Z"
     assert result[0].description is None
@@ -38,7 +38,7 @@ def test_parse_watchlist_names_graphql_errors() -> None:
 def test_watchlist_summary_frozen() -> None:
     """WatchlistSummary is immutable (frozen dataclass)."""
     summary = WatchlistSummary(
-        id="1", name="Test", last_modified="2026-01-01T00:00:00Z", description=None
+        id=1, name="Test", last_modified="2026-01-01T00:00:00Z", description=None
     )
 
     with pytest.raises(FrozenInstanceError):

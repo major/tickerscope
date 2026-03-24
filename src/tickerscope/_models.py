@@ -520,7 +520,7 @@ class WatchlistSummary(DataClassDictMixin):
         """Serialize this dataclass to a JSON string."""
         return json.dumps(self.to_dict())
 
-    id: str | None
+    id: int | None
     name: str | None
     last_modified: str | None
     description: str | None

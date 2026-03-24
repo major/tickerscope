@@ -432,7 +432,7 @@ def parse_watchlists_response(raw: dict) -> list[WatchlistSummary]:
     items = raw.get("data", {}).get("watchlists", []) or []
     return [
         WatchlistSummary(
-            id=item.get("id"),
+            id=_to_int(item.get("id")),
             name=item.get("name"),
             last_modified=item.get("lastModifiedDateUtc"),
             description=item.get("description"),

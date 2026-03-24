@@ -522,10 +522,10 @@ class BaseTickerScopeClient(ABC):
         result = self._graphql_and_parse(payload, parse_watchlists_response)
         return _apply_limit(result, limit)
 
-    def get_watchlist_symbols(self, watchlist_id: str) -> Any:
-        payload = self._build_get_watchlist_symbols_payload(watchlist_id)
+    def get_watchlist_symbols(self, watchlist_id: int) -> Any:
+        payload = self._build_get_watchlist_symbols_payload(str(watchlist_id))
         return self._graphql_and_parse(
-            payload, parse_watchlist_detail_response, watchlist_id
+            payload, parse_watchlist_detail_response, str(watchlist_id)
         )
 
     def get_screens(
@@ -814,12 +814,12 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         result = await self._graphql_and_parse(payload, parse_watchlists_response)
         return _apply_limit(result, limit)
 
-    async def get_watchlist_symbols(self, watchlist_id: str) -> WatchlistDetail:
-        payload = self._build_get_watchlist_symbols_payload(watchlist_id)
+    async def get_watchlist_symbols(self, watchlist_id: int) -> WatchlistDetail:
+        payload = self._build_get_watchlist_symbols_payload(str(watchlist_id))
         return await self._graphql_and_parse(
             payload,
             parse_watchlist_detail_response,
-            watchlist_id,
+            str(watchlist_id),
         )
 
     async def get_screens(

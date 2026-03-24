@@ -922,7 +922,7 @@ class TestFromDictRoundTrip:
     def test_watchlist_summary_from_dict(self) -> None:
         """WatchlistSummary.from_dict() round-trip succeeds with datetime field."""
         data = {
-            "id": "wl-100",
+            "id": 100,
             "name": "Test Watchlist",
             "last_modified": "2026-03-15T10:30:00.000Z",
             "description": None,
