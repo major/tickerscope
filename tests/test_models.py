@@ -14,6 +14,7 @@ from tickerscope._models import (
     Pattern,
     PricePercentChanges,
     Pricing,
+    Quote,
     QuarterlyFundOwnership,
     Ratings,
     StockData,
@@ -345,3 +346,49 @@ class TestAllImportable:
         for name in expected_classes:
             cls = getattr(_models, name)
             assert callable(cls), f"{name} is not callable"
+
+
+class TestQuoteCloseAlias:
+    """Tests for Quote.close property alias."""
+
+    def test_close_returns_last_value(self) -> None:
+        """Quote.close returns the same value as Quote.last."""
+        q = Quote(
+            trade_date_time=None,
+            timeliness=None,
+            quote_type=None,
+            last=42.5,
+            volume=None,
+            percent_change=None,
+            net_change=None,
+        )
+        assert q.close == 42.5
+        assert q.close == q.last
+
+    def test_close_is_none_when_last_is_none(self) -> None:
+        """Quote.close returns None when last is None."""
+        q = Quote(
+            trade_date_time=None,
+            timeliness=None,
+            quote_type=None,
+            last=None,
+            volume=None,
+            percent_change=None,
+            net_change=None,
+        )
+        assert q.close is None
+
+    def test_close_not_in_to_dict_output(self) -> None:
+        """Quote.close is a property so it does not appear in to_dict() output."""
+        q = Quote(
+            trade_date_time=None,
+            timeliness=None,
+            quote_type=None,
+            last=42.5,
+            volume=None,
+            percent_change=None,
+            net_change=None,
+        )
+        d = q.to_dict()
+        assert "close" not in d
+        assert "last" in d

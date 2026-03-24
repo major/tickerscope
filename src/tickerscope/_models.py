@@ -190,7 +190,7 @@ class CorporateActions(DataClassDictMixin):
     next_ex_dividend_date: str | None
     dividends: list[Dividend]
     splits: list[str | None]
-    spinoffs: list
+    spinoffs: list[Any]  # Element structure unknown; API always returns empty list in observed responses
 
     @property
     def next_ex_dividend_date_dt(self) -> datetime.date | None:
@@ -690,6 +690,11 @@ class Quote(DataClassDictMixin):
     def trade_date_time_dt(self) -> datetime.datetime | None:
         """Parsed trade_date_time as a datetime object, or None if unavailable."""
         return parse_datetime(self.trade_date_time)
+
+    @property
+    def close(self) -> float | None:
+        """Price alias for `last` using standard OHLCV field naming (see DataPoint.close)."""
+        return self.last
 
 
 @dataclass(frozen=True, slots=True)
