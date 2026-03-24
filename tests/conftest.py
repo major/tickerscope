@@ -8,85 +8,26 @@ import pytest
 FIXTURES_DIR = pathlib.Path(__file__).parent / "fixtures"
 
 
-@pytest.fixture
-def stock_response():
-    """Load the stock response fixture from JSON."""
-    with open(FIXTURES_DIR / "stock_response.json") as f:
-        return json.load(f)
+def _json_fixture(filename: str):
+    """Create a pytest fixture that loads a JSON file from the fixtures directory."""
+
+    @pytest.fixture(name=filename.removesuffix(".json"))
+    def _load():
+        with open(FIXTURES_DIR / filename) as f:
+            return json.load(f)
+
+    return _load
 
 
-@pytest.fixture
-def stock_extracted():
-    """Load the stock extracted fixture from JSON."""
-    with open(FIXTURES_DIR / "stock_extracted.json") as f:
-        return json.load(f)
-
-
-@pytest.fixture
-def watchlist_names_response():
-    """Load the watchlist names response fixture from JSON."""
-    with open(FIXTURES_DIR / "watchlist_names_response.json") as f:
-        return json.load(f)
-
-
-@pytest.fixture
-def flagged_symbols_response():
-    """Load the flagged symbols response fixture from JSON."""
-    with open(FIXTURES_DIR / "flagged_symbols_response.json") as f:
-        return json.load(f)
-
-
-@pytest.fixture
-def screens_response():
-    """Load the screens response fixture from JSON."""
-    with open(FIXTURES_DIR / "screens_response.json") as f:
-        return json.load(f)
-
-
-@pytest.fixture
-def screen_result_response():
-    """Load the screen result response fixture from JSON."""
-    with open(FIXTURES_DIR / "screen_result_response.json") as f:
-        return json.load(f)
-
-
-@pytest.fixture
-def chart_data_response():
-    """Load the chart data response fixture from JSON."""
-    with open(FIXTURES_DIR / "chart_data_response.json") as f:
-        return json.load(f)
-
-
-@pytest.fixture
-def fundamentals_response():
-    """Load the fundamentals response fixture from JSON."""
-    with open(FIXTURES_DIR / "fundamentals_response.json") as f:
-        return json.load(f)
-
-
-@pytest.fixture
-def active_alerts_response():
-    """Load the active alerts response fixture from JSON."""
-    with open(FIXTURES_DIR / "active_alerts_response.json") as f:
-        return json.load(f)
-
-
-@pytest.fixture
-def triggered_alerts_response():
-    """Load the triggered alerts response fixture from JSON."""
-    with open(FIXTURES_DIR / "triggered_alerts_response.json") as f:
-        return json.load(f)
-
-
-@pytest.fixture
-def layouts_response():
-    """Load the layouts response fixture from JSON."""
-    with open(FIXTURES_DIR / "layouts_response.json") as f:
-        return json.load(f)
-
-
-@pytest.fixture
-def chart_markups_response():
-    """Load the chart markups response fixture from JSON."""
-    with open(FIXTURES_DIR / "chart_markups_response.json") as f:
-        return json.load(f)
+stock_response = _json_fixture("stock_response.json")
+stock_extracted = _json_fixture("stock_extracted.json")
+watchlist_names_response = _json_fixture("watchlist_names_response.json")
+flagged_symbols_response = _json_fixture("flagged_symbols_response.json")
+screens_response = _json_fixture("screens_response.json")
+screen_result_response = _json_fixture("screen_result_response.json")
+chart_data_response = _json_fixture("chart_data_response.json")
+fundamentals_response = _json_fixture("fundamentals_response.json")
+active_alerts_response = _json_fixture("active_alerts_response.json")
+triggered_alerts_response = _json_fixture("triggered_alerts_response.json")
+layouts_response = _json_fixture("layouts_response.json")
+chart_markups_response = _json_fixture("chart_markups_response.json")
