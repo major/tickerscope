@@ -19,8 +19,8 @@ REQUIRED_METHOD_KEYS = {
 KNOWN_METHODS = [
     "get_stock",
     "get_chart_data",
-    "screen_watchlist",
-    "get_watchlists",
+    "get_watchlist",
+    "get_watchlist_names",
     "get_watchlist_symbols",
     "get_screens",
     "run_screen",

@@ -107,8 +107,8 @@ async def main():
 | `get_chart_data(symbol, ...)` | `ChartData` | OHLCV time series and quotes |
 | `get_fundamentals(symbol)` | `FundamentalData` | Earnings/sales reported and estimates |
 | `get_ownership(symbol)` | `OwnershipData` | Institutional fund ownership |
-| `screen_watchlist(list_id)` | `list[WatchlistEntry]` | Screen a watchlist for stock data |
-| `get_watchlists()` | `list[WatchlistSummary]` | All user watchlists |
+| `get_watchlist(list_id)` | `list[WatchlistEntry]` | Screen a watchlist for stock data |
+| `get_watchlist_names()` | `list[WatchlistSummary]` | All user watchlists |
 | `get_watchlist_symbols(id)` | `WatchlistDetail` | Symbol keys in a watchlist |
 | `get_watchlist_by_name(name)` | `WatchlistDetail` | Look up watchlist by name |
 | `get_screens()` | `list[Screen]` | Saved stock screens |
