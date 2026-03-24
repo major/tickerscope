@@ -171,10 +171,10 @@ class TestFormattedSuffixDrop:
     """Verify raw fields are dropped when their _formatted counterpart exists."""
 
     def test_raw_dropped_when_formatted_present(self) -> None:
-        """market_cap is dropped when market_cap_formatted is non-None."""
+        """market_cap is kept when market_cap_formatted is non-None."""
         p = _minimal_pricing(market_cap=3.2e12, market_cap_formatted="$3.2T")
         d = p.to_dict()
-        assert "market_cap" not in d
+        assert "market_cap" in d
         assert d.get("market_cap_formatted") == "$3.2T"
 
     def test_raw_kept_when_formatted_none(self) -> None:
@@ -185,7 +185,7 @@ class TestFormattedSuffixDrop:
         assert "market_cap_formatted" not in d
 
     def test_all_5_pricing_pairs_dropped(self) -> None:
-        """All 5 raw/formatted pairs in Pricing drop the raw value correctly."""
+        """All 5 raw/formatted pairs in Pricing keep both raw and formatted values."""
         p = _minimal_pricing(
             market_cap=3.2e12,
             market_cap_formatted="$3.2T",
@@ -206,10 +206,10 @@ class TestFormattedSuffixDrop:
             "atr_percent_21d",
             "short_interest_percent_float",
         ]:
-            assert raw not in d, f"{raw} should be dropped"
+            assert raw in d, f"{raw} should be present"
 
     def test_company_ipo_price_dropped(self) -> None:
-        """Company.ipo_price is dropped when ipo_price_formatted is present."""
+        """Company.ipo_price is kept when ipo_price_formatted is present."""
         c = Company(
             name="Acme",
             industry=None,
@@ -227,11 +227,11 @@ class TestFormattedSuffixDrop:
             ipo_price_formatted="$25.00",
         )
         d = c.to_dict()
-        assert "ipo_price" not in d
+        assert "ipo_price" in d
         assert d["ipo_price_formatted"] == "$25.00"
 
     def test_pattern_pivot_price_dropped(self) -> None:
-        """Pattern.pivot_price is dropped when pivot_price_formatted is present."""
+        """Pattern.pivot_price is kept when pivot_price_formatted is present."""
         p = Pattern(
             type="Cup",
             stage=1,
@@ -245,14 +245,14 @@ class TestFormattedSuffixDrop:
             base_length=30,
         )
         d = p.to_dict()
-        assert "pivot_price" not in d
+        assert "pivot_price" in d
         assert d["pivot_price_formatted"] == "$150.00"
 
     def test_basic_ownership_funds_float_pct_dropped(self) -> None:
-        """BasicOwnership.funds_float_pct dropped when formatted counterpart exists."""
+        """BasicOwnership.funds_float_pct kept when formatted counterpart exists."""
         o = BasicOwnership(funds_float_pct=43.87, funds_float_pct_formatted="43.87%")
         d = o.to_dict()
-        assert "funds_float_pct" not in d
+        assert "funds_float_pct" in d
         assert d["funds_float_pct_formatted"] == "43.87%"
 
 
@@ -265,7 +265,7 @@ class TestFormattedPrefixDrop:
     """Verify raw fields are dropped when their formatted_ prefix counterpart exists."""
 
     def test_reported_period_drops_raw_when_formatted_present(self) -> None:
-        """ReportedPeriod drops value and pct_change_yoy when formatted versions exist."""
+        """ReportedPeriod keeps value and pct_change_yoy when formatted versions exist."""
         rp = ReportedPeriod(
             value=2.5,
             formatted_value="$2.50",
@@ -275,13 +275,13 @@ class TestFormattedPrefixDrop:
             period_end_date="2024-12-31",
         )
         d = rp.to_dict()
-        assert "value" not in d
-        assert "pct_change_yoy" not in d
+        assert "value" in d
+        assert "pct_change_yoy" in d
         assert d["formatted_value"] == "$2.50"
         assert d["formatted_pct_change"] == "15.2%"
 
     def test_estimate_period_drops_raw_when_formatted_present(self) -> None:
-        """EstimatePeriod drops value and pct_change_yoy when formatted versions exist."""
+        """EstimatePeriod keeps value and pct_change_yoy when formatted versions exist."""
         ep = EstimatePeriod(
             value=3.0,
             formatted_value="$3.00",
@@ -292,8 +292,8 @@ class TestFormattedPrefixDrop:
             revision_direction="UP",
         )
         d = ep.to_dict()
-        assert "value" not in d
-        assert "pct_change_yoy" not in d
+        assert "value" in d
+        assert "pct_change_yoy" in d
 
     def test_reported_period_keeps_raw_when_formatted_none(self) -> None:
         """ReportedPeriod keeps raw value when formatted_value is None."""
@@ -331,7 +331,7 @@ class TestOrphanField:
         d = f.to_dict()
         assert "debt_percent_formatted" in d
         assert d["debt_percent_formatted"] == "12.3%"
-        assert "r_and_d_percent_last_qtr" not in d  # raw dropped since formatted exists
+        assert "r_and_d_percent_last_qtr" in d  # raw kept since formatted exists
 
     def test_debt_percent_formatted_omitted_when_none(self) -> None:
         """Orphan debt_percent_formatted is omitted when None (standard omit_none)."""

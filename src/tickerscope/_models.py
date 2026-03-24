@@ -42,11 +42,6 @@ class Company(DataClassDictMixin):
         """Serialize this dataclass to a JSON string."""
         return json.dumps(self.to_dict())
 
-    def __post_serialize__(self, d: dict) -> dict:
-        if d.get("ipo_price_formatted") is not None:
-            d.pop("ipo_price", None)
-        return d
-
     name: str | None
     industry: str | None
     sector: str | None
@@ -100,19 +95,6 @@ class Pricing(DataClassDictMixin):
     def to_json(self) -> str:
         """Serialize this dataclass to a JSON string."""
         return json.dumps(self.to_dict())
-
-    def __post_serialize__(self, d: dict) -> dict:
-        if d.get("market_cap_formatted") is not None:
-            d.pop("market_cap", None)
-        if d.get("avg_dollar_volume_50d_formatted") is not None:
-            d.pop("avg_dollar_volume_50d", None)
-        if d.get("up_down_volume_ratio_formatted") is not None:
-            d.pop("up_down_volume_ratio", None)
-        if d.get("atr_percent_21d_formatted") is not None:
-            d.pop("atr_percent_21d", None)
-        if d.get("short_interest_percent_float_formatted") is not None:
-            d.pop("short_interest_percent_float", None)
-        return d
 
     market_cap: float | None
     market_cap_formatted: str | None
@@ -227,11 +209,6 @@ class Pattern(DataClassDictMixin):
         """Serialize this dataclass to a JSON string."""
         return json.dumps(self.to_dict())
 
-    def __post_serialize__(self, d: dict) -> dict:
-        if d.get("pivot_price_formatted") is not None:
-            d.pop("pivot_price", None)
-        return d
-
     type: str | None
     stage: int | None
     base_number: int | None
@@ -287,11 +264,6 @@ class BasicOwnership(DataClassDictMixin):
         """Serialize this dataclass to a JSON string."""
         return json.dumps(self.to_dict())
 
-    def __post_serialize__(self, d: dict) -> dict:
-        if d.get("funds_float_pct_formatted") is not None:
-            d.pop("funds_float_pct", None)
-        return d
-
     funds_float_pct: float | None
     funds_float_pct_formatted: str | None
 
@@ -306,11 +278,6 @@ class Fundamentals(DataClassDictMixin):
     def to_json(self) -> str:
         """Serialize this dataclass to a JSON string."""
         return json.dumps(self.to_dict())
-
-    def __post_serialize__(self, d: dict) -> dict:
-        if d.get("r_and_d_percent_last_qtr_formatted") is not None:
-            d.pop("r_and_d_percent_last_qtr", None)
-        return d
 
     r_and_d_percent_last_qtr: float | None
     r_and_d_percent_last_qtr_formatted: str | None
@@ -839,13 +806,6 @@ class ReportedPeriod(DataClassDictMixin):
         """Serialize this dataclass to a JSON string."""
         return json.dumps(self.to_dict())
 
-    def __post_serialize__(self, d: dict) -> dict:
-        if d.get("formatted_value") is not None:
-            d.pop("value", None)
-        if d.get("formatted_pct_change") is not None:
-            d.pop("pct_change_yoy", None)
-        return d
-
     value: float | None
     formatted_value: str | None
     pct_change_yoy: float | None
@@ -869,13 +829,6 @@ class EstimatePeriod(DataClassDictMixin):
     def to_json(self) -> str:
         """Serialize this dataclass to a JSON string."""
         return json.dumps(self.to_dict())
-
-    def __post_serialize__(self, d: dict) -> dict:
-        if d.get("formatted_value") is not None:
-            d.pop("value", None)
-        if d.get("formatted_pct_change") is not None:
-            d.pop("pct_change_yoy", None)
-        return d
 
     value: float | None
     formatted_value: str | None
