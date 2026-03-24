@@ -411,3 +411,51 @@ class TestRoundTrip:
         d = ppc.to_dict()
         reconstructed = PricePercentChanges.from_dict(d)
         assert reconstructed == ppc
+
+
+# ---------------------------------------------------------------------------
+# 10. Runtime omit_none parameter
+# ---------------------------------------------------------------------------
+
+
+class TestOmitNoneParameter:
+    """Tests for runtime omit_none parameter on to_dict() and to_json()."""
+
+    def test_to_dict_default_omits_none_backward_compat(self) -> None:
+        """model.to_dict() with no args omits None fields (backward compat)."""
+        r = Ratings(composite=99, eps=None, rs=None, smr=None, ad=None)
+        d = r.to_dict()
+        assert "composite" in d
+        assert d["composite"] == 99
+        assert "eps" not in d
+
+    def test_to_dict_omit_none_false_includes_nulls(self) -> None:
+        """model.to_dict(omit_none=False) includes None fields as explicit nulls."""
+        r = Ratings(composite=99, eps=None, rs=None, smr=None, ad=None)
+        d = r.to_dict(omit_none=False)
+        assert "composite" in d
+        assert d["composite"] == 99
+        assert "eps" in d
+        assert d["eps"] is None
+        assert "rs" in d
+        assert d["rs"] is None
+
+    def test_to_json_omit_none_false_includes_nulls(self) -> None:
+        """model.to_json(omit_none=False) produces JSON with explicit null values."""
+        r = Ratings(composite=99, eps=None, rs=None, smr=None, ad=None)
+        j = json.loads(r.to_json(omit_none=False))
+        assert "eps" in j
+        assert j["eps"] is None
+
+    def test_nested_propagation_with_real_model(self) -> None:
+        """StockData.to_dict(omit_none=False) propagates nulls to nested Ratings."""
+        s = _minimal_stock(
+            ratings=Ratings(composite=99, eps=None, rs=None, smr=None, ad=None),
+        )
+        d = s.to_dict(omit_none=False)
+        assert "ratings" in d
+        ratings_dict = d["ratings"]
+        assert "composite" in ratings_dict
+        assert ratings_dict["composite"] == 99
+        assert "eps" in ratings_dict
+        assert ratings_dict["eps"] is None

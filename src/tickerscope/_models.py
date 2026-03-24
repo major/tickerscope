@@ -7,7 +7,7 @@ import json
 from dataclasses import dataclass
 from typing import Any
 
-from mashumaro.config import BaseConfig  # pyright: ignore[reportMissingImports]
+from mashumaro.config import BaseConfig, TO_DICT_ADD_OMIT_NONE_FLAG  # pyright: ignore[reportMissingImports]
 from mashumaro.mixins.dict import DataClassDictMixin  # pyright: ignore[reportMissingImports]
 
 from tickerscope._dates import parse_date, parse_date_list, parse_datetime
@@ -18,11 +18,12 @@ class Ratings(DataClassDictMixin):
     """Stock composite, EPS, RS, SMR, and A/D ratings."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     composite: int | None
     eps: int | None
@@ -36,11 +37,12 @@ class Company(DataClassDictMixin):
     """Company profile information."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     name: str | None
     industry: str | None
@@ -68,11 +70,12 @@ class PricePercentChanges(DataClassDictMixin):
     """Price percent changes vs various reference periods."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     ytd: float | None
     mtd: float | None
@@ -90,11 +93,12 @@ class Pricing(DataClassDictMixin):
     """Pricing statistics and market data."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     market_cap: float | None
     market_cap_formatted: str | None
@@ -127,11 +131,12 @@ class Financials(DataClassDictMixin):
     """Financial metrics and earnings data."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     eps_due_date: str | None
     eps_due_date_status: str | None
@@ -160,11 +165,12 @@ class Dividend(DataClassDictMixin):
     """Individual dividend event."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     ex_date: str | None
     amount: str | None
@@ -181,16 +187,19 @@ class CorporateActions(DataClassDictMixin):
     """Corporate action history (dividends, splits, spinoffs)."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     next_ex_dividend_date: str | None
     dividends: list[Dividend]
     splits: list[str | None]
-    spinoffs: list[Any]  # Element structure unknown; API always returns empty list in observed responses
+    spinoffs: list[
+        Any
+    ]  # Element structure unknown; API always returns empty list in observed responses
 
     @property
     def next_ex_dividend_date_dt(self) -> datetime.date | None:
@@ -203,11 +212,12 @@ class Pattern(DataClassDictMixin):
     """Technical chart pattern detected by MarketSurge."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     type: str | None
     stage: int | None
@@ -241,11 +251,12 @@ class Industry(DataClassDictMixin):
     """Industry group information."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     name: str | None
     sector: str | None
@@ -258,11 +269,12 @@ class BasicOwnership(DataClassDictMixin):
     """Basic fund ownership metrics (from stock data query)."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     funds_float_pct: float | None
     funds_float_pct_formatted: str | None
@@ -273,11 +285,12 @@ class Fundamentals(DataClassDictMixin):
     """Fundamental financial data."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     r_and_d_percent_last_qtr: float | None
     r_and_d_percent_last_qtr_formatted: str | None
@@ -295,11 +308,12 @@ class StockData(DataClassDictMixin):
     """Complete stock data response from the OtherMarketData query."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     symbol: str
     ratings: Ratings | None
@@ -403,11 +417,12 @@ class WatchlistEntry(DataClassDictMixin):
     """Single row from an AdhocScreen watchlist query."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     symbol: str | None
     company_name: str | None
@@ -478,11 +493,12 @@ class QuarterlyFundOwnership(DataClassDictMixin):
     """Fund ownership count for a single quarter."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     date: str | None
     count: str | None
@@ -498,11 +514,12 @@ class OwnershipData(DataClassDictMixin):
     """Complete ownership data response from the Ownership query."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     symbol: str
     funds_float_pct: str | None
@@ -514,11 +531,12 @@ class WatchlistSummary(DataClassDictMixin):
     """Summary of a user watchlist (from GetAllWatchlistNames query)."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     id: int | None
     name: str | None
@@ -536,11 +554,12 @@ class WatchlistSymbol(DataClassDictMixin):
     """Single symbol entry in a watchlist (from FlaggedSymbols query)."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     key: str | None
     dow_jones_key: str | None
@@ -551,11 +570,12 @@ class WatchlistDetail(DataClassDictMixin):
     """Full watchlist with its symbol items (from FlaggedSymbols query)."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     id: str | None
     name: str | None
@@ -574,11 +594,12 @@ class ScreenSource(DataClassDictMixin):
     """Data source linked to a saved screen."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     id: str | None
     type: str | None
@@ -590,11 +611,12 @@ class Screen(DataClassDictMixin):
     """A saved screen definition (from Screens query)."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     id: str | None
     name: str | None
@@ -625,11 +647,12 @@ class ScreenResult(DataClassDictMixin):
     """
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     screen_name: str | None
     elapsed_time: str | None
@@ -642,11 +665,12 @@ class DataPoint(DataClassDictMixin):
     """Single OHLCV data point from a time series."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     start_date_time: str
     end_date_time: str
@@ -672,11 +696,12 @@ class Quote(DataClassDictMixin):
     """Real-time or extended-hours quote data."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     trade_date_time: str | None
     timeliness: str | None
@@ -702,11 +727,12 @@ class TimeSeries(DataClassDictMixin):
     """Time series container with period and data points."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     period: str
     data_points: list[DataPoint]
@@ -717,11 +743,12 @@ class ExchangeHoliday(DataClassDictMixin):
     """Exchange holiday entry."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     name: str
     holiday_type: str | None
@@ -745,11 +772,12 @@ class ExchangeInfo(DataClassDictMixin):
     """Exchange metadata and holiday schedule."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     city: str | None
     country_code: str | None
@@ -762,11 +790,12 @@ class ChartData(DataClassDictMixin):
     """Complete chart data response from the ChartMarketData query."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     symbol: str
     time_series: TimeSeries | None
@@ -805,11 +834,12 @@ class ReportedPeriod(DataClassDictMixin):
     """Historical reported earnings or sales for a single annual period."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     value: float | None
     formatted_value: str | None
@@ -829,11 +859,12 @@ class EstimatePeriod(DataClassDictMixin):
     """Future EPS or sales estimate for a single annual period."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     value: float | None
     formatted_value: str | None
@@ -849,11 +880,12 @@ class FundamentalData(DataClassDictMixin):
     """Fundamental financial data from the FundermentalDataBox query."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     symbol: str
     company_name: str | None
@@ -894,11 +926,12 @@ class StockAnalysis(DataClassDictMixin):
     """Combined stock, fundamentals, and ownership data with partial failures."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     symbol: str
     stock: StockData
@@ -912,11 +945,12 @@ class AlertInstrument(DataClassDictMixin):
     """Instrument details from an alert subscription or triggered alert."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     djid: str | None
     ticker: str | None
@@ -928,11 +962,12 @@ class AlertTerm(DataClassDictMixin):
     """Alert trigger criteria term (value/operator/field with optional instrument)."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     value: str | None
     operator: str | None
@@ -945,11 +980,12 @@ class AlertCriteria(DataClassDictMixin):
     """Full alert criteria including type and trigger term."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     criteria_id: str
     engine: str | None
@@ -963,11 +999,12 @@ class DeliveryPreference(DataClassDictMixin):
     """Alert delivery method and timing."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     method: str
     type: str
@@ -978,11 +1015,12 @@ class AlertSubscription(DataClassDictMixin):
     """A single active alert subscription."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     delivery_preferences: list[DeliveryPreference]
     criteria: AlertCriteria | None
@@ -1000,11 +1038,12 @@ class AlertSubscriptionList(DataClassDictMixin):
     """Collection of active alert subscriptions with quota info."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     subscriptions: list[AlertSubscription]
     num_subscriptions: int
@@ -1016,11 +1055,12 @@ class TriggeredAlertTerm(DataClassDictMixin):
     """Alert trigger criteria term from a triggered alert (includes dj_key)."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     value: str | None
     operator: str | None
@@ -1034,11 +1074,12 @@ class TriggeredAlert(DataClassDictMixin):
     """A single triggered/fired alert with its payload."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     alert_id: str
     alert_type: str | None
@@ -1065,11 +1106,12 @@ class TriggeredAlertList(DataClassDictMixin):
     """Collection of triggered alerts with pagination cursor."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     cursor_id: str | None
     alerts: list[TriggeredAlert]
@@ -1080,11 +1122,12 @@ class LayoutColumn(DataClassDictMixin):
     """Single column in a market data layout."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     md_item_id: str
     name: str
@@ -1098,11 +1141,12 @@ class Layout(DataClassDictMixin):
     """User-saved market data column layout."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     id: str
     name: str
@@ -1115,11 +1159,12 @@ class ChartMarkup(DataClassDictMixin):
     """User-saved chart markup/annotation."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     id: str
     name: str | None
@@ -1145,11 +1190,12 @@ class ChartMarkupList(DataClassDictMixin):
     """Paginated collection of chart markups."""
 
     class Config(BaseConfig):
-        omit_none = True
+            omit_none = True
+            code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
 
-    def to_json(self) -> str:
-        """Serialize this dataclass to a JSON string."""
-        return json.dumps(self.to_dict())
+    def to_json(self, *, omit_none: bool = True) -> str:
+            """Serialize this dataclass to a JSON string."""
+            return json.dumps(self.to_dict(omit_none=omit_none))
 
     cursor_id: str | None
     markups: list[ChartMarkup]
