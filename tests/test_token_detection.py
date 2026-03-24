@@ -53,10 +53,12 @@ def test_graphql_403_raises_authentication_error(sync_client):
 
 
 @respx.mock
-def test_graphql_500_still_raises_httpx_error(sync_client):
-    """Test that HTTP 500 still raises httpx.HTTPStatusError (no wrapping)."""
+def test_graphql_500_raises_httperror(sync_client):
+    """Test that HTTP 500 is wrapped in HTTPError."""
+    from tickerscope._exceptions import HTTPError
+
     respx.post(GRAPHQL_URL).mock(return_value=httpx.Response(500))
-    with pytest.raises(httpx.HTTPStatusError):
+    with pytest.raises(HTTPError):
         sync_client._graphql({"query": "{ test }"})
 
 
@@ -95,8 +97,10 @@ async def test_async_graphql_403_raises_authentication_error(async_client):
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_async_graphql_500_still_raises_httpx_error(async_client):
-    """Test that async HTTP 500 still raises httpx.HTTPStatusError (no wrapping)."""
+async def test_async_graphql_500_raises_httperror(async_client):
+    """Test that async HTTP 500 is wrapped in HTTPError."""
+    from tickerscope._exceptions import HTTPError
+
     respx.post(GRAPHQL_URL).mock(return_value=httpx.Response(500))
-    with pytest.raises(httpx.HTTPStatusError):
+    with pytest.raises(HTTPError):
         await async_client._graphql({"query": "{ test }"})

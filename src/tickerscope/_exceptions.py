@@ -139,3 +139,41 @@ class SymbolNotFoundError(APIError):
         if self.symbol is not None:
             d["symbol"] = self.symbol
         return d
+
+
+class HTTPError(TickerScopeError):
+    """Raised when an HTTP request returns a non-401/403 error status code.
+
+    Attributes:
+        status_code: HTTP status code from the response.
+        response_body: Raw response body text.
+        message: Error message describing the HTTP error.
+    """
+
+    def __init__(
+        self,
+        *,
+        status_code: int,
+        response_body: str,
+        message: str,
+    ) -> None:
+        """Initialize HTTPError.
+
+        Args:
+            status_code: HTTP status code from the response.
+            response_body: Raw response body text.
+            message: Error message describing the HTTP error.
+        """
+        super().__init__(message)
+        self.status_code = status_code
+        self.response_body = response_body
+        self.message = message
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return a structured dict representation of this error."""
+        return {
+            "error_type": "http_error",
+            "status_code": self.status_code,
+            "message": self.message,
+            "response_body": self.response_body,
+        }

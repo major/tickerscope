@@ -103,12 +103,14 @@ def test_context_manager_calls_close():
 
 @respx.mock
 def test_http_error_raises(client):
-    """Test that HTTP errors propagate correctly."""
+    """Test that HTTP errors are wrapped in HTTPError."""
+    from tickerscope._exceptions import HTTPError
+
     respx.post("https://shared-data.dowjones.io/gateway/graphql").mock(
         return_value=httpx.Response(500)
     )
 
-    with pytest.raises(httpx.HTTPStatusError):
+    with pytest.raises(HTTPError):
         client.get_stock("AAPL")
 
 

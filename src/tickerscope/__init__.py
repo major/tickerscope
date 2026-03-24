@@ -10,6 +10,7 @@ from tickerscope._exceptions import (
     APIError,
     AuthenticationError,
     CookieExtractionError,
+    HTTPError,
     TickerScopeError,
     SymbolNotFoundError,
     TokenExpiredError,
@@ -126,4 +127,5 @@ __all__ = [
     "TokenExpiredError",
     "APIError",
     "SymbolNotFoundError",
+    "HTTPError",
 ]

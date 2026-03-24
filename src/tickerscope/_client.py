@@ -18,7 +18,12 @@ from tickerscope._auth import (
     is_token_expired as _is_token_expired,
     resolve_jwt,
 )
-from tickerscope._exceptions import APIError, AuthenticationError, TokenExpiredError
+from tickerscope._exceptions import (
+    APIError,
+    AuthenticationError,
+    HTTPError,
+    TokenExpiredError,
+)
 from tickerscope._models import (
     AlertSubscriptionList,
     ChartData,
@@ -620,7 +625,19 @@ class TickerScopeClient(BaseTickerScopeClient):
                 raise AuthenticationError(
                     "Access denied -- token may lack required permissions (HTTP 403)",
                 ) from exc
-            raise
+            status_code = exc.response.status_code
+            response_body = exc.response.text
+            if status_code == 429:
+                message = "Rate limited, retry after a delay"
+            elif status_code >= 500:
+                message = "MarketSurge server error"
+            else:
+                message = f"HTTP error {status_code}"
+            raise HTTPError(
+                status_code=status_code,
+                response_body=response_body,
+                message=message,
+            ) from exc
         return resp.json()
 
     def get_watchlist_by_name(self, name: str) -> WatchlistDetail:
@@ -725,7 +742,19 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
                 raise AuthenticationError(
                     "Access denied -- token may lack required permissions (HTTP 403)",
                 ) from exc
-            raise
+            status_code = exc.response.status_code
+            response_body = exc.response.text
+            if status_code == 429:
+                message = "Rate limited, retry after a delay"
+            elif status_code >= 500:
+                message = "MarketSurge server error"
+            else:
+                message = f"HTTP error {status_code}"
+            raise HTTPError(
+                status_code=status_code,
+                response_body=response_body,
+                message=message,
+            ) from exc
         return resp.json()
 
     async def _graphql_and_parse(
