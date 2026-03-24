@@ -9,7 +9,6 @@ from typing import Any, Awaitable, Callable
 
 import httpx
 
-from tickerscope._cache import MethodCache
 from tickerscope._auth import (
     DYLAN_TOKEN,
     GRAPHQL_URL,
@@ -114,21 +113,19 @@ class BaseTickerScopeClient(ABC):
         """Return metadata about available client methods and API capabilities.
 
         Returns a JSON-serializable dict describing all methods, their parameters,
-        return types, and caching/pagination support. Can be called without
+        return types, and pagination support. Can be called without
         instantiating a client (no authentication required).
 
         Returns:
-            Dict with keys: auth_required, api_endpoint, async_only_caching, methods.
+            Dict with keys: auth_required, api_endpoint, methods.
         """
         return {
             "auth_required": True,
             "api_endpoint": GRAPHQL_URL,
-            "async_only_caching": True,
             "methods": [
                 {
                     "name": "get_stock",
                     "return_type": "StockData",
-                    "cacheable": True,
                     "supports_limit": False,
                     "parameters": [
                         {"name": "symbol", "type": "str", "required": True},
@@ -143,7 +140,6 @@ class BaseTickerScopeClient(ABC):
                 {
                     "name": "get_chart_data",
                     "return_type": "ChartData",
-                    "cacheable": True,
                     "supports_limit": False,
                     "supports_max_points": True,
                     "parameters": [
@@ -167,7 +163,6 @@ class BaseTickerScopeClient(ABC):
                 {
                     "name": "get_watchlist",
                     "return_type": "list[WatchlistEntry]",
-                    "cacheable": False,
                     "supports_limit": True,
                     "parameters": [
                         {"name": "list_id", "type": "int", "required": True},
@@ -176,7 +171,6 @@ class BaseTickerScopeClient(ABC):
                 {
                     "name": "get_ownership",
                     "return_type": "OwnershipData",
-                    "cacheable": True,
                     "supports_limit": False,
                     "parameters": [
                         {"name": "symbol", "type": "str", "required": True},
@@ -185,14 +179,12 @@ class BaseTickerScopeClient(ABC):
                 {
                     "name": "get_watchlist_names",
                     "return_type": "list[WatchlistSummary]",
-                    "cacheable": True,
                     "supports_limit": True,
                     "parameters": [],
                 },
                 {
                     "name": "get_watchlist_items",
                     "return_type": "WatchlistDetail",
-                    "cacheable": True,
                     "supports_limit": False,
                     "parameters": [
                         {"name": "watchlist_id", "type": "str", "required": True},
@@ -201,7 +193,6 @@ class BaseTickerScopeClient(ABC):
                 {
                     "name": "get_screens",
                     "return_type": "list[Screen]",
-                    "cacheable": True,
                     "supports_limit": True,
                     "parameters": [
                         {
@@ -221,7 +212,6 @@ class BaseTickerScopeClient(ABC):
                 {
                     "name": "run_screen",
                     "return_type": "ScreenResult",
-                    "cacheable": False,
                     "supports_limit": False,
                     "parameters": [
                         {"name": "screen_name", "type": "str", "required": True},
@@ -235,7 +225,6 @@ class BaseTickerScopeClient(ABC):
                 {
                     "name": "get_fundamentals",
                     "return_type": "FundamentalData",
-                    "cacheable": True,
                     "supports_limit": False,
                     "parameters": [
                         {"name": "symbol", "type": "str", "required": True},
@@ -244,28 +233,24 @@ class BaseTickerScopeClient(ABC):
                 {
                     "name": "get_active_alerts",
                     "return_type": "AlertSubscriptionList",
-                    "cacheable": True,
                     "supports_limit": True,
                     "parameters": [],
                 },
                 {
                     "name": "get_triggered_alerts",
                     "return_type": "TriggeredAlertList",
-                    "cacheable": False,
                     "supports_limit": True,
                     "parameters": [],
                 },
                 {
                     "name": "get_layouts",
                     "return_type": "list[Layout]",
-                    "cacheable": True,
                     "supports_limit": True,
                     "parameters": [],
                 },
                 {
                     "name": "get_chart_markups",
                     "return_type": "ChartMarkupList",
-                    "cacheable": True,
                     "supports_limit": True,
                     "parameters": [
                         {"name": "symbol", "type": "str", "required": True},
@@ -286,7 +271,6 @@ class BaseTickerScopeClient(ABC):
                 {
                     "name": "get_watchlist_by_name",
                     "return_type": "WatchlistDetail",
-                    "cacheable": True,
                     "supports_limit": False,
                     "parameters": [
                         {"name": "name", "type": "str", "required": True},
@@ -295,7 +279,6 @@ class BaseTickerScopeClient(ABC):
                 {
                     "name": "get_screen_by_name",
                     "return_type": "Screen",
-                    "cacheable": True,
                     "supports_limit": False,
                     "parameters": [
                         {"name": "name", "type": "str", "required": True},
@@ -709,13 +692,9 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         timeout: float = 30.0,
         *,
         jwt: str | None = None,
-        cache_ttl: int = 0,
     ) -> None:
         self._jwt = resolve_jwt(jwt=jwt, browser=browser, timeout=timeout)
         self._http = httpx.AsyncClient(headers=self._build_headers(self._jwt))
-        self._cache: MethodCache | None = (
-            MethodCache(ttl=cache_ttl) if cache_ttl > 0 else None
-        )
 
     async def __aenter__(self) -> AsyncTickerScopeClient:
         return self
@@ -730,7 +709,6 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         timeout: float = 30.0,
         *,
         jwt: str | None = None,
-        cache_ttl: int = 0,
     ) -> "AsyncTickerScopeClient":
         instance = object.__new__(cls)
         instance._jwt = await async_resolve_jwt(
@@ -739,19 +717,10 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         instance._http = httpx.AsyncClient(
             headers=instance._build_headers(instance._jwt)
         )
-        instance._cache = MethodCache(ttl=cache_ttl) if cache_ttl > 0 else None
         return instance
 
     async def aclose(self) -> None:
         await self._http.aclose()
-
-    async def clear_cache(self) -> None:
-        """Clear all cached method results.
-
-        Safe to call even when caching is disabled (cache_ttl=0).
-        """
-        if self._cache is not None:
-            await self._cache.clear()
 
     async def _graphql(self, payload: dict[str, Any]) -> dict[str, Any]:
         resp = await self._http.post(GRAPHQL_URL, json=payload)
@@ -759,7 +728,6 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
             resp.raise_for_status()
         except httpx.HTTPStatusError as exc:
             if exc.response.status_code == 401:
-                await self.clear_cache()
                 raise TokenExpiredError(
                     "JWT token has expired or is invalid (HTTP 401)",
                     status_code=401,
@@ -784,20 +752,9 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         self,
         symbol: str,
         symbol_dialect_type: str = "CHARTING",
-        *,
-        use_cache: bool = True,
     ) -> StockData:
-        if self._cache is not None and use_cache:
-            key = MethodCache.build_key("get_stock", symbol, symbol_dialect_type)
-            cached = await self._cache.get(key)
-            if cached is not None:
-                return cached
         payload = self._build_get_stock_payload(symbol, symbol_dialect_type)
-        result = await self._graphql_and_parse(payload, parse_stock_response, symbol)
-        if self._cache is not None and use_cache:
-            key = MethodCache.build_key("get_stock", symbol, symbol_dialect_type)
-            await self._cache.set(key, result)
-        return result
+        return await self._graphql_and_parse(payload, parse_stock_response, symbol)
 
     async def get_chart_data(
         self,
@@ -808,20 +765,7 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         period: str = "P1D",
         exchange: str = "NYSE",
         max_points: int | None = None,
-        use_cache: bool = True,
     ) -> ChartData:
-        if self._cache is not None and use_cache:
-            key = MethodCache.build_key(
-                "get_chart_data",
-                symbol,
-                start_date=start_date,
-                end_date=end_date,
-                period=period,
-                exchange=exchange,
-            )
-            cached = await self._cache.get(key)
-            if cached is not None:
-                return _apply_max_points(cached, max_points)
         payload = self._build_get_chart_data_payload(
             symbol,
             start_date=start_date,
@@ -832,16 +776,6 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         result = await self._graphql_and_parse(
             payload, parse_chart_data_response, symbol
         )
-        if self._cache is not None and use_cache:
-            key = MethodCache.build_key(
-                "get_chart_data",
-                symbol,
-                start_date=start_date,
-                end_date=end_date,
-                period=period,
-                exchange=exchange,
-            )
-            await self._cache.set(key, result)
         return _apply_max_points(result, max_points)
 
     async def get_watchlist(
@@ -855,64 +789,28 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
             result = result[:limit]
         return result
 
-    async def get_ownership(
-        self, symbol: str, *, use_cache: bool = True
-    ) -> OwnershipData:
-        if self._cache is not None and use_cache:
-            key = MethodCache.build_key("get_ownership", symbol)
-            cached = await self._cache.get(key)
-            if cached is not None:
-                return cached
+    async def get_ownership(self, symbol: str) -> OwnershipData:
         payload = self._build_get_ownership_payload(symbol)
-        result = await self._graphql_and_parse(
-            payload, parse_ownership_response, symbol
-        )
-        if self._cache is not None and use_cache:
-            key = MethodCache.build_key("get_ownership", symbol)
-            await self._cache.set(key, result)
-        return result
+        return await self._graphql_and_parse(payload, parse_ownership_response, symbol)
 
     async def get_watchlist_names(
-        self, *, limit: int | None = None, use_cache: bool = True
+        self, *, limit: int | None = None
     ) -> list[WatchlistSummary]:
-        if self._cache is not None and use_cache:
-            key = MethodCache.build_key("get_watchlist_names")
-            cached = await self._cache.get(key)
-            if cached is not None:
-                if limit is not None:
-                    if limit < 0:
-                        raise ValueError("limit must be non-negative")
-                    cached = cached[:limit]
-                return cached
         payload = self._build_get_watchlist_names_payload()
         result = await self._graphql_and_parse(payload, parse_watchlist_names_response)
-        if self._cache is not None and use_cache:
-            key = MethodCache.build_key("get_watchlist_names")
-            await self._cache.set(key, result)
         if limit is not None:
             if limit < 0:
                 raise ValueError("limit must be non-negative")
             result = result[:limit]
         return result
 
-    async def get_watchlist_items(
-        self, watchlist_id: str, *, use_cache: bool = True
-    ) -> WatchlistDetail:
-        if self._cache is not None and use_cache:
-            key = MethodCache.build_key("get_watchlist_items", watchlist_id)
-            cached = await self._cache.get(key)
-            if cached is not None:
-                return cached
+    async def get_watchlist_items(self, watchlist_id: str) -> WatchlistDetail:
         payload = self._build_get_watchlist_items_payload(watchlist_id)
-        result = await self._graphql_and_parse(
+        return await self._graphql_and_parse(
             payload,
             parse_watchlist_detail_response,
             watchlist_id,
         )
-        if self._cache is not None and use_cache:
-            key = MethodCache.build_key("get_watchlist_items", watchlist_id)
-            await self._cache.set(key, result)
-        return result
 
     async def get_screens(
         self,
@@ -920,28 +818,11 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         sort_dir: str | None = None,
         *,
         limit: int | None = None,
-        use_cache: bool = True,
     ) -> list[Screen]:
-        if self._cache is not None and use_cache:
-            key = MethodCache.build_key(
-                "get_screens", screen_type=screen_type, sort_dir=sort_dir
-            )
-            cached = await self._cache.get(key)
-            if cached is not None:
-                if limit is not None:
-                    if limit < 0:
-                        raise ValueError("limit must be non-negative")
-                    cached = cached[:limit]
-                return cached
         payload = self._build_get_screens_payload(
             screen_type=screen_type, sort_dir=sort_dir
         )
         result = await self._graphql_and_parse(payload, parse_screens_response)
-        if self._cache is not None and use_cache:
-            key = MethodCache.build_key(
-                "get_screens", screen_type=screen_type, sort_dir=sort_dir
-            )
-            await self._cache.set(key, result)
         if limit is not None:
             if limit < 0:
                 raise ValueError("limit must be non-negative")
@@ -956,40 +837,17 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         payload = self._build_run_screen_payload(screen_name, parameters)
         return await self._graphql_and_parse(payload, parse_screen_result_response)
 
-    async def get_fundamentals(
-        self, symbol: str, *, use_cache: bool = True
-    ) -> FundamentalData:
-        if self._cache is not None and use_cache:
-            key = MethodCache.build_key("get_fundamentals", symbol)
-            cached = await self._cache.get(key)
-            if cached is not None:
-                return cached
+    async def get_fundamentals(self, symbol: str) -> FundamentalData:
         payload = self._build_get_fundamentals_payload(symbol)
-        result = await self._graphql_and_parse(
+        return await self._graphql_and_parse(
             payload, parse_fundamentals_response, symbol
         )
-        if self._cache is not None and use_cache:
-            key = MethodCache.build_key("get_fundamentals", symbol)
-            await self._cache.set(key, result)
-        return result
 
     async def get_active_alerts(
-        self, *, limit: int | None = None, use_cache: bool = True
+        self, *, limit: int | None = None
     ) -> AlertSubscriptionList:
-        if self._cache is not None and use_cache:
-            key = MethodCache.build_key("get_active_alerts")
-            cached = await self._cache.get(key)
-            if cached is not None:
-                if limit is not None:
-                    if limit < 0:
-                        raise ValueError("limit must be non-negative")
-                    cached = replace(cached, subscriptions=cached.subscriptions[:limit])
-                return cached
         payload = self._build_get_active_alerts_payload()
         result = await self._graphql_and_parse(payload, parse_active_alerts_response)
-        if self._cache is not None and use_cache:
-            key = MethodCache.build_key("get_active_alerts")
-            await self._cache.set(key, result)
         if limit is not None:
             if limit < 0:
                 raise ValueError("limit must be non-negative")
@@ -1007,23 +865,9 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
             result = replace(result, alerts=result.alerts[:limit])
         return result
 
-    async def get_layouts(
-        self, *, limit: int | None = None, use_cache: bool = True
-    ) -> list[Layout]:
-        if self._cache is not None and use_cache:
-            key = MethodCache.build_key("get_layouts")
-            cached = await self._cache.get(key)
-            if cached is not None:
-                if limit is not None:
-                    if limit < 0:
-                        raise ValueError("limit must be non-negative")
-                    cached = cached[:limit]
-                return cached
+    async def get_layouts(self, *, limit: int | None = None) -> list[Layout]:
         payload = self._build_get_layouts_payload()
         result = await self._graphql_and_parse(payload, parse_layouts_response)
-        if self._cache is not None and use_cache:
-            key = MethodCache.build_key("get_layouts")
-            await self._cache.set(key, result)
         if limit is not None:
             if limit < 0:
                 raise ValueError("limit must be non-negative")
@@ -1037,36 +881,13 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         frequency: str = "DAILY",
         sort_dir: str = "ASC",
         limit: int | None = None,
-        use_cache: bool = True,
     ) -> ChartMarkupList:
-        if self._cache is not None and use_cache:
-            key = MethodCache.build_key(
-                "get_chart_markups",
-                symbol,
-                frequency=frequency,
-                sort_dir=sort_dir,
-            )
-            cached = await self._cache.get(key)
-            if cached is not None:
-                if limit is not None:
-                    if limit < 0:
-                        raise ValueError("limit must be non-negative")
-                    cached = replace(cached, markups=cached.markups[:limit])
-                return cached
         payload = self._build_get_chart_markups_payload(
             symbol,
             frequency=frequency,
             sort_dir=sort_dir,
         )
         result = await self._graphql_and_parse(payload, parse_chart_markups_response)
-        if self._cache is not None and use_cache:
-            key = MethodCache.build_key(
-                "get_chart_markups",
-                symbol,
-                frequency=frequency,
-                sort_dir=sort_dir,
-            )
-            await self._cache.set(key, result)
         if limit is not None:
             if limit < 0:
                 raise ValueError("limit must be non-negative")

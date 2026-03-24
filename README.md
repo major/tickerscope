@@ -6,7 +6,7 @@
 [![License](https://img.shields.io/pypi/l/tickerscope)](https://github.com/major/tickerscope/blob/main/LICENSE)
 
 Unofficial async Python client for the [MarketSurge](https://marketsurge.investors.com/) stock research API.
-Wraps the GraphQL endpoints with typed dataclass models, cookie-based auth, and optional caching.
+Wraps the GraphQL endpoints with typed dataclass models and cookie-based auth.
 
 > [!IMPORTANT]
 > This is an **unofficial** library. You need an active MarketSurge subscription and must be logged in via your browser for authentication to work.
@@ -16,19 +16,12 @@ Wraps the GraphQL endpoints with typed dataclass models, cookie-based auth, and 
 - Sync and async clients (`TickerScopeClient` / `AsyncTickerScopeClient`)
 - Frozen dataclass models with JSON serialization via [mashumaro](https://github.com/Fatal1ty/mashumaro)
 - Automatic JWT auth from browser cookies (Firefox/Chrome) via [rookiepy](https://github.com/thewh1teagle/rookiepy)
-- Optional response caching with [aiocache](https://github.com/aio-libs/aiocache)
 - Token expiry detection and structured error hierarchy
 
 ## Installation
 
 ```bash
 pip install tickerscope
-```
-
-With optional caching support:
-
-```bash
-pip install tickerscope[cache]
 ```
 
 ## Authentication
@@ -80,7 +73,7 @@ import asyncio
 from tickerscope import AsyncTickerScopeClient
 
 async def main():
-    async with AsyncTickerScopeClient(cache_ttl=300) as client:
+    async with AsyncTickerScopeClient() as client:
         stock = await client.get_stock("NVDA")
         print(stock.company.name, stock.ratings.composite)
 
@@ -98,7 +91,7 @@ HTTP request:
 
 ```python
 async def main():
-    client = await AsyncTickerScopeClient.create(cache_ttl=300)
+    client = await AsyncTickerScopeClient.create()
     try:
         stock = await client.get_stock("TSLA")
         print(stock.ratings)
@@ -125,8 +118,6 @@ async def main():
 | `get_triggered_alerts()` | `TriggeredAlertList` | Recently triggered alerts |
 | `get_layouts()` | `list[Layout]` | Saved chart layouts |
 | `get_chart_markups(symbol)` | `ChartMarkupList` | Chart annotations/markups |
-
-Most async methods accept `use_cache=True` (default) when caching is enabled via `cache_ttl`.
 
 ## Error handling
 
