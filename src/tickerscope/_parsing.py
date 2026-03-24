@@ -66,6 +66,14 @@ def _safe_value(node: dict | None, key: str = "value"):
     return node.get(key)
 
 
+def _safe_date_value(node: dict | None, key: str = "value") -> str | None:
+    """Safely read a date string, converting the '0001-01-01' sentinel to None."""
+    result = _safe_value(node, key)
+    if result == "0001-01-01":
+        return None
+    return result
+
+
 def _as_map(items: list[dict], key: str) -> dict:
     """Convert a list of dicts to a lookup dict keyed by `key`."""
     result: dict = {}
@@ -190,9 +198,9 @@ def parse_stock_response(raw: dict, symbol: str) -> StockData:
                 pivot_price_formatted=_safe_value(
                     pattern.get("pivotPrice"), "formattedValue"
                 ),
-                pivot_date=_safe_value(pattern.get("pivotDate")),
-                base_start_date=_safe_value(pattern.get("baseStartDate")),
-                base_end_date=_safe_value(pattern.get("baseEndDate")),
+                pivot_date=_safe_date_value(pattern.get("pivotDate")),
+                base_start_date=_safe_date_value(pattern.get("baseStartDate")),
+                base_end_date=_safe_date_value(pattern.get("baseEndDate")),
                 base_length=pattern.get("baseLength"),
             )
         )
@@ -218,7 +226,7 @@ def parse_stock_response(raw: dict, symbol: str) -> StockData:
             address=company.get("address"),
             address2=company.get("address2"),
             phone=company.get("phone"),
-            ipo_date=_safe_value(instrument.get("ipoDate")),
+            ipo_date=_safe_date_value(instrument.get("ipoDate")),
             ipo_price=_safe_value(instrument.get("ipoPrice")),
             ipo_price_formatted=_safe_value(
                 instrument.get("ipoPrice"), "formattedValue"
@@ -268,9 +276,11 @@ def parse_stock_response(raw: dict, symbol: str) -> StockData:
             volume_percent_change_vs_50d=_safe_value(volume_pct_vs.get("VS_MA50D", {})),
         ),
         financials=Financials(
-            eps_due_date=_safe_value(financials.get("epsDueDate")),
+            eps_due_date=_safe_date_value(financials.get("epsDueDate")),
             eps_due_date_status=financials.get("epsDueDateStatus"),
-            eps_last_reported_date=_safe_value(financials.get("epsLastReportedDate")),
+            eps_last_reported_date=_safe_date_value(
+                financials.get("epsLastReportedDate")
+            ),
             eps_growth_rate=_safe_value(eps_growth),
             sales_growth_rate_3y=_safe_value(sales_growth),
             pre_tax_margin=_safe_value(profit_margin.get("preTaxMargin")),
@@ -285,14 +295,14 @@ def parse_stock_response(raw: dict, symbol: str) -> StockData:
             ),
             dividends=[
                 Dividend(
-                    ex_date=_safe_value(dividend.get("exDate")),
+                    ex_date=_safe_date_value(dividend.get("exDate")),
                     amount=_safe_value(dividend.get("amount"), "formattedValue"),
                     change_indicator=dividend.get("changeIndicator"),
                 )
                 for dividend in corporate_actions.get("dividends", [])
             ],
             splits=[
-                _safe_value(split.get("splitDate"))
+                _safe_date_value(split.get("splitDate"))
                 for split in corporate_actions.get("splits", [])
             ],
             spinoffs=corporate_actions.get("spinoffs", []),
@@ -320,7 +330,7 @@ def parse_stock_response(raw: dict, symbol: str) -> StockData:
             debt_percent_formatted=_safe_value(
                 fundamentals.get("debtPercent"), "formattedValue"
             ),
-            new_ceo_date=_safe_value(fundamentals.get("newCEODate")),
+            new_ceo_date=_safe_date_value(fundamentals.get("newCEODate")),
         ),
         patterns=pattern_rows,
     )
@@ -407,7 +417,7 @@ def parse_ownership_response(raw: dict, symbol: str) -> OwnershipData:
         ),
         quarterly_funds=[
             QuarterlyFundOwnership(
-                date=_safe_value(item.get("date")),
+                date=_safe_date_value(item.get("date")),
                 count=_safe_value(item.get("numberOfFundsHeld"), "formattedValue"),
             )
             for item in quarterly
@@ -666,7 +676,7 @@ def parse_fundamentals_response(raw: dict, symbol: str) -> FundamentalData:
                 entry.get("percentChangeYOY"), "formattedValue"
             ),
             period_offset=entry.get("periodOffset", ""),
-            period_end_date=_safe_value(entry.get("periodEndDate")),
+            period_end_date=_safe_date_value(entry.get("periodEndDate")),
         )
         for entry in consensus.get("eps", {}).get("reportedEarnings", [])
     ]
@@ -680,7 +690,7 @@ def parse_fundamentals_response(raw: dict, symbol: str) -> FundamentalData:
                 entry.get("percentChangeYOY"), "formattedValue"
             ),
             period_offset=entry.get("periodOffset", ""),
-            period_end_date=_safe_value(entry.get("periodEndDate")),
+            period_end_date=_safe_date_value(entry.get("periodEndDate")),
         )
         for entry in consensus.get("sales", {}).get("reportedSales", [])
     ]

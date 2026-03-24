@@ -4,6 +4,7 @@
 
 from tickerscope._exceptions import APIError, SymbolNotFoundError
 from tickerscope._parsing import (
+    _safe_date_value,
     parse_active_alerts_response,
     parse_chart_data_response,
     parse_chart_markups_response,
@@ -436,3 +437,27 @@ def test_parse_chart_markups_response_graphql_errors() -> None:
         assert exc.errors == [{"message": "unauthorized"}]
     else:
         raise AssertionError("Expected APIError")
+
+
+class TestSafeDateValue:
+    """Tests for the _safe_date_value() sentinel filtering helper."""
+
+    def test_sentinel_date_returns_none(self) -> None:
+        """The '0001-01-01' sentinel is normalized to None."""
+        assert _safe_date_value({"value": "0001-01-01"}) is None
+
+    def test_valid_date_passes_through(self) -> None:
+        """A valid date string is returned unchanged."""
+        assert _safe_date_value({"value": "2025-01-15"}) == "2025-01-15"
+
+    def test_none_input_returns_none(self) -> None:
+        """None input returns None (delegated to _safe_value)."""
+        assert _safe_date_value(None) is None
+
+    def test_empty_dict_returns_none(self) -> None:
+        """Empty dict with no 'value' key returns None."""
+        assert _safe_date_value({}) is None
+
+    def test_non_dict_returns_none(self) -> None:
+        """Non-dict input returns None (delegated to _safe_value)."""
+        assert _safe_date_value("not-a-dict") is None  # type: ignore[arg-type]
