@@ -40,54 +40,27 @@ class TestCapabilitiesStructure:
         """Return capabilities dict from the base class."""
         return BaseTickerScopeClient.capabilities()
 
-    def test_returns_dict(self, caps: dict) -> None:
-        """capabilities() returns a plain dict."""
+    def test_top_level_shape(self, caps: dict) -> None:
+        """Verify top-level structure: type, keys, field types, and method count."""
         assert isinstance(caps, dict)
-
-    def test_top_level_keys_present(self, caps: dict) -> None:
-        """Dict contains methods, auth_required, and api_endpoint."""
         assert REQUIRED_TOP_LEVEL_KEYS.issubset(caps.keys())
-
-    def test_auth_required_is_bool(self, caps: dict) -> None:
-        """auth_required is a boolean."""
         assert isinstance(caps["auth_required"], bool)
-
-    def test_api_endpoint_is_str(self, caps: dict) -> None:
-        """api_endpoint is a non-empty string."""
         assert isinstance(caps["api_endpoint"], str)
         assert len(caps["api_endpoint"]) > 0
-
-    def test_methods_is_list(self, caps: dict) -> None:
-        """methods value is a list."""
         assert isinstance(caps["methods"], list)
-
-    def test_methods_count(self, caps: dict) -> None:
-        """At least 15 methods are advertised."""
         assert len(caps["methods"]) >= 15
 
-    def test_each_method_has_required_keys(self, caps: dict) -> None:
-        """Every method dict contains name, parameters, and return_type."""
+    def test_method_structure(self, caps: dict) -> None:
+        """Verify each method entry has required keys with correct types."""
         for method in caps["methods"]:
             missing = REQUIRED_METHOD_KEYS - method.keys()
             assert not missing, (
                 f"Method {method.get('name', '???')} missing keys: {missing}"
             )
-
-    def test_method_name_is_str(self, caps: dict) -> None:
-        """Every method name is a non-empty string."""
-        for method in caps["methods"]:
             assert isinstance(method["name"], str)
             assert len(method["name"]) > 0
-
-    def test_return_type_is_str(self, caps: dict) -> None:
-        """return_type is a non-empty string for every method."""
-        for method in caps["methods"]:
             assert isinstance(method["return_type"], str)
             assert len(method["return_type"]) > 0
-
-    def test_parameters_is_list(self, caps: dict) -> None:
-        """parameters is a list for every method."""
-        for method in caps["methods"]:
             assert isinstance(method["parameters"], list), (
                 f"{method['name']}: parameters is {type(method['parameters'])}"
             )
