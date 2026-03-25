@@ -1,5 +1,7 @@
 """Pytest configuration and shared fixtures for MarketSurge tests."""
 
+from __future__ import annotations
+
 import json
 from pathlib import Path
 from unittest.mock import patch

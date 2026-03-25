@@ -1,5 +1,7 @@
 """Tests for user_message branching logic and computed defaults in the exception hierarchy."""
 
+from __future__ import annotations
+
 from tickerscope._exceptions import (
     APIError,
     AuthenticationError,

@@ -1,5 +1,7 @@
 """Tests for frozen dataclass models."""
 
+from __future__ import annotations
+
 import pytest
 
 from tickerscope._models import (
