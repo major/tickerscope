@@ -1,10 +1,9 @@
-"""Spike test for mashumaro TO_DICT_ADD_OMIT_NONE_FLAG with frozen+slots dataclasses.
+"""Behavioral tests for SerializableDataclass omit_none flag.
 
 Validates that:
-1. TO_DICT_ADD_OMIT_NONE_FLAG can be imported from mashumaro.config
-2. Backward compat: model.to_dict() (no args) omits None fields
-3. New behavior: model.to_dict(omit_none=False) includes None fields as explicit nulls
-4. Nested propagation: parent.to_dict(omit_none=False) includes nulls in nested child
+1. Backward compat: model.to_dict() (no args) omits None fields
+2. Explicit behavior: model.to_dict(omit_none=False) includes None fields as explicit nulls
+3. Nested propagation: parent.to_dict(omit_none=False) includes nulls in nested child
 """
 
 from __future__ import annotations
@@ -12,36 +11,41 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 
-from mashumaro.config import BaseConfig  # pyright: ignore[reportMissingImports]
-from mashumaro.config import TO_DICT_ADD_OMIT_NONE_FLAG  # pyright: ignore[reportMissingImports]
-from mashumaro.mixins.dict import DataClassDictMixin  # pyright: ignore[reportMissingImports]
+from tickerscope._serialization import SerializableDataclass  # pyright: ignore[reportMissingImports]
 
 
 # ---------------------------------------------------------------------------
-# Test 1: Flag is importable
-# ---------------------------------------------------------------------------
-
-
-def test_flag_importable() -> None:
-    """Verify TO_DICT_ADD_OMIT_NONE_FLAG is importable and not None."""
-    assert TO_DICT_ADD_OMIT_NONE_FLAG is not None
-
-
-# ---------------------------------------------------------------------------
-# Test 2: Backward compat - to_dict() with no args omits None
+# Test models
 # ---------------------------------------------------------------------------
 
 
 @dataclass(frozen=True, slots=True)
-class FlatModel(DataClassDictMixin):
-    """Minimal frozen+slots model with omit_none=True and flag enabled."""
-
-    class Config(BaseConfig):
-        omit_none = True
-        code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
+class FlatModel(SerializableDataclass):
+    """Minimal frozen+slots model for omit_none testing."""
 
     name: str | None
     value: int | None
+
+
+@dataclass(frozen=True, slots=True)
+class ChildModel(SerializableDataclass):
+    """Nested child model for propagation testing."""
+
+    child_name: str | None
+    child_value: int | None
+
+
+@dataclass(frozen=True, slots=True)
+class ParentModel(SerializableDataclass):
+    """Parent model containing a nested child."""
+
+    parent_name: str | None
+    child: ChildModel | None
+
+
+# ---------------------------------------------------------------------------
+# Test 1: Backward compat - to_dict() with no args omits None
+# ---------------------------------------------------------------------------
 
 
 def test_to_dict_default_omits_none() -> None:
@@ -49,14 +53,13 @@ def test_to_dict_default_omits_none() -> None:
     model = FlatModel(name="test", value=None)
     result = model.to_dict()
 
-    # Should omit the None value field
     assert "name" in result
     assert result["name"] == "test"
     assert "value" not in result
 
 
 # ---------------------------------------------------------------------------
-# Test 3: New behavior - to_dict(omit_none=False) includes None
+# Test 2: New behavior - to_dict(omit_none=False) includes None
 # ---------------------------------------------------------------------------
 
 
@@ -65,7 +68,6 @@ def test_to_dict_omit_none_false_includes_none() -> None:
     model = FlatModel(name="test", value=None)
     result = model.to_dict(omit_none=False)
 
-    # Should include the None value field as explicit null
     assert "name" in result
     assert result["name"] == "test"
     assert "value" in result
@@ -73,44 +75,20 @@ def test_to_dict_omit_none_false_includes_none() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Test 4: to_json is tested in task 2 (placeholder)
+# Test 3: to_json roundtrip via json.dumps
 # ---------------------------------------------------------------------------
 
 
 def test_to_json_not_tested_here() -> None:
-    """Note: to_json() serialization is tested in task 2, not here."""
+    """Note: to_json() is tested in test_serialization.py; this is a sanity check."""
     model = FlatModel(name="test", value=None)
     json_str = json.dumps(model.to_dict())
     assert isinstance(json_str, str)
 
 
 # ---------------------------------------------------------------------------
-# Test 5: Nested propagation - parent.to_dict(omit_none=False) includes nulls in child
+# Test 4: Nested propagation
 # ---------------------------------------------------------------------------
-
-
-@dataclass(frozen=True, slots=True)
-class ChildModel(DataClassDictMixin):
-    """Nested child model with omit_none=True and flag enabled."""
-
-    class Config(BaseConfig):
-        omit_none = True
-        code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
-
-    child_name: str | None
-    child_value: int | None
-
-
-@dataclass(frozen=True, slots=True)
-class ParentModel(DataClassDictMixin):
-    """Parent model containing a nested child with omit_none=True and flag enabled."""
-
-    class Config(BaseConfig):
-        omit_none = True
-        code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
-
-    parent_name: str | None
-    child: ChildModel | None
 
 
 def test_nested_propagation() -> None:

@@ -14,7 +14,7 @@ Wraps the GraphQL endpoints with typed dataclass models and cookie-based auth.
 ## Features
 
 - Sync and async clients (`TickerScopeClient` / `AsyncTickerScopeClient`)
-- Frozen dataclass models with JSON serialization via [mashumaro](https://github.com/Fatal1ty/mashumaro)
+- Frozen dataclass models with JSON serialization
 - Automatic JWT auth from browser cookies (Firefox/Chrome) via [rookiepy](https://github.com/thewh1teagle/rookiepy)
 - Token expiry detection and structured error hierarchy
 
