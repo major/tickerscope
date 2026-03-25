@@ -13,6 +13,7 @@ from tickerscope._parsing import (
     parse_chart_markups_response,
     parse_fundamentals_response,
     parse_layouts_response,
+    parse_nav_tree_response,
     parse_ownership_response,
     parse_panels_response,
     parse_rs_rating_history_response,
@@ -53,6 +54,7 @@ from tickerscope._parsing import (
             parse_rs_rating_history_response, ("SYM",), id="rs_rating_history"
         ),
         pytest.param(parse_server_time_response, (), id="server_time"),
+        pytest.param(parse_nav_tree_response, (), id="nav_tree"),
     ],
 )
 def test_graphql_errors_raise_api_error(parser, extra_args) -> None:

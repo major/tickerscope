@@ -33,6 +33,7 @@ from tickerscope._models import (
     ChartMarkupList,
     FundamentalData,
     Layout,
+    NavTreeNode,
     OwnershipData,
     Panel,
     RSRatingHistory,
@@ -51,6 +52,7 @@ from tickerscope._parsing import (
     parse_chart_markups_response,
     parse_fundamentals_response,
     parse_layouts_response,
+    parse_nav_tree_response,
     parse_ownership_response,
     parse_panels_response,
     parse_rs_rating_history_response,
@@ -74,6 +76,7 @@ from tickerscope._queries import (
     GET_SERVER_DATE_TIME_QUERY,
     MARKET_DATA_LAYOUTS_QUERY,
     MARKET_DATA_SCREEN_QUERY,
+    NAV_TREE_QUERY,
     OTHER_MARKET_DATA_QUERY,
     OWNERSHIP_QUERY,
     RS_RATING_RI_PANEL_QUERY,
@@ -616,6 +619,14 @@ class BaseTickerScopeClient(ABC):
             "query": GET_SERVER_DATE_TIME_QUERY,
         }
 
+    @staticmethod
+    def _build_get_nav_tree_payload() -> dict[str, Any]:
+        return {
+            "operationName": "NavTree",
+            "variables": {"site": "marketsurge", "treeType": "MSR_NAV"},
+            "query": NAV_TREE_QUERY,
+        }
+
     def _graphql_and_parse(
         self,
         payload: dict[str, Any],
@@ -752,6 +763,10 @@ class BaseTickerScopeClient(ABC):
     def get_server_time(self) -> Any:
         payload = self._build_get_server_time_payload()
         return self._graphql_and_parse(payload, parse_server_time_response)
+
+    def get_nav_tree(self) -> Any:
+        payload = self._build_get_nav_tree_payload()
+        return self._graphql_and_parse(payload, parse_nav_tree_response)
 
 
 class TickerScopeClient(BaseTickerScopeClient):
@@ -1153,6 +1168,10 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
     async def get_server_time(self) -> datetime.datetime:
         payload = self._build_get_server_time_payload()
         return await self._graphql_and_parse(payload, parse_server_time_response)
+
+    async def get_nav_tree(self) -> list[NavTreeNode]:
+        payload = self._build_get_nav_tree_payload()
+        return await self._graphql_and_parse(payload, parse_nav_tree_response)
 
     async def get_watchlist_by_name(self, name: str) -> WatchlistDetail:
         """Look up a watchlist by name and return its full details.

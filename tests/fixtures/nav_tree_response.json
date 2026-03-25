@@ -1,0 +1,55 @@
+{
+  "data": {
+    "user": {
+      "navTree": [
+        {
+          "id": "folder-1",
+          "name": "My Lists",
+          "parentId": null,
+          "type": "SYSTEM_FOLDER",
+          "children": [
+            {
+              "id": "leaf-1",
+              "name": "My Watchlist",
+              "type": "WATCHLIST"
+            },
+            {
+              "id": "leaf-2",
+              "name": "My Screen",
+              "type": "STOCK_SCREEN"
+            }
+          ],
+          "contentType": "WATCHLIST",
+          "treeType": "MSR_NAV"
+        },
+        {
+          "id": "leaf-3",
+          "name": "Recent Symbols",
+          "parentId": null,
+          "type": "WATCHLIST",
+          "url": null,
+          "treeType": "MSR_NAV",
+          "referenceId": "{\"watchlistId\": \"266152633632307\"}"
+        },
+        {
+          "id": "leaf-4",
+          "name": "My Screen",
+          "parentId": null,
+          "type": "STOCK_SCREEN",
+          "url": null,
+          "treeType": "MSR_NAV",
+          "referenceId": "{\"screenId\": \"01KJX696Z94RQPXK3EEH62GYNZ\"}"
+        },
+        {
+          "id": "folder-2",
+          "name": "Empty Folder",
+          "parentId": null,
+          "type": "SYSTEM_FOLDER",
+          "children": [],
+          "contentType": null,
+          "treeType": "MSR_NAV"
+        }
+      ]
+    }
+  }
+}

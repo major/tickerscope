@@ -45,6 +45,9 @@ from tickerscope._models import (
     IpoBasePattern,
     Layout,
     LayoutColumn,
+    NavTreeFolder,
+    NavTreeLeaf,
+    NavTreeNode,
     OwnershipData,
     Panel,
     Pattern,
@@ -123,6 +126,10 @@ __all__ = [
     # Layout models
     "Layout",
     "LayoutColumn",
+    # Nav tree models
+    "NavTreeNode",
+    "NavTreeFolder",
+    "NavTreeLeaf",
     # Panel models
     "Panel",
     # Chart markup models

@@ -710,6 +710,39 @@ class Panel(SerializableDataclass):
 
 
 @dataclass(frozen=True, slots=True)
+class NavTreeNode(SerializableDataclass):
+    """Base class for sidebar navigation tree nodes.
+
+    Shared by NavTree and CoachTree queries. Folders and leaves
+    extend this with type-specific fields.
+    """
+
+    id: str | None
+    name: str | None
+    parent_id: str | None
+    node_type: str | None
+    tree_type: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class NavTreeFolder(NavTreeNode):
+    """Folder node in the navigation tree, containing child nodes."""
+
+    children: list[NavTreeNode]
+    content_type: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class NavTreeLeaf(NavTreeNode):
+    """Leaf node in the navigation tree (watchlist, screen, etc.)."""
+
+    url: str | None
+    reference_id: str | None
+    reference_watchlist_id: str | None
+    reference_screen_id: str | None
+
+
+@dataclass(frozen=True, slots=True)
 class AdhocScreenResult(SerializableDataclass):
     """Result of running an adhoc screen via MarketDataAdhocScreen query.
 

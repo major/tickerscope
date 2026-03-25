@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import datetime
+import json
 import logging
 
 from tickerscope._exceptions import APIError, SymbolNotFoundError
@@ -31,6 +32,9 @@ from tickerscope._models import (
     Industry,
     Layout,
     LayoutColumn,
+    NavTreeFolder,
+    NavTreeLeaf,
+    NavTreeNode,
     AscendingBasePattern,
     CupPattern,
     DoubleBottomPattern,
@@ -698,6 +702,61 @@ def parse_panels_response(raw: dict) -> list[Panel]:
             )
         )
     return panels
+
+
+def _build_nav_tree_node(raw: dict) -> NavTreeNode:
+    """Dispatch a raw nav tree dict to NavTreeFolder or NavTreeLeaf."""
+    common = {
+        "id": raw.get("id"),
+        "name": raw.get("name"),
+        "parent_id": raw.get("parentId"),
+        "node_type": raw.get("type"),
+        "tree_type": raw.get("treeType"),
+    }
+
+    if "children" in raw:
+        return NavTreeFolder(
+            **common,
+            children=[_build_nav_tree_node(child) for child in raw["children"]],
+            content_type=raw.get("contentType"),
+        )
+
+    ref_watchlist_id: str | None = None
+    ref_screen_id: str | None = None
+    ref_id = raw.get("referenceId")
+    if ref_id:
+        try:
+            ref = json.loads(ref_id)
+            ref_watchlist_id = ref.get("watchlistId")
+            ref_screen_id = ref.get("screenId")
+        except (json.JSONDecodeError, TypeError):
+            _log.debug("Skipping malformed referenceId: %s", ref_id)
+
+    return NavTreeLeaf(
+        **common,
+        url=raw.get("url"),
+        reference_id=ref_id,
+        reference_watchlist_id=ref_watchlist_id,
+        reference_screen_id=ref_screen_id,
+    )
+
+
+def parse_nav_tree_response(raw: dict) -> list[NavTreeNode]:
+    """Parse a NavTree GraphQL response into a list of NavTreeNode objects.
+
+    Args:
+        raw: The raw GraphQL response dict.
+
+    Raises:
+        APIError: If the response contains GraphQL errors.
+
+    Returns:
+        List of NavTreeNode (folders and leaves), or empty list when no nodes exist.
+    """
+    _check_graphql_errors(raw, "nav tree request")
+
+    items = raw.get("data", {}).get("user", {}).get("navTree", []) or []
+    return [_build_nav_tree_node(node) for node in items]
 
 
 def parse_watchlist_detail_response(raw: dict, watchlist_id: str) -> WatchlistDetail:
