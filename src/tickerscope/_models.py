@@ -743,6 +743,18 @@ class NavTreeLeaf(NavTreeNode):
 
 
 @dataclass(frozen=True, slots=True)
+class CoachTreeData(SerializableDataclass):
+    """IBD curated watchlists and screens from the CoachTree query.
+
+    Contains two separate tree lists: one for watchlists and one for screens.
+    Both reuse the NavTreeNode hierarchy (NavTreeFolder/NavTreeLeaf).
+    """
+
+    watchlists: list[NavTreeNode]
+    screens: list[NavTreeNode]
+
+
+@dataclass(frozen=True, slots=True)
 class AdhocScreenResult(SerializableDataclass):
     """Result of running an adhoc screen via MarketDataAdhocScreen query.
 

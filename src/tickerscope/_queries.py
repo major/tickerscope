@@ -20,6 +20,7 @@ RS_RATING_RI_PANEL_QUERY = load_query("rs_rating_ri_panel")
 GET_SERVER_DATE_TIME_QUERY = load_query("get_server_date_time")
 ALL_PANELS_QUERY = load_query("all_panels")
 NAV_TREE_QUERY = load_query("nav_tree")
+COACH_TREE_QUERY = load_query("coach_tree")
 
 WATCHLIST_COLUMNS = [
     {"name": "Symbol"},

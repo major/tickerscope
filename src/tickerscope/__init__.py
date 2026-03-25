@@ -28,6 +28,7 @@ from tickerscope._models import (
     ChartData,
     ChartMarkup,
     ChartMarkupList,
+    CoachTreeData,
     Company,
     CorporateActions,
     CupPattern,
@@ -130,6 +131,8 @@ __all__ = [
     "NavTreeNode",
     "NavTreeFolder",
     "NavTreeLeaf",
+    # Coach tree models
+    "CoachTreeData",
     # Panel models
     "Panel",
     # Chart markup models

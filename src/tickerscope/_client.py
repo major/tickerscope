@@ -31,6 +31,7 @@ from tickerscope._models import (
     AlertSubscriptionList,
     ChartData,
     ChartMarkupList,
+    CoachTreeData,
     FundamentalData,
     Layout,
     NavTreeNode,
@@ -50,6 +51,7 @@ from tickerscope._parsing import (
     parse_active_alerts_response,
     parse_chart_data_response,
     parse_chart_markups_response,
+    parse_coach_tree_response,
     parse_fundamentals_response,
     parse_layouts_response,
     parse_nav_tree_response,
@@ -72,6 +74,7 @@ from tickerscope._queries import (
     CHART_MARKET_DATA_QUERY,
     CHART_MARKET_DATA_WEEKLY_QUERY,
     CHART_MARKUPS_QUERY,
+    COACH_TREE_QUERY,
     FLAGGED_SYMBOLS_QUERY,
     FUNDAMENTALS_QUERY,
     GET_SERVER_DATE_TIME_QUERY,
@@ -641,6 +644,14 @@ class BaseTickerScopeClient(ABC):
             "query": NAV_TREE_QUERY,
         }
 
+    @staticmethod
+    def _build_get_coach_lists_payload() -> dict[str, Any]:
+        return {
+            "operationName": "CoachTree",
+            "variables": {"site": "marketsurge", "treeType": "MSR_NAV"},
+            "query": COACH_TREE_QUERY,
+        }
+
     def _graphql_and_parse(
         self,
         payload: dict[str, Any],
@@ -781,6 +792,10 @@ class BaseTickerScopeClient(ABC):
     def get_nav_tree(self) -> Any:
         payload = self._build_get_nav_tree_payload()
         return self._graphql_and_parse(payload, parse_nav_tree_response)
+
+    def get_coach_lists(self) -> Any:
+        payload = self._build_get_coach_lists_payload()
+        return self._graphql_and_parse(payload, parse_coach_tree_response)
 
 
 class TickerScopeClient(BaseTickerScopeClient):
@@ -1186,6 +1201,10 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
     async def get_nav_tree(self) -> list[NavTreeNode]:
         payload = self._build_get_nav_tree_payload()
         return await self._graphql_and_parse(payload, parse_nav_tree_response)
+
+    async def get_coach_lists(self) -> CoachTreeData:
+        payload = self._build_get_coach_lists_payload()
+        return await self._graphql_and_parse(payload, parse_coach_tree_response)
 
     async def get_watchlist_by_name(self, name: str) -> WatchlistDetail:
         """Look up a watchlist by name and return its full details.

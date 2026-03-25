@@ -1,0 +1,41 @@
+{
+  "data": {
+    "user": {
+      "watchlists": [
+        {
+          "id": "wl-folder-1",
+          "name": "IBD Live Watch",
+          "parentId": null,
+          "type": "SYSTEM_FOLDER",
+          "children": [
+            {"id": "wl-leaf-1", "name": "IBD Live", "type": "WATCHLIST"}
+          ],
+          "contentType": "WATCHLIST",
+          "treeType": "MSR_NAV"
+        },
+        {
+          "id": "wl-leaf-2",
+          "name": "S&P 500",
+          "parentId": null,
+          "type": "WATCHLIST",
+          "url": null,
+          "treeType": "MSR_NAV",
+          "referenceId": "{\"watchlistId\": \"94490110509978\", \"screenId\": \"01KF1ENSYEXKTCXPWKPRQ4S92N\"}"
+        }
+      ],
+      "screens": [
+        {
+          "id": "sc-folder-1",
+          "name": "William J. O'Neil",
+          "parentId": null,
+          "type": "SYSTEM_FOLDER",
+          "children": [
+            {"id": "sc-leaf-1", "name": "IBD 50", "type": "STOCK_SCREEN"}
+          ],
+          "contentType": "STOCK_SCREEN",
+          "treeType": "MSR_NAV"
+        }
+      ]
+    }
+  }
+}

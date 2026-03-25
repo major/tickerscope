@@ -10,6 +10,7 @@ from tickerscope._exceptions import APIError, SymbolNotFoundError
 from tickerscope._models import (
     AdhocScreenResult,
     AlertCriteria,
+    CoachTreeData,
     AlertInstrument,
     AlertSubscription,
     AlertSubscriptionList,
@@ -757,6 +758,25 @@ def parse_nav_tree_response(raw: dict) -> list[NavTreeNode]:
 
     items = raw.get("data", {}).get("user", {}).get("navTree", []) or []
     return [_build_nav_tree_node(node) for node in items]
+
+
+def parse_coach_tree_response(raw: dict) -> CoachTreeData:
+    """Parse a CoachTree GraphQL response into a CoachTreeData dataclass.
+
+    Args:
+        raw: The raw GraphQL response dict.
+
+    Raises:
+        APIError: If the response contains GraphQL errors.
+
+    Returns:
+        CoachTreeData with watchlists and screens lists.
+    """
+    _check_graphql_errors(raw, "coach tree")
+    user = raw.get("data", {}).get("user", {})
+    watchlists = [_build_nav_tree_node(n) for n in user.get("watchlists", []) or []]
+    screens = [_build_nav_tree_node(n) for n in user.get("screens", []) or []]
+    return CoachTreeData(watchlists=watchlists, screens=screens)
 
 
 def parse_watchlist_detail_response(raw: dict, watchlist_id: str) -> WatchlistDetail:
