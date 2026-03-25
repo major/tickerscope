@@ -17,6 +17,7 @@ from tickerscope._exceptions import (
 )
 from tickerscope._serialization import SerializableDataclass
 from tickerscope._models import (
+    AdhocScreenResult,
     AlertCriteria,
     AlertInstrument,
     AlertSubscription,
@@ -137,6 +138,7 @@ __all__ = [
     # Screen models
     "Screen",
     "ScreenResult",
+    "AdhocScreenResult",
     "ScreenSource",
     # Serialization base
     "SerializableDataclass",

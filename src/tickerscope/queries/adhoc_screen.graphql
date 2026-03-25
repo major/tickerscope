@@ -4,7 +4,7 @@ query MarketDataAdhocScreen(
   $responseColumns: [MDAdhocScreenerDataItemInput!]!
   $resultLimit: Int!
   $pageSize: Int!
-  $pageSkip: Int
+  $pageSkip: Int!
   $includeSource: MDScreenerDataSourceInput!
   $resultType: MDScreenerResultType
 ) {
@@ -20,6 +20,7 @@ query MarketDataAdhocScreen(
   ) {
     correlationTag
     elapsedTime
+    errorValues
     numberOfInstrumentsInSource
     numberOfMatchingInstruments
     responseValues {

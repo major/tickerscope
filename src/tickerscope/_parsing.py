@@ -7,6 +7,7 @@ import logging
 
 from tickerscope._exceptions import APIError, SymbolNotFoundError
 from tickerscope._models import (
+    AdhocScreenResult,
     AlertCriteria,
     AlertInstrument,
     AlertSubscription,
@@ -474,13 +475,27 @@ def parse_watchlist_response(raw: dict) -> list[WatchlistEntry]:
     Returns:
         A list of WatchlistEntry rows, or an empty list when no data is present.
     """
-    _check_graphql_errors(raw, "watchlist request")
+    result = parse_adhoc_screen_response(raw)
+    return result.entries
 
-    response_values = (
-        raw.get("data", {}).get("marketDataAdhocScreen", {}).get("responseValues", [])
-    )
-    if not response_values:
-        return []
+
+def parse_adhoc_screen_response(raw: dict) -> AdhocScreenResult:
+    """Parse a MarketDataAdhocScreen response into an AdhocScreenResult.
+
+    Args:
+        raw: The raw GraphQL response dict.
+
+    Raises:
+        APIError: If the response contains GraphQL errors.
+
+    Returns:
+        AdhocScreenResult with entries and optional error_values.
+    """
+    _check_graphql_errors(raw, "adhoc screen request")
+
+    adhoc_data = raw.get("data", {}).get("marketDataAdhocScreen", {})
+    response_values = adhoc_data.get("responseValues", [])
+    error_values = adhoc_data.get("errorValues")
 
     rows: list[WatchlistEntry] = []
     for row_values in response_values:
@@ -514,7 +529,7 @@ def parse_watchlist_response(raw: dict) -> list[WatchlistEntry]:
             )
         )
 
-    return rows
+    return AdhocScreenResult(entries=rows, error_values=error_values)
 
 
 def parse_ownership_response(raw: dict, symbol: str) -> OwnershipData:

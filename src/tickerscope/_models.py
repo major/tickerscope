@@ -687,6 +687,17 @@ class ScreenResult(SerializableDataclass):
 
 
 @dataclass(frozen=True, slots=True)
+class AdhocScreenResult(SerializableDataclass):
+    """Result of running an adhoc screen via MarketDataAdhocScreen query.
+
+    Contains entries (WatchlistEntry items) and optional error values from the response.
+    """
+
+    entries: list[WatchlistEntry]
+    error_values: list[str] | None
+
+
+@dataclass(frozen=True, slots=True)
 class DataPoint(SerializableDataclass):
     """Single OHLCV data point from a time series."""
 
