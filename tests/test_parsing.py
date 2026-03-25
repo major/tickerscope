@@ -14,6 +14,7 @@ from tickerscope._parsing import (
     parse_fundamentals_response,
     parse_layouts_response,
     parse_ownership_response,
+    parse_panels_response,
     parse_rs_rating_history_response,
     parse_screen_result_response,
     parse_screens_response,
@@ -41,6 +42,7 @@ from tickerscope._parsing import (
         pytest.param(parse_triggered_alerts_response, (), id="triggered_alerts"),
         pytest.param(parse_layouts_response, (), id="layouts"),
         pytest.param(parse_chart_markups_response, (), id="chart_markups"),
+        pytest.param(parse_panels_response, (), id="panels"),
         pytest.param(parse_screens_response, (), id="screens"),
         pytest.param(parse_screen_result_response, (), id="screen_result"),
         pytest.param(

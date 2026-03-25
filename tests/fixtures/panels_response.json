@@ -1,0 +1,47 @@
+{
+  "data": {
+    "user": {
+      "panels": [
+        {
+          "id": "panel-uuid-1",
+          "name": "My Layout",
+          "site": "marketsurge",
+          "type": "LAYOUT",
+          "data": {
+            "symbol": "AAPL",
+            "name": "Apple Inc.",
+            "chartSymbol": "STOCK/US/XNYS/AAPL",
+            "timeUnit": "day",
+            "interval": 1,
+            "chartType": "hlc_box",
+            "showEarnings": true,
+            "showMarkups": true
+          },
+          "createdAt": "2025-01-15T10:30:00.000Z",
+          "updatedAt": "2025-03-20T14:22:00.000Z"
+        },
+        {
+          "id": "panel-uuid-2",
+          "name": "Alert Settings",
+          "site": "marketsurge",
+          "type": "ALERTS_SETTING",
+          "data": {
+            "alertThreshold": 5,
+            "notificationMethod": "email"
+          },
+          "createdAt": "2025-02-01T08:00:00.000Z",
+          "updatedAt": "2025-02-01T08:00:00.000Z"
+        },
+        {
+          "id": "panel-uuid-3",
+          "name": "Application Settings",
+          "site": "marketsurge",
+          "type": "APPLICATION_SETTINGS",
+          "data": {},
+          "createdAt": "2025-01-10T12:00:00.000Z",
+          "updatedAt": "2025-03-15T09:30:00.000Z"
+        }
+      ]
+    }
+  }
+}

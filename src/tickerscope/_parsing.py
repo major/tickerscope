@@ -36,6 +36,7 @@ from tickerscope._models import (
     DoubleBottomPattern,
     IpoBasePattern,
     OwnershipData,
+    Panel,
     Pattern,
     PricePercentChanges,
     RSRatingHistory,
@@ -666,6 +667,37 @@ def parse_screens_response(raw: dict) -> list[Screen]:
             )
         )
     return screens
+
+
+def parse_panels_response(raw: dict) -> list[Panel]:
+    """Parse an AllPanels GraphQL response into a list of Panel dataclasses.
+
+    Args:
+        raw: The raw GraphQL response dict.
+
+    Raises:
+        APIError: If the response contains GraphQL errors.
+
+    Returns:
+        List of Panel objects, or empty list when no panels exist.
+    """
+    _check_graphql_errors(raw, "panels request")
+
+    items = raw.get("data", {}).get("user", {}).get("panels", []) or []
+    panels: list[Panel] = []
+    for item in items:
+        panels.append(
+            Panel(
+                id=item.get("id"),
+                name=item.get("name"),
+                site=item.get("site"),
+                panel_type=item.get("type"),
+                data=item.get("data"),
+                created_at=item.get("createdAt"),
+                updated_at=item.get("updatedAt"),
+            )
+        )
+    return panels
 
 
 def parse_watchlist_detail_response(raw: dict, watchlist_id: str) -> WatchlistDetail:

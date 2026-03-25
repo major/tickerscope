@@ -687,6 +687,29 @@ class ScreenResult(SerializableDataclass):
 
 
 @dataclass(frozen=True, slots=True)
+class Panel(SerializableDataclass):
+    """A user panel configuration (from AllPanels query)."""
+
+    id: str | None
+    name: str | None
+    site: str | None
+    panel_type: str | None
+    data: dict[str, Any] | None
+    created_at: str | None
+    updated_at: str | None
+
+    @property
+    def created_at_dt(self) -> datetime.datetime | None:
+        """Parsed created_at as a datetime object, or None if unavailable."""
+        return parse_datetime(self.created_at)
+
+    @property
+    def updated_at_dt(self) -> datetime.datetime | None:
+        """Parsed updated_at as a datetime object, or None if unavailable."""
+        return parse_datetime(self.updated_at)
+
+
+@dataclass(frozen=True, slots=True)
 class AdhocScreenResult(SerializableDataclass):
     """Result of running an adhoc screen via MarketDataAdhocScreen query.
 

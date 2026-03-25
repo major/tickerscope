@@ -1,0 +1,13 @@
+query AllPanels($site: String!) {
+  user {
+    panels(site: $site) {
+      id
+      name
+      site
+      type
+      data
+      createdAt
+      updatedAt
+    }
+  }
+}

@@ -34,6 +34,7 @@ from tickerscope._models import (
     FundamentalData,
     Layout,
     OwnershipData,
+    Panel,
     RSRatingHistory,
     Screen,
     ScreenResult,
@@ -51,6 +52,7 @@ from tickerscope._parsing import (
     parse_fundamentals_response,
     parse_layouts_response,
     parse_ownership_response,
+    parse_panels_response,
     parse_rs_rating_history_response,
     parse_screen_result_response,
     parse_screens_response,
@@ -64,6 +66,7 @@ from tickerscope._parsing import (
 from tickerscope._queries import (
     ACTIVE_ALERTS_QUERY,
     ADHOC_SCREEN_QUERY,
+    ALL_PANELS_QUERY,
     CHART_MARKET_DATA_QUERY,
     CHART_MARKUPS_QUERY,
     FLAGGED_SYMBOLS_QUERY,
@@ -572,6 +575,14 @@ class BaseTickerScopeClient(ABC):
         }
 
     @staticmethod
+    def _build_get_panels_payload() -> dict[str, Any]:
+        return {
+            "operationName": "AllPanels",
+            "variables": {"site": "marketsurge"},
+            "query": ALL_PANELS_QUERY,
+        }
+
+    @staticmethod
     def _build_get_chart_markups_payload(
         symbol: str, *, frequency: str = "DAILY", sort_dir: str = "ASC"
     ) -> dict[str, Any]:
@@ -713,6 +724,10 @@ class BaseTickerScopeClient(ABC):
     def get_layouts(self) -> Any:
         payload = self._build_get_layouts_payload()
         return self._graphql_and_parse(payload, parse_layouts_response)
+
+    def get_panels(self) -> Any:
+        payload = self._build_get_panels_payload()
+        return self._graphql_and_parse(payload, parse_panels_response)
 
     def get_chart_markups(
         self,
@@ -1110,6 +1125,10 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
     async def get_layouts(self) -> list[Layout]:
         payload = self._build_get_layouts_payload()
         return await self._graphql_and_parse(payload, parse_layouts_response)
+
+    async def get_panels(self) -> list[Panel]:
+        payload = self._build_get_panels_payload()
+        return await self._graphql_and_parse(payload, parse_panels_response)
 
     async def get_chart_markups(
         self,

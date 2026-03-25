@@ -46,6 +46,7 @@ from tickerscope._models import (
     Layout,
     LayoutColumn,
     OwnershipData,
+    Panel,
     Pattern,
     PricePercentChanges,
     Pricing,
@@ -122,6 +123,8 @@ __all__ = [
     # Layout models
     "Layout",
     "LayoutColumn",
+    # Panel models
+    "Panel",
     # Chart markup models
     "ChartMarkup",
     "ChartMarkupList",
