@@ -81,7 +81,7 @@ def test_rs_rating_history_frozen() -> None:
     )
     history = RSRatingHistory(symbol="TEST", ratings=[snap], rs_line_new_high=False)
     with pytest.raises(AttributeError):
-        history.symbol = "OTHER"  # type: ignore
+        history.symbol = "OTHER"  # type: ignore[misc]
 
 
 def test_rs_rating_snapshot_frozen() -> None:
@@ -90,7 +90,7 @@ def test_rs_rating_snapshot_frozen() -> None:
         letter_value="NONE", period="P12M", period_offset="CURRENT", value=90
     )
     with pytest.raises(AttributeError):
-        snap.value = 95  # type: ignore
+        snap.value = 95  # type: ignore[misc]
 
 
 @respx.mock
