@@ -70,6 +70,7 @@ from tickerscope._queries import (
     ADHOC_SCREEN_QUERY,
     ALL_PANELS_QUERY,
     CHART_MARKET_DATA_QUERY,
+    CHART_MARKET_DATA_WEEKLY_QUERY,
     CHART_MARKUPS_QUERY,
     FLAGGED_SYMBOLS_QUERY,
     FUNDAMENTALS_QUERY,
@@ -447,22 +448,35 @@ class BaseTickerScopeClient(ABC):
         start_date: str,
         end_date: str,
         period: str = "P1D",
-        exchange: str = "NYSE",
+        exchange: str | None = None,
     ) -> dict[str, Any]:
+        """Build the GraphQL payload for chart data requests.
+
+        When *exchange* is ``None``, the weekly query variant is used which
+        omits the ``exchangeData`` section for a lighter response.  When an
+        exchange name is provided, the full daily query is used instead.
+        """
+        variables: dict[str, Any] = {
+            "symbols": [symbol],
+            "symbolDialectType": "CHARTING",
+            "where": {
+                "startDateTime": {"eq": start_date},
+                "endDateTime": {"eq": end_date},
+                "timeSeriesType": {"eq": period},
+                "includeIntradayData": True,
+            },
+        }
+
+        if exchange is None:
+            query = CHART_MARKET_DATA_WEEKLY_QUERY
+        else:
+            variables["exchangeName"] = exchange
+            query = CHART_MARKET_DATA_QUERY
+
         return {
             "operationName": "ChartMarketData",
-            "variables": {
-                "symbols": [symbol],
-                "symbolDialectType": "CHARTING",
-                "where": {
-                    "startDateTime": {"eq": start_date},
-                    "endDateTime": {"eq": end_date},
-                    "timeSeriesType": {"eq": period},
-                    "includeIntradayData": True,
-                },
-                "exchangeName": exchange,
-            },
-            "query": CHART_MARKET_DATA_QUERY,
+            "variables": variables,
+            "query": query,
         }
 
     @staticmethod
@@ -662,7 +676,7 @@ class BaseTickerScopeClient(ABC):
         end_date: str | None = None,
         lookback: str | None = None,
         period: str = "P1D",
-        exchange: str = "NYSE",
+        exchange: str | None = None,
     ) -> Any:
         resolved_start_date, resolved_end_date = _resolve_chart_dates(
             start_date=start_date,
@@ -824,7 +838,7 @@ class TickerScopeClient(BaseTickerScopeClient):
         end_date: str | None = None,
         lookback: str | None = None,
         period: str = "P1D",
-        exchange: str = "NYSE",
+        exchange: str | None = None,
     ) -> ChartData:
         return super().get_chart_data(
             symbol,
@@ -1036,7 +1050,7 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         end_date: str | None = None,
         lookback: str | None = None,
         period: str = "P1D",
-        exchange: str = "NYSE",
+        exchange: str | None = None,
     ) -> ChartData:
         resolved_start_date, resolved_end_date = _resolve_chart_dates(
             start_date=start_date,
