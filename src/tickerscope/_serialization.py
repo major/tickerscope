@@ -27,7 +27,7 @@ class SerializableDataclass:
             Serialized dictionary for this dataclass.
         """
         result: dict[str, Any] = {}
-        for field in dataclasses.fields(self):  # type: ignore[arg-type]
+        for field in dataclasses.fields(self):  # type: ignore
             value = getattr(self, field.name)
             if value is None and omit_none:
                 continue
