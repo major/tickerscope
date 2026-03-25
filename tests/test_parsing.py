@@ -14,6 +14,7 @@ from tickerscope._parsing import (
     parse_fundamentals_response,
     parse_layouts_response,
     parse_ownership_response,
+    parse_rs_rating_history_response,
     parse_screen_result_response,
     parse_screens_response,
     parse_stock_response,
@@ -45,6 +46,9 @@ from tickerscope._parsing import (
             parse_watchlist_detail_response, ("wl-id",), id="watchlist_detail"
         ),
         pytest.param(parse_watchlists_response, (), id="watchlist_names"),
+        pytest.param(
+            parse_rs_rating_history_response, ("SYM",), id="rs_rating_history"
+        ),
     ],
 )
 def test_graphql_errors_raise_api_error(parser, extra_args) -> None:

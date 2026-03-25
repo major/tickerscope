@@ -582,6 +582,25 @@ class OwnershipData(SerializableDataclass):
 
 
 @dataclass(frozen=True, slots=True)
+class RSRatingSnapshot(SerializableDataclass):
+    """Single RS rating value at a specific period and time offset."""
+
+    letter_value: str | None
+    period: str | None
+    period_offset: str | None
+    value: int | None
+
+
+@dataclass(frozen=True, slots=True)
+class RSRatingHistory(SerializableDataclass):
+    """RS rating history from RSRatingRIPanel query."""
+
+    symbol: str
+    ratings: list[RSRatingSnapshot]
+    rs_line_new_high: bool | None
+
+
+@dataclass(frozen=True, slots=True)
 class WatchlistSummary(SerializableDataclass):
     """Summary of a user watchlist (from GetAllWatchlistNames query)."""
 

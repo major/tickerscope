@@ -36,6 +36,8 @@ from tickerscope._models import (
     OwnershipData,
     Pattern,
     PricePercentChanges,
+    RSRatingHistory,
+    RSRatingSnapshot,
     TightArea,
     Pricing,
     QuarterlyFundOwnership,
@@ -545,6 +547,40 @@ def parse_ownership_response(raw: dict, symbol: str) -> OwnershipData:
             )
             for item in quarterly
         ],
+    )
+
+
+def parse_rs_rating_history_response(raw: dict, symbol: str) -> RSRatingHistory:
+    """Parse an RSRatingRIPanel GraphQL response into an RSRatingHistory dataclass.
+
+    Args:
+        raw: The raw GraphQL response dict.
+        symbol: The stock symbol that was queried.
+
+    Raises:
+        APIError: If the response contains GraphQL errors.
+        SymbolNotFoundError: If marketData is empty for the symbol.
+
+    Returns:
+        RSRatingHistory with RS rating snapshots and rsLineNewHigh flag.
+    """
+    _check_graphql_errors(raw, f"symbol {symbol!r}")
+    item = _extract_market_data(raw, symbol)
+    ratings_list = item.get("ratings", {}).get("rsRating", [])
+    intraday_stats = item.get("pricingStatistics", {}).get("intradayStatistics", {})
+
+    return RSRatingHistory(
+        symbol=symbol,
+        ratings=[
+            RSRatingSnapshot(
+                letter_value=rating.get("letterValue"),
+                period=rating.get("period"),
+                period_offset=rating.get("periodOffset"),
+                value=rating.get("value"),
+            )
+            for rating in ratings_list
+        ],
+        rs_line_new_high=intraday_stats.get("rsLineNewHigh"),
     )
 
 

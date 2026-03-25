@@ -1,0 +1,26 @@
+{
+  "data": {
+    "marketData": [
+      {
+        "id": "208144392",
+        "ratings": {
+          "rsRating": [
+            { "letterValue": "NONE", "period": "P12M", "periodOffset": "P4W_AGO",  "value": 87 },
+            { "letterValue": "NONE", "period": "P12M", "periodOffset": "P3M_AGO",  "value": 94 },
+            { "letterValue": "NONE", "period": "P12M", "periodOffset": "P6M_AGO",  "value": 79 },
+            { "letterValue": "NONE", "period": "P12M", "periodOffset": "P1Y_AGO",  "value": 13 },
+            { "letterValue": "NONE", "period": "P12M", "periodOffset": "P1W_AGO",  "value": 90 },
+            { "letterValue": "NONE", "period": "P12M", "periodOffset": "CURRENT",  "value": 90 },
+            { "letterValue": "NONE", "period": "P3M",  "periodOffset": "CURRENT",  "value": 35 },
+            { "letterValue": "NONE", "period": "P6M",  "periodOffset": "CURRENT",  "value": 36 }
+          ]
+        },
+        "pricingStatistics": {
+          "intradayStatistics": {
+            "rsLineNewHigh": false
+          }
+        }
+      }
+    ]
+  }
+}

@@ -39,6 +39,7 @@ active_alerts_response = _json_fixture("active_alerts_response.json")
 triggered_alerts_response = _json_fixture("triggered_alerts_response.json")
 layouts_response = _json_fixture("layouts_response.json")
 chart_markups_response = _json_fixture("chart_markups_response.json")
+rs_rating_history_response = _json_fixture("rs_rating_history_response.json")
 
 
 # ---------------------------------------------------------------------------

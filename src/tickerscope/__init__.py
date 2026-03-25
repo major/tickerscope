@@ -52,6 +52,8 @@ from tickerscope._models import (
     Quote,
     Ratings,
     ReportedPeriod,
+    RSRatingHistory,
+    RSRatingSnapshot,
     Screen,
     ScreenResult,
     ScreenSource,
@@ -129,6 +131,9 @@ __all__ = [
     "OwnershipData",
     "QuarterlyFundOwnership",
     "WatchlistSummary",
+    # RS rating models
+    "RSRatingSnapshot",
+    "RSRatingHistory",
     # Screen models
     "Screen",
     "ScreenResult",

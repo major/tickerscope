@@ -33,6 +33,7 @@ from tickerscope._models import (
     FundamentalData,
     Layout,
     OwnershipData,
+    RSRatingHistory,
     Screen,
     ScreenResult,
     StockAnalysis,
@@ -49,6 +50,7 @@ from tickerscope._parsing import (
     parse_fundamentals_response,
     parse_layouts_response,
     parse_ownership_response,
+    parse_rs_rating_history_response,
     parse_screen_result_response,
     parse_screens_response,
     parse_stock_response,
@@ -68,6 +70,7 @@ from tickerscope._queries import (
     MARKET_DATA_SCREEN_QUERY,
     OTHER_MARKET_DATA_QUERY,
     OWNERSHIP_QUERY,
+    RS_RATING_RI_PANEL_QUERY,
     SCREENS_QUERY,
     TRIGGERED_ALERTS_QUERY,
     WATCHLIST_COLUMNS,
@@ -580,6 +583,17 @@ class BaseTickerScopeClient(ABC):
             "query": CHART_MARKUPS_QUERY,
         }
 
+    @staticmethod
+    def _build_get_rs_rating_history_payload(symbol: str) -> dict[str, Any]:
+        return {
+            "operationName": "RSRatingRIPanel",
+            "variables": {
+                "symbols": [symbol],
+                "symbolDialectType": "CHARTING",
+            },
+            "query": RS_RATING_RI_PANEL_QUERY,
+        }
+
     def _graphql_and_parse(
         self,
         payload: dict[str, Any],
@@ -702,6 +716,12 @@ class BaseTickerScopeClient(ABC):
             sort_dir=sort_dir,
         )
         return self._graphql_and_parse(payload, parse_chart_markups_response)
+
+    def get_rs_rating_history(self, symbol: str) -> Any:
+        payload = self._build_get_rs_rating_history_payload(symbol)
+        return self._graphql_and_parse(
+            payload, parse_rs_rating_history_response, symbol
+        )
 
 
 class TickerScopeClient(BaseTickerScopeClient):
@@ -1089,6 +1109,12 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
             sort_dir=sort_dir,
         )
         return await self._graphql_and_parse(payload, parse_chart_markups_response)
+
+    async def get_rs_rating_history(self, symbol: str) -> RSRatingHistory:
+        payload = self._build_get_rs_rating_history_payload(symbol)
+        return await self._graphql_and_parse(
+            payload, parse_rs_rating_history_response, symbol
+        )
 
     async def get_watchlist_by_name(self, name: str) -> WatchlistDetail:
         """Look up a watchlist by name and return its full details.
