@@ -92,6 +92,7 @@ def test_stock_analysis_to_dict_output():
         ownership=None,
         fundamentals=None,
         patterns=[],
+        tight_areas=[],
     )
 
     payload = StockAnalysis(
@@ -107,6 +108,7 @@ def test_stock_analysis_to_dict_output():
         "stock": {
             "symbol": "AMD",
             "patterns": [],
+            "tight_areas": [],
         },
         "errors": ["fundamentals unavailable", "ownership unavailable"],
     }

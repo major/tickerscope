@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+# pyright: reportMissingImports=false
+
 import pytest
 
 from tickerscope._models import (
@@ -108,6 +110,7 @@ class TestStockData:
                 new_ceo_date=None,
             ),
             patterns=[],
+            tight_areas=[],
         )
         with pytest.raises(AttributeError):
             stock.symbol = "GOOG"  # type: ignore[misc]

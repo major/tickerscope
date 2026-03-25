@@ -29,9 +29,14 @@ from tickerscope._models import (
     Industry,
     Layout,
     LayoutColumn,
+    AscendingBasePattern,
+    CupPattern,
+    DoubleBottomPattern,
+    IpoBasePattern,
     OwnershipData,
     Pattern,
     PricePercentChanges,
+    TightArea,
     Pricing,
     QuarterlyFundOwnership,
     Ratings,
@@ -102,6 +107,128 @@ def _to_float(value) -> float | None:
         return float(value)
     except (TypeError, ValueError):
         return None
+
+
+_CUP_PATTERN_TYPES = frozenset(
+    {
+        "CUP_WITH_HANDLE",
+        "CUP_WITHOUT_HANDLE",
+        "SAUCER_WITH_HANDLE",
+        "SAUCER_WITHOUT_HANDLE",
+    }
+)
+
+
+def _base_pattern_kwargs(raw: dict) -> dict:
+    """Extract common Pattern fields shared by all pattern types."""
+    pattern_type = str(raw.get("patternType", "")).replace("_", " ").title()
+    return {
+        "id": raw.get("id"),
+        "pattern_type": pattern_type,
+        "periodicity": raw.get("periodicity"),
+        "base_stage": raw.get("baseStage"),
+        "base_number": raw.get("baseNumber"),
+        "base_status": raw.get("baseStatus"),
+        "base_length": raw.get("baseLength"),
+        "base_depth": _safe_value(raw.get("baseDepth")),
+        "base_depth_formatted": _safe_value(raw.get("baseDepth"), "formattedValue"),
+        "base_start_date": _safe_date_value(raw.get("baseStartDate")),
+        "base_end_date": _safe_date_value(raw.get("baseEndDate")),
+        "base_bottom_date": _safe_date_value(raw.get("baseBottomDate")),
+        "left_side_high_date": _safe_date_value(raw.get("leftSideHighDate")),
+        "pivot_price": _safe_value(raw.get("pivotPrice")),
+        "pivot_price_formatted": _safe_value(raw.get("pivotPrice"), "formattedValue"),
+        "pivot_date": _safe_date_value(raw.get("pivotDate")),
+        "pivot_price_date": _safe_date_value(raw.get("pivotPriceDate")),
+        "avg_volume_rate_pct_on_pivot": _safe_value(raw.get("avgVolumeRatePctOnPivot")),
+        "avg_volume_rate_pct_on_pivot_formatted": _safe_value(
+            raw.get("avgVolumeRatePctOnPivot"), "formattedValue"
+        ),
+        "price_pct_change_on_pivot": _safe_value(raw.get("pricePctChangeOnPivot")),
+        "price_pct_change_on_pivot_formatted": _safe_value(
+            raw.get("pricePctChangeOnPivot"), "formattedValue"
+        ),
+    }
+
+
+def _build_pattern(raw: dict) -> Pattern:
+    """Dispatch a raw pattern dict to the correct Pattern subclass."""
+    base = _base_pattern_kwargs(raw)
+    ptype = raw.get("patternType", "")
+
+    if ptype in _CUP_PATTERN_TYPES:
+        return CupPattern(
+            **base,
+            handle_depth=_safe_value(raw.get("handleDepth")),
+            handle_depth_formatted=_safe_value(
+                raw.get("handleDepth"), "formattedValue"
+            ),
+            handle_length=raw.get("handleLength"),
+            cup_length=raw.get("cupLength"),
+            cup_end_date=_safe_date_value(raw.get("cupEndDate")),
+            handle_low_date=_safe_date_value(raw.get("handleLowDate")),
+            handle_start_date=_safe_date_value(raw.get("handleStartDate")),
+        )
+
+    if ptype == "DOUBLE_BOTTOM":
+        return DoubleBottomPattern(
+            **base,
+            first_bottom_date=_safe_date_value(raw.get("firstBottomDate")),
+            second_bottom_date=_safe_date_value(raw.get("secondBottomDate")),
+            mid_peak_date=_safe_date_value(raw.get("midPeakDate")),
+        )
+
+    if ptype == "ASCENDING_BASE":
+        return AscendingBasePattern(
+            **base,
+            first_bottom_date=_safe_date_value(raw.get("firstBottomDate")),
+            second_ascending_high_date=_safe_date_value(
+                raw.get("secondAscendingHighDate")
+            ),
+            second_bottom_date=_safe_date_value(raw.get("secondBottomDate")),
+            third_ascending_high_date=_safe_date_value(
+                raw.get("thirdAscendingHighDate")
+            ),
+            third_bottom_date=_safe_date_value(raw.get("thirdBottomDate")),
+            pull_back_1_depth=_safe_value(raw.get("pullBack1Depth")),
+            pull_back_1_depth_formatted=_safe_value(
+                raw.get("pullBack1Depth"), "formattedValue"
+            ),
+            pull_back_2_depth=_safe_value(raw.get("pullBack2Depth")),
+            pull_back_2_depth_formatted=_safe_value(
+                raw.get("pullBack2Depth"), "formattedValue"
+            ),
+            pull_back_3_depth=_safe_value(raw.get("pullBack3Depth")),
+            pull_back_3_depth_formatted=_safe_value(
+                raw.get("pullBack3Depth"), "formattedValue"
+            ),
+        )
+
+    if ptype == "IPO_BASE":
+        return IpoBasePattern(
+            **base,
+            up_bars=raw.get("upBars"),
+            blue_bars=raw.get("blueBars"),
+            stall_bars=raw.get("stallBars"),
+            down_bars=raw.get("downBars"),
+            red_bars=raw.get("redBars"),
+            support_bars=raw.get("supportBars"),
+            up_volume_total=_safe_value(raw.get("upVolumeTotal")),
+            up_volume_total_formatted=_safe_value(
+                raw.get("upVolumeTotal"), "formattedValue"
+            ),
+            down_volume_total=_safe_value(raw.get("downVolumeTotal")),
+            down_volume_total_formatted=_safe_value(
+                raw.get("downVolumeTotal"), "formattedValue"
+            ),
+            volume_pct_change_on_pivot=_safe_value(raw.get("volumePctChangeOnPivot")),
+            volume_pct_change_on_pivot_formatted=_safe_value(
+                raw.get("volumePctChangeOnPivot"), "formattedValue"
+            ),
+        )
+
+    # CONSOLIDATION, FLAT_BASE, and any unknown types use base Pattern
+    return Pattern(**base)
 
 
 def _check_graphql_errors(raw: dict, context: str) -> None:
@@ -186,24 +313,19 @@ def parse_stock_response(raw: dict, symbol: str) -> StockData:
     sales_growth = _first(sales_consensus.get("growthRate", []))
     profit_margin = _first(financials.get("profitMarginValues", []))
 
-    pattern_rows: list[Pattern] = []
-    for pattern in item.get("patternInfo", {}).get("patterns", []):
-        pattern_rows.append(
-            Pattern(
-                type=str(pattern.get("patternType", "")).replace("_", " ").title(),
-                stage=pattern.get("baseStage"),
-                base_number=pattern.get("baseNumber"),
-                status=pattern.get("baseStatus"),
-                pivot_price=_safe_value(pattern.get("pivotPrice")),
-                pivot_price_formatted=_safe_value(
-                    pattern.get("pivotPrice"), "formattedValue"
-                ),
-                pivot_date=_safe_date_value(pattern.get("pivotDate")),
-                base_start_date=_safe_date_value(pattern.get("baseStartDate")),
-                base_end_date=_safe_date_value(pattern.get("baseEndDate")),
-                base_length=pattern.get("baseLength"),
-            )
+    pattern_info = item.get("patternInfo", {})
+    pattern_rows: list[Pattern] = [
+        _build_pattern(p) for p in pattern_info.get("patterns", [])
+    ]
+    tight_area_rows: list[TightArea] = [
+        TightArea(
+            pattern_id=ta.get("patternID"),
+            start_date=_safe_date_value(ta.get("startDate")),
+            end_date=_safe_date_value(ta.get("endDate")),
+            length=ta.get("length"),
         )
+        for ta in pattern_info.get("tightAreas", [])
+    ]
 
     return StockData(
         symbol=symbol,
@@ -333,6 +455,7 @@ def parse_stock_response(raw: dict, symbol: str) -> StockData:
             new_ceo_date=_safe_date_value(fundamentals.get("newCEODate")),
         ),
         patterns=pattern_rows,
+        tight_areas=tight_area_rows,
     )
 
 

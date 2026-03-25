@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+# pyright: reportMissingImports=false
+
 import json
 from pathlib import Path
 from unittest.mock import patch
@@ -9,7 +11,7 @@ from unittest.mock import patch
 import pytest
 
 from tickerscope._client import AsyncTickerScopeClient, TickerScopeClient
-from tickerscope._models import Pricing, Ratings, StockData
+from tickerscope._models import CupPattern, Pricing, Ratings, StockData
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
@@ -112,6 +114,7 @@ def minimal_stock():
             ownership=None,
             fundamentals=None,
             patterns=[],
+            tight_areas=[],
         )
         defaults.update(overrides)
         return StockData(**defaults)
@@ -133,6 +136,7 @@ def minimal_stock_empty() -> StockData:
         ownership=None,
         fundamentals=None,
         patterns=[],
+        tight_areas=[],
     )
 
 
@@ -146,7 +150,6 @@ def full_stock() -> StockData:
         Financials,
         Fundamentals,
         Industry,
-        Pattern,
         PricePercentChanges,
     )
 
@@ -230,17 +233,36 @@ def full_stock() -> StockData:
             new_ceo_date=None,
         ),
         patterns=[
-            Pattern(
-                type="Cup With Handle",
-                stage=2,
+            CupPattern(
+                id=None,
+                pattern_type="Cup With Handle",
+                periodicity=None,
+                base_stage="2",
                 base_number=1,
-                status="COMPLETE",
+                base_status="COMPLETE",
+                base_depth=None,
+                base_depth_formatted=None,
                 pivot_price=198.45,
                 pivot_price_formatted="$198.45",
                 pivot_date="2024-06-15",
+                pivot_price_date=None,
+                avg_volume_rate_pct_on_pivot=None,
+                avg_volume_rate_pct_on_pivot_formatted=None,
+                price_pct_change_on_pivot=None,
+                price_pct_change_on_pivot_formatted=None,
                 base_start_date="2024-01-10",
                 base_end_date="2024-06-14",
+                base_bottom_date=None,
+                left_side_high_date=None,
                 base_length=110,
+                handle_depth=None,
+                handle_depth_formatted=None,
+                handle_length=None,
+                cup_length=None,
+                cup_end_date=None,
+                handle_low_date=None,
+                handle_start_date=None,
             ),
         ],
+        tight_areas=[],
     )

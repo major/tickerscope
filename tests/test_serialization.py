@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+# pyright: reportMissingImports=false
+
 import json
 
 import pytest
@@ -9,9 +11,9 @@ import pytest
 from tickerscope._models import (
     BasicOwnership,
     Company,
+    CupPattern,
     EstimatePeriod,
     Fundamentals,
-    Pattern,
     PricePercentChanges,
     Ratings,
     ReportedPeriod,
@@ -33,17 +35,35 @@ _COMPANY_WITH_IPO = Company(
     ipo_price=25.0,
     ipo_price_formatted="$25.00",
 )
-_CUP_PATTERN = Pattern(
-    type="Cup",
-    stage=1,
+_CUP_PATTERN = CupPattern(
+    id=None,
+    pattern_type="Cup",
+    periodicity=None,
+    base_stage="1",
     base_number=1,
-    status="Complete",
+    base_status="Complete",
+    base_depth=None,
+    base_depth_formatted=None,
     pivot_price=150.0,
     pivot_price_formatted="$150.00",
     pivot_date="2024-01-01",
+    pivot_price_date=None,
+    avg_volume_rate_pct_on_pivot=None,
+    avg_volume_rate_pct_on_pivot_formatted=None,
+    price_pct_change_on_pivot=None,
+    price_pct_change_on_pivot_formatted=None,
     base_start_date="2023-06-01",
     base_end_date="2024-01-01",
+    base_bottom_date=None,
+    left_side_high_date=None,
     base_length=30,
+    handle_depth=None,
+    handle_depth_formatted=None,
+    handle_length=None,
+    cup_length=None,
+    cup_end_date=None,
+    handle_low_date=None,
+    handle_start_date=None,
 )
 _BASIC_OWNERSHIP = BasicOwnership(
     funds_float_pct=43.87, funds_float_pct_formatted="43.87%"

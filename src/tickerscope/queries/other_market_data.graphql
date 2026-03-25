@@ -4,6 +4,9 @@ query OtherMarketData(
   $upToHistoricalPeriodOffset: MDUpToQueryPeriodOffsetHistorical!
   $upToQueryPeriodOffset: MDUpToQueryPeriodOffsetFuture!
   $upToHistoricalPeriodForProfitMargin: MDUpToQueryPeriodOffsetHistorical!
+  $patternStartDate: String!
+  $patternEndDate: String!
+  $patternPeriodicity: MDPatternPeriodicity!
 ) {
   marketData(symbols: $symbols, symbolDialectType: $symbolDialectType) {
     id
@@ -244,9 +247,9 @@ query OtherMarketData(
     patternInfo {
       patterns(
         where: {
-          baseStartDate: { value: { gte: "2021-12-02" } }
-          baseEndDate: { value: { lte: "2026-03-20" } }
-          periodicity: { eq: DAILY }
+          baseStartDate: { value: { gte: $patternStartDate } }
+          baseEndDate: { value: { lte: $patternEndDate } }
+          periodicity: { eq: $patternPeriodicity }
         }
       ) {
         ... on MDCupWithoutHandle {
@@ -842,8 +845,8 @@ query OtherMarketData(
       }
       tightAreas(
         where: {
-          startDate: { value: { gte: "2021-12-02" } }
-          endDate: { value: { gte: "2021-12-02" } }
+          startDate: { value: { gte: $patternStartDate } }
+          endDate: { value: { gte: $patternStartDate } }
         }
       ) {
         patternID

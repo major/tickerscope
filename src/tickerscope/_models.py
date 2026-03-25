@@ -150,24 +150,74 @@ class CorporateActions(SerializableDataclass):
 
 
 @dataclass(frozen=True, slots=True)
-class Pattern(SerializableDataclass):
-    """Technical chart pattern detected by MarketSurge."""
+class TightArea(SerializableDataclass):
+    """Tight price consolidation area on a chart (e.g. 3-weeks-tight)."""
 
-    type: str | None
-    stage: int | None
+    pattern_id: int | None
+    start_date: str | None
+    end_date: str | None
+    length: int | None
+
+    @property
+    def start_date_dt(self) -> datetime.date | None:
+        """Parsed start_date as a date object, or None if unavailable."""
+        return parse_date(self.start_date)
+
+    @property
+    def end_date_dt(self) -> datetime.date | None:
+        """Parsed end_date as a date object, or None if unavailable."""
+        return parse_date(self.end_date)
+
+
+@dataclass(frozen=True, slots=True)
+class Pattern(SerializableDataclass):
+    """Base class for all technical chart patterns detected by MarketSurge.
+
+    Consolidation and Flat Base patterns use this class directly.
+    Cup/saucer, double bottom, ascending base, and IPO base patterns
+    use specialized subclasses with additional fields.
+    """
+
+    # Identity
+    id: str | None
+    pattern_type: str | None
+    periodicity: str | None
+
+    # Base characteristics
+    base_stage: str | None
     base_number: int | None
-    status: str | None
+    base_status: str | None
+    base_length: int | None
+    base_depth: float | None
+    base_depth_formatted: str | None
+
+    # Key dates
+    base_start_date: str | None
+    base_end_date: str | None
+    base_bottom_date: str | None
+    left_side_high_date: str | None
+
+    # Pivot info
     pivot_price: float | None
     pivot_price_formatted: str | None
     pivot_date: str | None
-    base_start_date: str | None
-    base_end_date: str | None
-    base_length: int | None
+    pivot_price_date: str | None
+
+    # Performance on pivot day
+    avg_volume_rate_pct_on_pivot: float | None
+    avg_volume_rate_pct_on_pivot_formatted: str | None
+    price_pct_change_on_pivot: float | None
+    price_pct_change_on_pivot_formatted: str | None
 
     @property
     def pivot_date_dt(self) -> datetime.date | None:
         """Parsed pivot_date as a date object, or None if unavailable."""
         return parse_date(self.pivot_date)
+
+    @property
+    def pivot_price_date_dt(self) -> datetime.date | None:
+        """Parsed pivot_price_date as a date object, or None if unavailable."""
+        return parse_date(self.pivot_price_date)
 
     @property
     def base_start_date_dt(self) -> datetime.date | None:
@@ -178,6 +228,132 @@ class Pattern(SerializableDataclass):
     def base_end_date_dt(self) -> datetime.date | None:
         """Parsed base_end_date as a date object, or None if unavailable."""
         return parse_date(self.base_end_date)
+
+    @property
+    def base_bottom_date_dt(self) -> datetime.date | None:
+        """Parsed base_bottom_date as a date object, or None if unavailable."""
+        return parse_date(self.base_bottom_date)
+
+    @property
+    def left_side_high_date_dt(self) -> datetime.date | None:
+        """Parsed left_side_high_date as a date object, or None if unavailable."""
+        return parse_date(self.left_side_high_date)
+
+
+@dataclass(frozen=True, slots=True)
+class CupPattern(Pattern):
+    """Cup or saucer pattern, with or without handle.
+
+    Covers CUP_WITH_HANDLE, CUP_WITHOUT_HANDLE, SAUCER_WITH_HANDLE,
+    and SAUCER_WITHOUT_HANDLE pattern types.
+    """
+
+    handle_depth: float | None
+    handle_depth_formatted: str | None
+    handle_length: int | None
+    cup_length: int | None
+    cup_end_date: str | None
+    handle_low_date: str | None
+    handle_start_date: str | None
+
+    @property
+    def cup_end_date_dt(self) -> datetime.date | None:
+        """Parsed cup_end_date as a date object, or None if unavailable."""
+        return parse_date(self.cup_end_date)
+
+    @property
+    def handle_low_date_dt(self) -> datetime.date | None:
+        """Parsed handle_low_date as a date object, or None if unavailable."""
+        return parse_date(self.handle_low_date)
+
+    @property
+    def handle_start_date_dt(self) -> datetime.date | None:
+        """Parsed handle_start_date as a date object, or None if unavailable."""
+        return parse_date(self.handle_start_date)
+
+
+@dataclass(frozen=True, slots=True)
+class DoubleBottomPattern(Pattern):
+    """Double bottom (W-shaped) chart pattern."""
+
+    first_bottom_date: str | None
+    second_bottom_date: str | None
+    mid_peak_date: str | None
+
+    @property
+    def first_bottom_date_dt(self) -> datetime.date | None:
+        """Parsed first_bottom_date as a date object, or None if unavailable."""
+        return parse_date(self.first_bottom_date)
+
+    @property
+    def second_bottom_date_dt(self) -> datetime.date | None:
+        """Parsed second_bottom_date as a date object, or None if unavailable."""
+        return parse_date(self.second_bottom_date)
+
+    @property
+    def mid_peak_date_dt(self) -> datetime.date | None:
+        """Parsed mid_peak_date as a date object, or None if unavailable."""
+        return parse_date(self.mid_peak_date)
+
+
+@dataclass(frozen=True, slots=True)
+class AscendingBasePattern(Pattern):
+    """Ascending base pattern with three progressively higher pullbacks."""
+
+    first_bottom_date: str | None
+    second_ascending_high_date: str | None
+    second_bottom_date: str | None
+    third_ascending_high_date: str | None
+    third_bottom_date: str | None
+    pull_back_1_depth: float | None
+    pull_back_1_depth_formatted: str | None
+    pull_back_2_depth: float | None
+    pull_back_2_depth_formatted: str | None
+    pull_back_3_depth: float | None
+    pull_back_3_depth_formatted: str | None
+
+    @property
+    def first_bottom_date_dt(self) -> datetime.date | None:
+        """Parsed first_bottom_date as a date object, or None if unavailable."""
+        return parse_date(self.first_bottom_date)
+
+    @property
+    def second_ascending_high_date_dt(self) -> datetime.date | None:
+        """Parsed second_ascending_high_date as a date object, or None."""
+        return parse_date(self.second_ascending_high_date)
+
+    @property
+    def second_bottom_date_dt(self) -> datetime.date | None:
+        """Parsed second_bottom_date as a date object, or None if unavailable."""
+        return parse_date(self.second_bottom_date)
+
+    @property
+    def third_ascending_high_date_dt(self) -> datetime.date | None:
+        """Parsed third_ascending_high_date as a date object, or None."""
+        return parse_date(self.third_ascending_high_date)
+
+    @property
+    def third_bottom_date_dt(self) -> datetime.date | None:
+        """Parsed third_bottom_date as a date object, or None if unavailable."""
+        return parse_date(self.third_bottom_date)
+
+
+@dataclass(frozen=True, slots=True)
+class IpoBasePattern(Pattern):
+    """First base pattern after an IPO, with detailed bar and volume analysis."""
+
+    up_bars: int | None
+    blue_bars: int | None
+    stall_bars: int | None
+    down_bars: int | None
+    red_bars: int | None
+    support_bars: int | None
+    up_volume_total: float | None
+    up_volume_total_formatted: str | None
+    down_volume_total: float | None
+    down_volume_total_formatted: str | None
+    volume_pct_change_on_pivot: float | None
+    volume_pct_change_on_pivot_formatted: str | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -227,6 +403,7 @@ class StockData(SerializableDataclass):
     ownership: BasicOwnership | None
     fundamentals: Fundamentals | None
     patterns: list[Pattern]
+    tight_areas: list[TightArea]
 
     def _str_header(self) -> str:
         """Format header line with symbol and company name."""
@@ -294,12 +471,12 @@ class StockData(SerializableDataclass):
             return None
         p = self.patterns[0]
         pat_parts = []
-        if p.stage is not None:
-            pat_parts.append(f"Stage {p.stage}")
+        if p.base_stage is not None:
+            pat_parts.append(f"Stage {p.base_stage}")
         if p.pivot_price_formatted is not None:
             pat_parts.append(f"Pivot {p.pivot_price_formatted}")
         detail = f" ({', '.join(pat_parts)})" if pat_parts else ""
-        return f"Pattern: {p.type or 'Unknown'}{detail}"
+        return f"Pattern: {p.pattern_type or 'Unknown'}{detail}"
 
     def __str__(self) -> str:
         """Human-readable multi-line summary for LLM consumption."""

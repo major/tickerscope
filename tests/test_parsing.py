@@ -5,6 +5,7 @@
 import pytest
 
 from tickerscope._exceptions import APIError, SymbolNotFoundError
+from tickerscope._models import CupPattern
 from tickerscope._parsing import (
     _safe_date_value,
     parse_active_alerts_response,
@@ -68,9 +69,12 @@ def test_parse_stock_response_real_fixture(stock_response) -> None:
     assert stock.ratings.composite == 95
     assert stock.ratings.rs == 92
     assert stock.ratings.smr == "A"
+    assert stock.company is not None
     assert stock.company.name == "Alphabet, Inc."
     assert isinstance(stock.patterns, list)
     assert len(stock.patterns) >= 0
+    assert isinstance(stock.patterns[0], CupPattern)
+    assert isinstance(stock.tight_areas, list)
 
 
 def test_parse_stock_response_empty_market_data() -> None:

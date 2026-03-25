@@ -1,5 +1,7 @@
 """Tests for the public API surface of the marketsurge package."""
 
+# pyright: reportMissingImports=false
+
 
 def test_import_no_side_effects(capsys):
     """Test that importing marketsurge triggers no output or side effects."""
@@ -17,6 +19,19 @@ def test_all_exports_importable():
         obj = getattr(tickerscope, name)
         assert obj is not None, f"{name} is None"
     print(f"OK - {len(tickerscope.__all__)} exports verified")
+
+
+def test_pattern_hierarchy_exports_present():
+    import tickerscope
+
+    expected_exports = {
+        "CupPattern",
+        "DoubleBottomPattern",
+        "AscendingBasePattern",
+        "IpoBasePattern",
+        "TightArea",
+    }
+    assert expected_exports.issubset(set(tickerscope.__all__))
 
 
 def test_client_importable_from_package():
