@@ -16,6 +16,7 @@ TRIGGERED_ALERTS_QUERY = load_query("triggered_alerts")
 MARKET_DATA_LAYOUTS_QUERY = load_query("market_data_layouts")
 CHART_MARKUPS_QUERY = load_query("chart_markups")
 RS_RATING_RI_PANEL_QUERY = load_query("rs_rating_ri_panel")
+GET_SERVER_DATE_TIME_QUERY = load_query("get_server_date_time")
 
 WATCHLIST_COLUMNS = [
     {"name": "Symbol"},

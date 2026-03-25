@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import datetime
 import logging
 
 from tickerscope._exceptions import APIError, SymbolNotFoundError
@@ -1114,3 +1115,22 @@ def parse_chart_markups_response(raw: dict) -> ChartMarkupList:
         cursor_id=container.get("cursorId"),
         markups=markups,
     )
+
+
+def parse_server_time_response(raw: dict) -> datetime.datetime:
+    """Parse GetServerDateTime GraphQL response into a timezone-aware datetime.
+
+    Args:
+        raw: GraphQL response dict with ibdGetServerDateTime field.
+
+    Returns:
+        Timezone-aware datetime.datetime object.
+
+    Raises:
+        APIError: If response contains GraphQL errors or server time is missing.
+    """
+    _check_graphql_errors(raw, "server time")
+    ts = raw.get("data", {}).get("ibdGetServerDateTime")
+    if not ts:
+        raise APIError("Server returned no datetime", errors=[])
+    return datetime.datetime.fromisoformat(ts)

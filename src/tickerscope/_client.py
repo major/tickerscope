@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import datetime
 import logging
 from calendar import monthrange
 from abc import ABC, abstractmethod
@@ -53,6 +54,7 @@ from tickerscope._parsing import (
     parse_rs_rating_history_response,
     parse_screen_result_response,
     parse_screens_response,
+    parse_server_time_response,
     parse_stock_response,
     parse_triggered_alerts_response,
     parse_watchlist_detail_response,
@@ -66,6 +68,7 @@ from tickerscope._queries import (
     CHART_MARKUPS_QUERY,
     FLAGGED_SYMBOLS_QUERY,
     FUNDAMENTALS_QUERY,
+    GET_SERVER_DATE_TIME_QUERY,
     MARKET_DATA_LAYOUTS_QUERY,
     MARKET_DATA_SCREEN_QUERY,
     OTHER_MARKET_DATA_QUERY,
@@ -594,6 +597,14 @@ class BaseTickerScopeClient(ABC):
             "query": RS_RATING_RI_PANEL_QUERY,
         }
 
+    @staticmethod
+    def _build_get_server_time_payload() -> dict[str, Any]:
+        return {
+            "operationName": "GetServerDateTime",
+            "variables": {},
+            "query": GET_SERVER_DATE_TIME_QUERY,
+        }
+
     def _graphql_and_parse(
         self,
         payload: dict[str, Any],
@@ -722,6 +733,10 @@ class BaseTickerScopeClient(ABC):
         return self._graphql_and_parse(
             payload, parse_rs_rating_history_response, symbol
         )
+
+    def get_server_time(self) -> Any:
+        payload = self._build_get_server_time_payload()
+        return self._graphql_and_parse(payload, parse_server_time_response)
 
 
 class TickerScopeClient(BaseTickerScopeClient):
@@ -1115,6 +1130,10 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         return await self._graphql_and_parse(
             payload, parse_rs_rating_history_response, symbol
         )
+
+    async def get_server_time(self) -> datetime.datetime:
+        payload = self._build_get_server_time_payload()
+        return await self._graphql_and_parse(payload, parse_server_time_response)
 
     async def get_watchlist_by_name(self, name: str) -> WatchlistDetail:
         """Look up a watchlist by name and return its full details.
