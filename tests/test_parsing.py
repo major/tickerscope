@@ -9,6 +9,7 @@ from tickerscope._models import CupPattern
 from tickerscope._parsing import (
     _safe_date_value,
     parse_active_alerts_response,
+    parse_adhoc_screen_response,
     parse_chart_data_response,
     parse_chart_markups_response,
     parse_coach_tree_response,
@@ -57,6 +58,7 @@ from tickerscope._parsing import (
         pytest.param(parse_server_time_response, (), id="server_time"),
         pytest.param(parse_nav_tree_response, (), id="nav_tree"),
         pytest.param(parse_coach_tree_response, (), id="coach_tree"),
+        pytest.param(parse_adhoc_screen_response, (), id="adhoc_screen"),
     ],
 )
 def test_graphql_errors_raise_api_error(parser, extra_args) -> None:
