@@ -757,14 +757,76 @@ class CoachTreeData(SerializableDataclass):
 
 @dataclass(frozen=True, slots=True)
 class ReportInfo(SerializableDataclass):
-    """Predefined MarketSurge report metadata extracted from the NavTree.
+    """Predefined MarketSurge report metadata.
 
-    Reports (like "Bases Forming", "RS Line Blue Dot") appear as
-    REPORTS_SCREEN leaves in the navigation tree with integer IDs.
+    Reports (like "Bases Forming", "RS Line Blue Dot") are predefined stock
+    lists identified by integer IDs. Use PREDEFINED_REPORTS for the full
+    catalog.
     """
 
     name: str
     original_id: int
+
+
+PREDEFINED_REPORTS: tuple[ReportInfo, ...] = (
+    ReportInfo(name="Top 150 EPS Rating Stocks", original_id=1),
+    ReportInfo(name="Top 150 RS Rating Stocks", original_id=3),
+    ReportInfo(name="Fastest Growing Companies - Top 150", original_id=5),
+    ReportInfo(name="Top 30 EPS Rating Stocks with High Avg. Volume", original_id=26),
+    ReportInfo(name="Top 30 RS Rating Stocks with High Avg. Volume", original_id=27),
+    ReportInfo(name="Weekly New High Report", original_id=28),
+    ReportInfo(
+        name="Weekly Report of Stocks Approaching or at New High", original_id=29
+    ),
+    ReportInfo(name="IBD 85-85 Index", original_id=39),
+    ReportInfo(name="IBD Big Cap 20", original_id=40),
+    ReportInfo(name="Today's Industry Performance: NEW HIGHS", original_id=47),
+    ReportInfo(name="Today's Industry Performance: NEW LOWS", original_id=48),
+    ReportInfo(name="Top 25 Funds over 10 Years", original_id=50),
+    ReportInfo(name="Top 25 Industry or Sector Funds Over 3 Years", original_id=51),
+    ReportInfo(name="Extended Stocks", original_id=84),
+    ReportInfo(name="Accelerating Leaders", original_id=85),
+    ReportInfo(name="Decelerating Leaders", original_id=87),
+    ReportInfo(name="Top Rated Stocks", original_id=88),
+    ReportInfo(name="MarketSurge Growth 250", original_id=93),
+    ReportInfo(name="Additions", original_id=94),
+    ReportInfo(name="Deletions", original_id=95),
+    ReportInfo(name="IPO 1 Year", original_id=96),
+    ReportInfo(name="RS Line New High", original_id=97),
+    ReportInfo(name="Large Cap", original_id=98),
+    ReportInfo(name="Mid Cap", original_id=99),
+    ReportInfo(name="Small Cap", original_id=100),
+    ReportInfo(name="Technical Strength", original_id=101),
+    ReportInfo(name="Fundamental Strength", original_id=102),
+    ReportInfo(name="Breaking Out Today", original_id=104),
+    ReportInfo(name="Recent Breakouts", original_id=105),
+    ReportInfo(name="Near Pivot", original_id=106),
+    ReportInfo(name="Tight Areas", original_id=107),
+    ReportInfo(name="Power from Pivot", original_id=108),
+    ReportInfo(name="Breakaway Gap", original_id=109),
+    ReportInfo(name="Earnings - Gap Up", original_id=110),
+    ReportInfo(name="Earnings - Gap Down", original_id=111),
+    ReportInfo(name="Earnings - Reported", original_id=112),
+    ReportInfo(name="Earnings - Upcoming", original_id=113),
+    ReportInfo(name="50-Day Break on Volume", original_id=114),
+    ReportInfo(name="Pullback to 10-week Line", original_id=115),
+    ReportInfo(name="Minervini Trend - 1 Month", original_id=119),
+    ReportInfo(name="Minervini Trend - 5 Months", original_id=120),
+    ReportInfo(name="RS Line Blue Dot", original_id=121),
+    ReportInfo(name="Minervini Trend - 5 Months Wide", original_id=123),
+    ReportInfo(name="Bases Forming", original_id=124),
+    ReportInfo(name="All Tight Areas", original_id=125),
+    ReportInfo(name="All RS Line New High", original_id=126),
+    ReportInfo(name="Minervini Trend - 1 - 4 Months", original_id=127),
+    ReportInfo(name="Barron's 400", original_id=130),
+    ReportInfo(name="Ants List", original_id=131),
+)
+"""Full catalog of predefined MarketSurge reports.
+
+Sourced from the MarketSurge frontend. These reports can be run via
+``run_report(original_id)`` regardless of whether the user has pinned
+them to their navigation sidebar.
+"""
 
 
 @dataclass(frozen=True, slots=True)

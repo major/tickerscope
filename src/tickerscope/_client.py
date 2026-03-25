@@ -38,6 +38,7 @@ from tickerscope._models import (
     NavTreeNode,
     OwnershipData,
     Panel,
+    PREDEFINED_REPORTS,
     ReportInfo,
     RSRatingHistory,
     Screen,
@@ -59,7 +60,6 @@ from tickerscope._parsing import (
     parse_nav_tree_response,
     parse_ownership_response,
     parse_panels_response,
-    parse_reports_from_nav_tree,
     parse_rs_rating_history_response,
     parse_screen_result_response,
     parse_screens_response,
@@ -980,17 +980,17 @@ class TickerScopeClient(BaseTickerScopeClient):
         return self.get_watchlist(match.id)
 
     def get_reports(self) -> list[ReportInfo]:
-        """Return available predefined reports from the user's NavTree.
+        """Return all predefined MarketSurge reports.
 
-        Fetches the navigation tree and extracts REPORTS_SCREEN leaves
-        (e.g. "Bases Forming", "RS Line Blue Dot"). Only reports the user
-        has added to their MarketSurge navigation are returned.
+        Returns the full hardcoded catalog of predefined reports
+        (e.g. "Bases Forming", "Near Pivot", "Breaking Out Today").
+        Any report can be run via ``run_report(original_id)`` regardless
+        of whether the user has pinned it to their navigation sidebar.
 
         Returns:
             List of ReportInfo sorted by original_id.
         """
-        nodes = self.get_nav_tree()
-        return parse_reports_from_nav_tree(nodes)
+        return list(PREDEFINED_REPORTS)
 
     def run_report_by_name(self, name: str) -> AdhocScreenResult:
         """Run a predefined report by display name.
@@ -1334,17 +1334,17 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         return await self.get_watchlist(match.id)
 
     async def get_reports(self) -> list[ReportInfo]:
-        """Return available predefined reports from the user's NavTree.
+        """Return all predefined MarketSurge reports.
 
-        Fetches the navigation tree and extracts REPORTS_SCREEN leaves
-        (e.g. "Bases Forming", "RS Line Blue Dot"). Only reports the user
-        has added to their MarketSurge navigation are returned.
+        Returns the full hardcoded catalog of predefined reports
+        (e.g. "Bases Forming", "Near Pivot", "Breaking Out Today").
+        Any report can be run via ``run_report(original_id)`` regardless
+        of whether the user has pinned it to their navigation sidebar.
 
         Returns:
             List of ReportInfo sorted by original_id.
         """
-        nodes = await self.get_nav_tree()
-        return parse_reports_from_nav_tree(nodes)
+        return list(PREDEFINED_REPORTS)
 
     async def run_report_by_name(self, name: str) -> AdhocScreenResult:
         """Run a predefined report by display name.

@@ -17,6 +17,7 @@ from tickerscope._exceptions import (
 )
 from tickerscope._serialization import SerializableDataclass
 from tickerscope._models import (
+    PREDEFINED_REPORTS,
     AdhocScreenResult,
     AlertCriteria,
     AlertInstrument,
@@ -133,6 +134,7 @@ __all__ = [
     "NavTreeFolder",
     "NavTreeLeaf",
     # Report models
+    "PREDEFINED_REPORTS",
     "ReportInfo",
     # Coach tree models
     "CoachTreeData",
