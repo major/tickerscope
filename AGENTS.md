@@ -25,7 +25,7 @@ marketsurge/
 | Task | Location | Notes |
 |------|----------|-------|
 | Add API endpoint | `_client.py` + `_parsing.py` + `queries/` | Build payload, add parser, add .graphql |
-| Add data model | `_models.py` + `__init__.py` | Frozen dataclass + export in `__all__` |
+| Add data model | `_models.py` + `__init__.py` | Frozen dataclass + SerializableDataclass, export in `__all__` |
 | Auth/JWT flow | `_auth.py` | resolve_jwt chain: param -> env -> cookie -> exchange |
 | Date handling | `_dates.py` | Always timezone-aware, never naive datetimes |
 | Caching | `_cache.py` | MethodCache wraps aiocache (optional dep) |
