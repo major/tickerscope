@@ -427,11 +427,10 @@ class BaseTickerScopeClient(ABC):
     def _build_get_stock_payload(
         symbol: str,
         symbol_dialect_type: str = "CHARTING",
-        *,
-        pattern_start_date: str = "2018-01-01",
-        pattern_end_date: str = "2099-12-31",
-        pattern_periodicity: str = "DAILY",
     ) -> dict[str, Any]:
+        today = date.today()
+        pattern_end = today.isoformat()
+        pattern_start = (today - timedelta(days=4 * 365)).isoformat()
         return {
             "operationName": "OtherMarketData",
             "variables": {
@@ -440,11 +439,10 @@ class BaseTickerScopeClient(ABC):
                 "upToHistoricalPeriodForProfitMargin": "P12Q_AGO",
                 "upToHistoricalPeriodOffset": "P24Q_AGO",
                 "upToQueryPeriodOffset": "P4Q_FUTURE",
-                "patternStartDate": pattern_start_date,
-                "patternEndDate": pattern_end_date,
-                "patternPeriodicity": pattern_periodicity,
             },
-            "query": OTHER_MARKET_DATA_QUERY,
+            "query": OTHER_MARKET_DATA_QUERY.replace(
+                "{pattern_start_date}", pattern_start
+            ).replace("{pattern_end_date}", pattern_end),
         }
 
     @staticmethod
@@ -668,18 +666,8 @@ class BaseTickerScopeClient(ABC):
         self,
         symbol: str,
         symbol_dialect_type: str = "CHARTING",
-        *,
-        pattern_start_date: str = "2018-01-01",
-        pattern_end_date: str = "2099-12-31",
-        pattern_periodicity: str = "DAILY",
     ) -> Any:
-        payload = self._build_get_stock_payload(
-            symbol,
-            symbol_dialect_type,
-            pattern_start_date=pattern_start_date,
-            pattern_end_date=pattern_end_date,
-            pattern_periodicity=pattern_periodicity,
-        )
+        payload = self._build_get_stock_payload(symbol, symbol_dialect_type)
         return self._graphql_and_parse(payload, parse_stock_response, symbol)
 
     def get_chart_data(
@@ -1098,18 +1086,8 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         self,
         symbol: str,
         symbol_dialect_type: str = "CHARTING",
-        *,
-        pattern_start_date: str = "2018-01-01",
-        pattern_end_date: str = "2099-12-31",
-        pattern_periodicity: str = "DAILY",
     ) -> StockData:
-        payload = self._build_get_stock_payload(
-            symbol,
-            symbol_dialect_type,
-            pattern_start_date=pattern_start_date,
-            pattern_end_date=pattern_end_date,
-            pattern_periodicity=pattern_periodicity,
-        )
+        payload = self._build_get_stock_payload(symbol, symbol_dialect_type)
         return await self._graphql_and_parse(payload, parse_stock_response, symbol)
 
     async def get_chart_data(
