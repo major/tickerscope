@@ -734,12 +734,13 @@ class NavTreeFolder(NavTreeNode):
 
 @dataclass(frozen=True, slots=True)
 class NavTreeLeaf(NavTreeNode):
-    """Leaf node in the navigation tree (watchlist, screen, etc.)."""
+    """Leaf node in the navigation tree (watchlist, screen, or report)."""
 
     url: str | None
     reference_id: str | None
     reference_watchlist_id: str | None
     reference_screen_id: str | None
+    reference_original_id: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -752,6 +753,18 @@ class CoachTreeData(SerializableDataclass):
 
     watchlists: list[NavTreeNode]
     screens: list[NavTreeNode]
+
+
+@dataclass(frozen=True, slots=True)
+class ReportInfo(SerializableDataclass):
+    """Predefined MarketSurge report metadata extracted from the NavTree.
+
+    Reports (like "Bases Forming", "RS Line Blue Dot") appear as
+    REPORTS_SCREEN leaves in the navigation tree with integer IDs.
+    """
+
+    name: str
+    original_id: int
 
 
 @dataclass(frozen=True, slots=True)

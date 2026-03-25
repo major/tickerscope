@@ -57,6 +57,7 @@ from tickerscope._models import (
     QuarterlyFundOwnership,
     Quote,
     Ratings,
+    ReportInfo,
     ReportedPeriod,
     RSRatingHistory,
     RSRatingSnapshot,
@@ -131,6 +132,8 @@ __all__ = [
     "NavTreeNode",
     "NavTreeFolder",
     "NavTreeLeaf",
+    # Report models
+    "ReportInfo",
     # Coach tree models
     "CoachTreeData",
     # Panel models

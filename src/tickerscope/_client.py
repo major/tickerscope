@@ -28,6 +28,7 @@ from tickerscope._exceptions import (
     TokenExpiredError,
 )
 from tickerscope._models import (
+    AdhocScreenResult,
     AlertSubscriptionList,
     ChartData,
     ChartMarkupList,
@@ -37,6 +38,7 @@ from tickerscope._models import (
     NavTreeNode,
     OwnershipData,
     Panel,
+    ReportInfo,
     RSRatingHistory,
     Screen,
     ScreenResult,
@@ -57,6 +59,7 @@ from tickerscope._parsing import (
     parse_nav_tree_response,
     parse_ownership_response,
     parse_panels_response,
+    parse_reports_from_nav_tree,
     parse_rs_rating_history_response,
     parse_screen_result_response,
     parse_screens_response,
@@ -797,6 +800,21 @@ class BaseTickerScopeClient(ABC):
         payload = self._build_get_coach_lists_payload()
         return self._graphql_and_parse(payload, parse_coach_tree_response)
 
+    def run_report(self, report_id: int) -> Any:
+        """Run a predefined MarketSurge report by its integer ID.
+
+        Uses the same MarketDataAdhocScreen query as watchlists.
+        Report IDs can be discovered via get_reports().
+
+        Args:
+            report_id: Integer ID of the report (e.g. 124 for Bases Forming).
+
+        Returns:
+            AdhocScreenResult with stock entries from the report.
+        """
+        payload = self._build_get_watchlist_payload(report_id)
+        return self._graphql_and_parse(payload, parse_watchlist_response)
+
 
 class TickerScopeClient(BaseTickerScopeClient):
     """Authenticated sync client for the MarketSurge GraphQL API."""
@@ -960,6 +978,43 @@ class TickerScopeClient(BaseTickerScopeClient):
         if match.id is None:
             raise APIError(f"Watchlist {name!r} has no ID")
         return self.get_watchlist(match.id)
+
+    def get_reports(self) -> list[ReportInfo]:
+        """Return available predefined reports from the user's NavTree.
+
+        Fetches the navigation tree and extracts REPORTS_SCREEN leaves
+        (e.g. "Bases Forming", "RS Line Blue Dot"). Only reports the user
+        has added to their MarketSurge navigation are returned.
+
+        Returns:
+            List of ReportInfo sorted by original_id.
+        """
+        nodes = self.get_nav_tree()
+        return parse_reports_from_nav_tree(nodes)
+
+    def run_report_by_name(self, name: str) -> AdhocScreenResult:
+        """Run a predefined report by display name.
+
+        Calls get_reports() to resolve the name to an integer ID,
+        then runs the report via run_report().
+
+        Args:
+            name: Display name of the report (e.g. "Bases Forming").
+
+        Returns:
+            AdhocScreenResult with stock entries from the report.
+
+        Raises:
+            APIError: If no report matches the given name.
+        """
+        reports = self.get_reports()
+        match = next((r for r in reports if r.name == name), None)
+        if match is None:
+            available = ", ".join(r.name for r in reports)
+            raise APIError(
+                f"No report found with name {name!r}. Available: {available or 'none'}"
+            )
+        return self.run_report(match.original_id)
 
 
 class AsyncTickerScopeClient(BaseTickerScopeClient):
@@ -1277,3 +1332,40 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         if match.id is None:
             raise APIError(f"Watchlist {name!r} has no ID")
         return await self.get_watchlist(match.id)
+
+    async def get_reports(self) -> list[ReportInfo]:
+        """Return available predefined reports from the user's NavTree.
+
+        Fetches the navigation tree and extracts REPORTS_SCREEN leaves
+        (e.g. "Bases Forming", "RS Line Blue Dot"). Only reports the user
+        has added to their MarketSurge navigation are returned.
+
+        Returns:
+            List of ReportInfo sorted by original_id.
+        """
+        nodes = await self.get_nav_tree()
+        return parse_reports_from_nav_tree(nodes)
+
+    async def run_report_by_name(self, name: str) -> AdhocScreenResult:
+        """Run a predefined report by display name.
+
+        Calls get_reports() to resolve the name to an integer ID,
+        then runs the report via run_report().
+
+        Args:
+            name: Display name of the report (e.g. "Bases Forming").
+
+        Returns:
+            AdhocScreenResult with stock entries from the report.
+
+        Raises:
+            APIError: If no report matches the given name.
+        """
+        reports = await self.get_reports()
+        match = next((r for r in reports if r.name == name), None)
+        if match is None:
+            available = ", ".join(r.name for r in reports)
+            raise APIError(
+                f"No report found with name {name!r}. Available: {available or 'none'}"
+            )
+        return await self.run_report(match.original_id)

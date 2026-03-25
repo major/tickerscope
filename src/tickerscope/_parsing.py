@@ -50,6 +50,7 @@ from tickerscope._models import (
     Pricing,
     QuarterlyFundOwnership,
     Ratings,
+    ReportInfo,
     ReportedPeriod,
     Screen,
     ScreenResult,
@@ -724,12 +725,14 @@ def _build_nav_tree_node(raw: dict) -> NavTreeNode:
 
     ref_watchlist_id: str | None = None
     ref_screen_id: str | None = None
+    ref_original_id: int | None = None
     ref_id = raw.get("referenceId")
     if ref_id:
         try:
             ref = json.loads(ref_id)
             ref_watchlist_id = ref.get("watchlistId")
             ref_screen_id = ref.get("screenId")
+            ref_original_id = ref.get("originalId")
         except (json.JSONDecodeError, TypeError):
             _log.debug("Skipping malformed referenceId: %s", ref_id)
 
@@ -739,6 +742,7 @@ def _build_nav_tree_node(raw: dict) -> NavTreeNode:
         reference_id=ref_id,
         reference_watchlist_id=ref_watchlist_id,
         reference_screen_id=ref_screen_id,
+        reference_original_id=ref_original_id,
     )
 
 
@@ -758,6 +762,42 @@ def parse_nav_tree_response(raw: dict) -> list[NavTreeNode]:
 
     items = raw.get("data", {}).get("user", {}).get("navTree", []) or []
     return [_build_nav_tree_node(node) for node in items]
+
+
+def parse_reports_from_nav_tree(nodes: list[NavTreeNode]) -> list[ReportInfo]:
+    """Extract predefined report metadata from parsed NavTree nodes.
+
+    Walks the tree recursively and returns a ReportInfo for each
+    REPORTS_SCREEN leaf that has an originalId in its referenceId JSON.
+
+    Args:
+        nodes: Parsed NavTree nodes from parse_nav_tree_response.
+
+    Returns:
+        Deduplicated list of ReportInfo sorted by original_id.
+    """
+    seen: dict[int, ReportInfo] = {}
+
+    def _collect(items: list[NavTreeNode]) -> None:
+        for node in items:
+            if isinstance(node, NavTreeFolder):
+                _collect(node.children)
+            elif (
+                isinstance(node, NavTreeLeaf)
+                and node.node_type == "REPORTS_SCREEN"
+                and node.reference_original_id is not None
+                and node.name is not None
+            ):
+                seen.setdefault(
+                    node.reference_original_id,
+                    ReportInfo(
+                        name=node.name,
+                        original_id=node.reference_original_id,
+                    ),
+                )
+
+    _collect(nodes)
+    return sorted(seen.values(), key=lambda r: r.original_id)
 
 
 def parse_coach_tree_response(raw: dict) -> CoachTreeData:

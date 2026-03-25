@@ -130,8 +130,12 @@ class APIError(TickerScopeError):
 
     @property
     def user_message(self) -> str:
-        """Return a user-friendly error message."""
-        return f"MarketSurge API error: {str(self)}"
+        """Return a user-friendly error message including GraphQL error details."""
+        base = f"MarketSurge API error: {str(self)}"
+        if self.errors:
+            details = "; ".join(e.get("message", str(e)) for e in self.errors)
+            return f"{base} - Details: {details}"
+        return base
 
     def to_dict(self) -> dict[str, Any]:
         """Return a structured dict representation of this error."""
