@@ -229,6 +229,7 @@ class TestChartDataStr:
         """str(cd) shows symbol and data point count."""
         cd = ChartData(
             symbol="AAPL",
+            benchmark_time_series=None,
             time_series=TimeSeries(
                 period="P1D",
                 data_points=[
@@ -275,6 +276,7 @@ class TestChartDataStr:
         """ChartData with no time series shows fallback message."""
         cd = ChartData(
             symbol="XYZ",
+            benchmark_time_series=None,
             time_series=None,
             quote=None,
             premarket_quote=None,
@@ -290,6 +292,7 @@ class TestChartDataStr:
         """str(cd) shows the date range from first to last data point."""
         cd = ChartData(
             symbol="MSFT",
+            benchmark_time_series=None,
             time_series=TimeSeries(
                 period="P1D",
                 data_points=[

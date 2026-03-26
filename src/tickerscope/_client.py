@@ -453,15 +453,21 @@ class BaseTickerScopeClient(ABC):
         end_date: str,
         period: str = "P1D",
         exchange: str | None = None,
+        benchmark: str | None = None,
     ) -> dict[str, Any]:
         """Build the GraphQL payload for chart data requests.
 
         When *exchange* is ``None``, the weekly query variant is used which
         omits the ``exchangeData`` section for a lighter response.  When an
         exchange name is provided, the full daily query is used instead.
+
+        When *benchmark* is provided (e.g. ``"0S&P5"``), it is included as
+        a second symbol so the response contains the benchmark time series
+        needed to compute a relative strength line.
         """
+        symbols = [symbol, benchmark] if benchmark else [symbol]
         variables: dict[str, Any] = {
-            "symbols": [symbol],
+            "symbols": symbols,
             "symbolDialectType": "CHARTING",
             "where": {
                 "startDateTime": {"eq": start_date},
@@ -679,6 +685,7 @@ class BaseTickerScopeClient(ABC):
         lookback: str | None = None,
         period: str = "P1D",
         exchange: str | None = None,
+        benchmark: str | None = None,
     ) -> Any:
         resolved_start_date, resolved_end_date = _resolve_chart_dates(
             start_date=start_date,
@@ -691,6 +698,7 @@ class BaseTickerScopeClient(ABC):
             end_date=resolved_end_date,
             period=period,
             exchange=exchange,
+            benchmark=benchmark,
         )
         return self._graphql_and_parse(payload, parse_chart_data_response, symbol)
 
@@ -860,6 +868,7 @@ class TickerScopeClient(BaseTickerScopeClient):
         lookback: str | None = None,
         period: str = "P1D",
         exchange: str | None = None,
+        benchmark: str | None = None,
     ) -> ChartData:
         return super().get_chart_data(
             symbol,
@@ -868,6 +877,7 @@ class TickerScopeClient(BaseTickerScopeClient):
             lookback=lookback,
             period=period,
             exchange=exchange,
+            benchmark=benchmark,
         )
 
     def get_stock_analysis(self, symbol: str) -> StockAnalysis:
@@ -1099,6 +1109,7 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         lookback: str | None = None,
         period: str = "P1D",
         exchange: str | None = None,
+        benchmark: str | None = None,
     ) -> ChartData:
         resolved_start_date, resolved_end_date = _resolve_chart_dates(
             start_date=start_date,
@@ -1111,6 +1122,7 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
             end_date=resolved_end_date,
             period=period,
             exchange=exchange,
+            benchmark=benchmark,
         )
         return await self._graphql_and_parse(payload, parse_chart_data_response, symbol)
 

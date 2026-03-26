@@ -963,9 +963,32 @@ def parse_chart_data_response(raw: dict, symbol: str) -> ChartData:
             ],
         )
 
+    benchmark_time_series = None
+    all_market_data = raw.get("data", {}).get("marketData", [])
+    if len(all_market_data) > 1:
+        bench_pricing = all_market_data[1].get("pricing", {})
+        bench_raw_ts = bench_pricing.get("timeSeries")
+        if bench_raw_ts:
+            benchmark_time_series = TimeSeries(
+                period=bench_raw_ts.get("period", ""),
+                data_points=[
+                    DataPoint(
+                        start_date_time=str(dp.get("startDateTime", "")),
+                        end_date_time=str(dp.get("endDateTime", "")),
+                        open=_to_float(_safe_value(dp.get("open"))),
+                        high=_to_float(_safe_value(dp.get("high"))),
+                        low=_to_float(_safe_value(dp.get("low"))),
+                        close=_to_float(_safe_value(dp.get("last"))),
+                        volume=_to_float(_safe_value(dp.get("volume"))),
+                    )
+                    for dp in bench_raw_ts.get("dataPoints", [])
+                ],
+            )
+
     return ChartData(
         symbol=symbol,
         time_series=time_series,
+        benchmark_time_series=benchmark_time_series,
         quote=_parse_quote(pricing.get("quote")),
         premarket_quote=_parse_quote(pricing.get("premarketQuote")),
         postmarket_quote=_parse_quote(pricing.get("postmarketQuote")),

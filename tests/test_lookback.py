@@ -167,6 +167,7 @@ def test_sync_get_chart_data_uses_resolved_dates_from_lookback(
         end_date="2026-03-24",
         period="P1D",
         exchange=None,
+        benchmark=None,
     )
 
 
@@ -189,4 +190,5 @@ async def test_async_get_chart_data_uses_resolved_dates_from_lookback(
         end_date="2026-03-24",
         period="P1D",
         exchange=None,
+        benchmark=None,
     )

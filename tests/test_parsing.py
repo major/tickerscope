@@ -199,6 +199,71 @@ def test_parse_chart_data_response_empty_market_data() -> None:
         raise AssertionError("Expected SymbolNotFoundError")
 
 
+def test_parse_chart_data_response_no_benchmark(chart_data_response) -> None:
+    """Single-symbol response has no benchmark_time_series."""
+    chart = parse_chart_data_response(chart_data_response, "TEST")
+    assert chart.benchmark_time_series is None
+
+
+def test_parse_chart_data_response_with_benchmark() -> None:
+    """Second marketData item is parsed as benchmark_time_series."""
+    raw = {
+        "data": {
+            "marketData": [
+                {
+                    "pricing": {
+                        "timeSeries": {
+                            "period": "P1D",
+                            "dataPoints": [
+                                {
+                                    "startDateTime": "2026-01-02",
+                                    "endDateTime": "2026-01-02",
+                                    "open": {"value": 50.0},
+                                    "high": {"value": 52.0},
+                                    "low": {"value": 49.0},
+                                    "last": {"value": 51.0},
+                                    "volume": {"value": 1000000},
+                                }
+                            ],
+                        },
+                        "quote": None,
+                        "premarketQuote": None,
+                        "postmarketQuote": None,
+                        "currentMarketState": None,
+                    }
+                },
+                {
+                    "pricing": {
+                        "timeSeries": {
+                            "period": "P1D",
+                            "dataPoints": [
+                                {
+                                    "startDateTime": "2026-01-02",
+                                    "endDateTime": "2026-01-02",
+                                    "open": {"value": 5800.0},
+                                    "high": {"value": 5850.0},
+                                    "low": {"value": 5780.0},
+                                    "last": {"value": 5830.0},
+                                    "volume": {"value": 3000000000},
+                                }
+                            ],
+                        }
+                    }
+                },
+            ]
+        }
+    }
+    chart = parse_chart_data_response(raw, "TEST")
+
+    assert chart.time_series is not None
+    assert chart.time_series.data_points[0].close == 51.0
+
+    assert chart.benchmark_time_series is not None
+    assert len(chart.benchmark_time_series.data_points) == 1
+    assert chart.benchmark_time_series.data_points[0].close == 5830.0
+    assert chart.benchmark_time_series.period == "P1D"
+
+
 def test_parse_chart_data_response_null_quotes(chart_data_response) -> None:
     """Return None for pre/post-market quotes when API values are null."""
     chart = parse_chart_data_response(chart_data_response, "TEST")

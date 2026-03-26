@@ -135,6 +135,7 @@ class TestSyncClientWeeklyPath:
             end_date="2026-03-01",
             period="P1D",
             exchange=None,
+            benchmark=None,
         )
 
     @respx.mock
@@ -183,6 +184,7 @@ class TestAsyncClientWeeklyPath:
             end_date="2026-03-01",
             period="P1D",
             exchange=None,
+            benchmark=None,
         )
 
     @respx.mock

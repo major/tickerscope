@@ -937,6 +937,7 @@ class ChartData(SerializableDataclass):
 
     symbol: str
     time_series: TimeSeries | None
+    benchmark_time_series: TimeSeries | None
     quote: Quote | None
     premarket_quote: Quote | None
     postmarket_quote: Quote | None
