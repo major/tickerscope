@@ -1039,6 +1039,10 @@ class Quote(SerializableDataclass):
     volume: float | None
     percent_change: float | None
     net_change: float | None
+    last_formatted: str | None = None
+    volume_formatted: str | None = None
+    percent_change_formatted: str | None = None
+    net_change_formatted: str | None = None
 
     @property
     def trade_date_time_dt(self) -> datetime.datetime | None:

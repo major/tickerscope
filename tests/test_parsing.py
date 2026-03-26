@@ -278,6 +278,17 @@ def test_parse_chart_data_response_real_fixture(chart_data_response) -> None:
     assert chart.quote.volume == 10133392227.0
 
 
+def test_parse_chart_data_response_quote_formatted(chart_data_response) -> None:
+    """Parse quote formatted value fields from chart data fixture."""
+    chart = parse_chart_data_response(chart_data_response, "TEST")
+
+    assert chart.quote is not None
+    assert chart.quote.last_formatted == "6,506.48"
+    assert chart.quote.volume_formatted == "10,133,392,227"
+    assert chart.quote.percent_change_formatted == "-1.51%"
+    assert chart.quote.net_change_formatted == "-100.01"
+
+
 def test_parse_chart_data_response_empty_market_data() -> None:
     """Raise SymbolNotFoundError when marketData is empty for chart data."""
     try:

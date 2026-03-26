@@ -1002,6 +1002,14 @@ def parse_chart_data_response(raw: dict, symbol: str) -> ChartData:
             volume=_to_float(_safe_value(raw_quote.get("volume"))),
             percent_change=_to_float(_safe_value(raw_quote.get("percentChange"))),
             net_change=_to_float(_safe_value(raw_quote.get("netChange"))),
+            last_formatted=_safe_value(raw_quote.get("last"), "formattedValue"),
+            volume_formatted=_safe_value(raw_quote.get("volume"), "formattedValue"),
+            percent_change_formatted=_safe_value(
+                raw_quote.get("percentChange"), "formattedValue"
+            ),
+            net_change_formatted=_safe_value(
+                raw_quote.get("netChange"), "formattedValue"
+            ),
         )
 
     time_series = None
