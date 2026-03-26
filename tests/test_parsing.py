@@ -192,10 +192,10 @@ def test_parse_stock_response_company_location_and_sub_type(stock_response) -> N
     stock = parse_stock_response(stock_response, "TEST")
 
     assert stock.company is not None
-    # Location fields are absent from fixture (not queried before), so None
-    assert stock.company.city is None
-    assert stock.company.country is None
-    assert stock.company.state_province is None
+    # Location fields added to fixture (Mountain View, CA, USA for Alphabet)
+    assert stock.company.city == "Mountain View"
+    assert stock.company.country == "United States"
+    assert stock.company.state_province == "California"
     # instrument[0].subType exists in fixture as "COMMON"
     assert stock.company.instrument_sub_type == "COMMON"
 

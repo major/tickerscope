@@ -1089,7 +1089,10 @@
               "address2": "1600 Amphitheatre Parkway",
               "phone": "+1.650.253.0000",
               "businessDescription": "Operates as a holding company with interests in google search, network, advertising and cloud services",
-              "url": "http://www.abc.xyz"
+              "url": "http://www.abc.xyz",
+              "city": "Mountain View",
+              "country": "United States",
+              "stateProvince": "California"
             }
           ],
           "instrument": [
