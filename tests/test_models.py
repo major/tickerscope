@@ -110,6 +110,7 @@ class TestStockData:
                 debt_percent_formatted=None,
                 new_ceo_date=None,
             ),
+            quarterly_financials=None,
             patterns=[],
             tight_areas=[],
         )

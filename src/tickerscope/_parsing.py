@@ -44,6 +44,10 @@ from tickerscope._models import (
     Panel,
     Pattern,
     PricePercentChanges,
+    QuarterlyEstimate,
+    QuarterlyFinancials,
+    QuarterlyProfitMargin,
+    QuarterlyReportedPeriod,
     RSRatingHistory,
     RSRatingSnapshot,
     TightArea,
@@ -273,6 +277,67 @@ def _extract_market_data(raw: dict, symbol: str) -> dict:
     return market_data[0]
 
 
+def _build_quarterly_reported(entries: list[dict]) -> list[QuarterlyReportedPeriod]:
+    """Build quarterly reported period objects from raw API entries."""
+    return [
+        QuarterlyReportedPeriod(
+            value=_safe_value(e.get("value")),
+            pct_change_yoy=_safe_value(e.get("percentChangeYOY")),
+            period_offset=e.get("periodOffset", ""),
+            period_end_date=_safe_date_value(e.get("periodEndDate")),
+            effective_date=_safe_date_value(e.get("effectiveDate")),
+            percent_surprise=_safe_value(e.get("percentSurprise")),
+            surprise_amount=_safe_value(e.get("surpriseAmount")),
+            quarter_number=e.get("quarterNumber"),
+            fiscal_year=e.get("fiscalYear"),
+        )
+        for e in entries
+    ]
+
+
+def _build_quarterly_estimates(entries: list[dict]) -> list[QuarterlyEstimate]:
+    """Build quarterly estimate objects from raw API entries."""
+    return [
+        QuarterlyEstimate(
+            value=_safe_value(e.get("value")),
+            pct_change_yoy=_safe_value(e.get("percentChangeYOY")),
+            period_end_date=_safe_date_value(e.get("periodEndDate")),
+            effective_date=_safe_date_value(e.get("effectiveDate")),
+            revision_direction=e.get("revisionDirection"),
+            estimate_type=e.get("type"),
+        )
+        for e in entries
+    ]
+
+
+def _build_quarterly_financials(
+    eps_consensus: dict, sales_consensus: dict, financials: dict
+) -> QuarterlyFinancials:
+    """Build QuarterlyFinancials from the OtherMarketData consensus data."""
+    estimates = financials.get("estimates", {})
+    return QuarterlyFinancials(
+        reported_earnings=_build_quarterly_reported(
+            eps_consensus.get("reportedEarnings", [])
+        ),
+        reported_sales=_build_quarterly_reported(
+            sales_consensus.get("reportedSales", [])
+        ),
+        eps_estimates=_build_quarterly_estimates(estimates.get("epsEstimates", [])),
+        sales_estimates=_build_quarterly_estimates(estimates.get("salesEstimates", [])),
+        profit_margins=[
+            QuarterlyProfitMargin(
+                period_offset=e.get("periodOffset", ""),
+                period_end_date=_safe_date_value(e.get("periodEndDate")),
+                pre_tax_margin=_safe_value(e.get("preTaxMargin")),
+                after_tax_margin=_safe_value(e.get("afterTaxMargin")),
+                gross_margin=_safe_value(e.get("grossMargin")),
+                return_on_equity=_safe_value(e.get("returnOnEquity")),
+            )
+            for e in financials.get("profitMarginValues", [])
+        ],
+    )
+
+
 def parse_stock_response(raw: dict, symbol: str) -> StockData:
     """Parse an OtherMarketData GraphQL response into a StockData dataclass.
 
@@ -323,6 +388,10 @@ def parse_stock_response(raw: dict, symbol: str) -> StockData:
     eps_growth = _first(eps_consensus.get("growthRate", []))
     sales_growth = _first(sales_consensus.get("growthRate", []))
     profit_margin = _first(financials.get("profitMarginValues", []))
+
+    quarterly_financials = _build_quarterly_financials(
+        eps_consensus, sales_consensus, financials
+    )
 
     pattern_info = item.get("patternInfo", {})
     pattern_rows: list[Pattern] = [
@@ -468,6 +537,7 @@ def parse_stock_response(raw: dict, symbol: str) -> StockData:
             ),
             new_ceo_date=_safe_date_value(fundamentals.get("newCEODate")),
         ),
+        quarterly_financials=quarterly_financials,
         patterns=pattern_rows,
         tight_areas=tight_area_rows,
     )

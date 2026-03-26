@@ -55,7 +55,11 @@ from tickerscope._models import (
     Pattern,
     PricePercentChanges,
     Pricing,
+    QuarterlyEstimate,
+    QuarterlyFinancials,
     QuarterlyFundOwnership,
+    QuarterlyProfitMargin,
+    QuarterlyReportedPeriod,
     Quote,
     Ratings,
     ReportInfo,
@@ -116,6 +120,11 @@ __all__ = [
     "FundamentalData",
     "ReportedPeriod",
     "EstimatePeriod",
+    # Quarterly financial models
+    "QuarterlyReportedPeriod",
+    "QuarterlyEstimate",
+    "QuarterlyProfitMargin",
+    "QuarterlyFinancials",
     # Alert models
     "AlertInstrument",
     "AlertTerm",

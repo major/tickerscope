@@ -91,6 +91,7 @@ def test_stock_analysis_to_dict_output():
         industry=None,
         ownership=None,
         fundamentals=None,
+        quarterly_financials=None,
         patterns=[],
         tight_areas=[],
     )

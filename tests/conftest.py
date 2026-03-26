@@ -119,6 +119,7 @@ def minimal_stock():
             industry=None,
             ownership=None,
             fundamentals=None,
+            quarterly_financials=None,
             patterns=[],
             tight_areas=[],
         )
@@ -141,6 +142,7 @@ def minimal_stock_empty() -> StockData:
         industry=None,
         ownership=None,
         fundamentals=None,
+        quarterly_financials=None,
         patterns=[],
         tight_areas=[],
     )
@@ -239,6 +241,7 @@ def full_stock() -> StockData:
             debt_percent_formatted=None,
             new_ceo_date=None,
         ),
+        quarterly_financials=None,
         patterns=[
             CupPattern(
                 id=None,

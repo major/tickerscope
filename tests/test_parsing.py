@@ -93,6 +93,78 @@ def test_parse_stock_response_real_fixture(stock_response) -> None:
     assert stock.pricing.ant_dates == ["2026-03-20", "2026-03-19", "2026-01-29"]
 
 
+def test_parse_stock_response_quarterly_earnings(stock_response) -> None:
+    """Parse quarterly reported earnings from the stock fixture."""
+    stock = parse_stock_response(stock_response, "TEST")
+    qf = stock.quarterly_financials
+
+    assert qf is not None
+    assert len(qf.reported_earnings) == 24
+
+    latest = qf.reported_earnings[0]
+    assert latest.value == 2.82
+    assert latest.pct_change_yoy == 0.3116
+    assert latest.period_offset == "P1Q_AGO"
+    assert latest.period_end_date == "2025-12-31"
+    assert latest.quarter_number == 4
+    assert latest.fiscal_year == 2025
+    assert latest.percent_surprise == 0.0703
+
+
+def test_parse_stock_response_quarterly_sales(stock_response) -> None:
+    """Parse quarterly reported sales from the stock fixture."""
+    stock = parse_stock_response(stock_response, "TEST")
+    qf = stock.quarterly_financials
+
+    assert qf is not None
+    assert len(qf.reported_sales) == 24
+
+    latest = qf.reported_sales[0]
+    assert latest.value == 113828
+    assert latest.period_offset == "P1Q_AGO"
+    assert latest.quarter_number == 4
+    assert latest.fiscal_year == 2025
+
+
+def test_parse_stock_response_quarterly_eps_estimates(stock_response) -> None:
+    """Parse quarterly EPS estimates from the stock fixture."""
+    stock = parse_stock_response(stock_response, "TEST")
+    qf = stock.quarterly_financials
+
+    assert qf is not None
+    assert len(qf.eps_estimates) == 4
+
+    first = qf.eps_estimates[0]
+    assert first.value == 2.603706
+    assert first.estimate_type == "QUARTERLY"
+    assert first.revision_direction == "NONE"
+    assert first.period_end_date is not None
+
+
+def test_parse_stock_response_quarterly_sales_estimates(stock_response) -> None:
+    """Parse quarterly sales estimates from the stock fixture."""
+    stock = parse_stock_response(stock_response, "TEST")
+    qf = stock.quarterly_financials
+
+    assert qf is not None
+    assert len(qf.sales_estimates) == 4
+
+
+def test_parse_stock_response_quarterly_profit_margins(stock_response) -> None:
+    """Parse quarterly profit margins from the stock fixture."""
+    stock = parse_stock_response(stock_response, "TEST")
+    qf = stock.quarterly_financials
+
+    assert qf is not None
+    assert len(qf.profit_margins) == 9
+
+    latest = qf.profit_margins[0]
+    assert latest.period_offset == "P1Q_AGO"
+    assert latest.period_end_date == "2025-12-31"
+    assert latest.pre_tax_margin == 0.3431
+    assert latest.after_tax_margin == 0.3022
+
+
 def test_parse_stock_response_empty_market_data() -> None:
     """Raise SymbolNotFoundError when marketData is empty."""
     try:

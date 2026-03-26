@@ -396,6 +396,97 @@ class Fundamentals(SerializableDataclass):
 
 
 @dataclass(frozen=True, slots=True)
+class QuarterlyReportedPeriod(SerializableDataclass):
+    """A single quarter of reported earnings or sales.
+
+    Extracted from the OtherMarketData query's consensusFinancials section.
+    Includes earnings surprise data and fiscal quarter identification.
+    """
+
+    value: float | None
+    pct_change_yoy: float | None
+    period_offset: str
+    period_end_date: str | None
+    effective_date: str | None
+    percent_surprise: float | None
+    surprise_amount: float | None
+    quarter_number: int | None
+    fiscal_year: int | None
+
+    @property
+    def period_end_date_dt(self) -> datetime.date | None:
+        """Parsed period_end_date as a date object, or None if unavailable."""
+        return parse_date(self.period_end_date)
+
+    @property
+    def effective_date_dt(self) -> datetime.date | None:
+        """Parsed effective_date as a date object, or None if unavailable."""
+        return parse_date(self.effective_date)
+
+
+@dataclass(frozen=True, slots=True)
+class QuarterlyEstimate(SerializableDataclass):
+    """A single quarter of estimated EPS or sales.
+
+    Extracted from the OtherMarketData query's estimates section.
+    Forward-looking analyst consensus estimates with revision direction.
+    """
+
+    value: float | None
+    pct_change_yoy: float | None
+    period_end_date: str | None
+    effective_date: str | None
+    revision_direction: str | None
+    estimate_type: str | None
+
+    @property
+    def period_end_date_dt(self) -> datetime.date | None:
+        """Parsed period_end_date as a date object, or None if unavailable."""
+        return parse_date(self.period_end_date)
+
+    @property
+    def effective_date_dt(self) -> datetime.date | None:
+        """Parsed effective_date as a date object, or None if unavailable."""
+        return parse_date(self.effective_date)
+
+
+@dataclass(frozen=True, slots=True)
+class QuarterlyProfitMargin(SerializableDataclass):
+    """Profit margin data for a single quarter.
+
+    Extracted from the OtherMarketData query's profitMarginValues array.
+    """
+
+    period_offset: str
+    period_end_date: str | None
+    pre_tax_margin: float | None
+    after_tax_margin: float | None
+    gross_margin: float | None
+    return_on_equity: float | None
+
+    @property
+    def period_end_date_dt(self) -> datetime.date | None:
+        """Parsed period_end_date as a date object, or None if unavailable."""
+        return parse_date(self.period_end_date)
+
+
+@dataclass(frozen=True, slots=True)
+class QuarterlyFinancials(SerializableDataclass):
+    """Quarterly earnings, sales, estimates, and margins.
+
+    Container for all quarterly financial data extracted from the
+    OtherMarketData query. Up to 24 quarters of reported data and
+    4 quarters of forward estimates.
+    """
+
+    reported_earnings: list[QuarterlyReportedPeriod]
+    reported_sales: list[QuarterlyReportedPeriod]
+    eps_estimates: list[QuarterlyEstimate]
+    sales_estimates: list[QuarterlyEstimate]
+    profit_margins: list[QuarterlyProfitMargin]
+
+
+@dataclass(frozen=True, slots=True)
 class StockData(SerializableDataclass):
     """Complete stock data response from the OtherMarketData query."""
 
@@ -408,6 +499,7 @@ class StockData(SerializableDataclass):
     industry: Industry | None
     ownership: BasicOwnership | None
     fundamentals: Fundamentals | None
+    quarterly_financials: QuarterlyFinancials | None
     patterns: list[Pattern]
     tight_areas: list[TightArea]
 
