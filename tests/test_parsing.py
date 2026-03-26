@@ -156,6 +156,37 @@ def test_parse_stock_response_alpha_beta_short_interest_etc(stock_response) -> N
     assert stock.pricing.pricing_end_date == "2026-03-19"
 
 
+def test_parse_stock_response_historical_price_and_volume_ma(stock_response) -> None:
+    stock = parse_stock_response(stock_response, "TEST")
+
+    assert stock.pricing is not None
+
+    historical = stock.pricing.historical_price_statistics
+    assert historical is not None
+    assert len(historical) >= 1
+    assert historical[0].period_offset == "P1Q_AGO"
+    assert historical[0].period == "P1Q"
+    assert historical[0].period_end_date == "2025-12-31"
+    assert historical[0].price_close == 313
+    assert historical[0].price_percent_change == pytest.approx(0.278073)
+
+    moving_averages = stock.pricing.volume_moving_averages
+    assert moving_averages is not None
+    assert len(moving_averages) >= 1
+    assert moving_averages[0].value == pytest.approx(35904177.91)
+    assert moving_averages[0].period == "P100D"
+    assert moving_averages[0].period_offset == "CURRENT"
+
+
+def test_parse_stock_response_volume_change_subjects(stock_response) -> None:
+    stock = parse_stock_response(stock_response, "TEST")
+
+    assert stock.pricing is not None
+    assert stock.pricing.volume_percent_change_vs_6m == pytest.approx(-0.1898)
+    assert stock.pricing.volume_percent_change_vs_10w == pytest.approx(-0.2298)
+    assert stock.pricing.volume_percent_change_vs_50d is not None
+
+
 def test_parse_stock_response_company_location_and_sub_type(stock_response) -> None:
     """Parse company location fields and instrument subType (DATA_AUDIT gaps #9, #10)."""
     stock = parse_stock_response(stock_response, "TEST")

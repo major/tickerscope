@@ -30,6 +30,7 @@ from tickerscope._models import (
     Financials,
     FundamentalData,
     Fundamentals,
+    HistoricalPriceStatistic,
     Industry,
     IndustryGroupSnapshot,
     Layout,
@@ -66,6 +67,7 @@ from tickerscope._models import (
     TriggeredAlert,
     TriggeredAlertList,
     TriggeredAlertTerm,
+    VolumeMovingAverage,
     WatchlistDetail,
     WatchlistEntry,
     WatchlistSymbol,
@@ -136,6 +138,39 @@ def _resolve_cash_flow_last_year(
     if isinstance(financials_value, dict):
         return financials_value
     return None
+
+
+def _build_historical_price_statistics(
+    pricing_eod: dict,
+) -> list[HistoricalPriceStatistic] | None:
+    return [
+        HistoricalPriceStatistic(
+            period=item.get("period"),
+            period_offset=item.get("periodOffset"),
+            period_end_date=_safe_value(item.get("periodEndDate")),
+            price_high_date=_safe_value(item.get("priceHighDate")),
+            price_high=_safe_value(item.get("priceHigh")),
+            price_low_date=_safe_value(item.get("priceLowDate")),
+            price_low=_safe_value(item.get("priceLow")),
+            price_close=_safe_value(item.get("priceClose")),
+            price_percent_change=_safe_value(item.get("pricePercentChange")),
+        )
+        for item in pricing_eod.get("historicalPriceStatistics", [])
+    ] or None
+
+
+def _build_volume_moving_averages(
+    pricing_eod: dict,
+) -> list[VolumeMovingAverage] | None:
+    return [
+        VolumeMovingAverage(
+            value=item.get("value"),
+            period=item.get("period"),
+            period_offset=item.get("periodOffset"),
+        )
+        for item in pricing_eod.get("volumeMovingAverages", [])
+        if isinstance(item, dict)
+    ] or None
 
 
 def _to_int(value) -> int | None:
@@ -527,6 +562,10 @@ def parse_stock_response(raw: dict, symbol: str) -> StockData:
                 vs_ma200d=_safe_value(price_pct_vs.get("VS_MA200D", {})),
             ),
             volume_percent_change_vs_50d=_safe_value(volume_pct_vs.get("VS_MA50D", {})),
+            historical_price_statistics=_build_historical_price_statistics(pricing_eod),
+            volume_moving_averages=_build_volume_moving_averages(pricing_eod),
+            volume_percent_change_vs_6m=_safe_value(volume_pct_vs.get("VS_MA6M", {})),
+            volume_percent_change_vs_10w=_safe_value(volume_pct_vs.get("VS_MA10W", {})),
             dividend_yield=_safe_value(pricing_intraday.get("yield")),
             dividend_yield_formatted=_safe_value(
                 pricing_intraday.get("yield"), "formattedValue"

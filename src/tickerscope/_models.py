@@ -92,6 +92,10 @@ class Pricing(SerializableDataclass):
     ant_dates: list[str | None]
     price_percent_changes: PricePercentChanges | None
     volume_percent_change_vs_50d: float | None
+    historical_price_statistics: list[HistoricalPriceStatistic] | None = None
+    volume_moving_averages: list[VolumeMovingAverage] | None = None
+    volume_percent_change_vs_6m: float | None = None
+    volume_percent_change_vs_10w: float | None = None
     dividend_yield: float | None = None
     dividend_yield_formatted: str | None = None
     price_to_cash_flow_ratio: float | None = None
