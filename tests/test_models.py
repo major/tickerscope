@@ -12,12 +12,15 @@ from tickerscope._models import (
     CorporateActions,
     Financials,
     Fundamentals,
+    HistoricalPriceStatistic,
     Industry,
+    IndustryGroupSnapshot,
     PricePercentChanges,
     Pricing,
     Quote,
     Ratings,
     StockData,
+    VolumeMovingAverage,
 )
 
 
@@ -191,3 +194,125 @@ class TestQuoteCloseAlias:
         d = q.to_dict()
         assert "close" not in d
         assert "last" in d
+
+
+class TestIndustryGroupSnapshot:
+    """Tests for the IndustryGroupSnapshot dataclass."""
+
+    def test_frozen_enforcement(self) -> None:
+        """Frozen dataclass rejects attribute assignment."""
+        snapshot = IndustryGroupSnapshot(period_offset="CURRENT", value=160)
+        with pytest.raises(AttributeError):
+            snapshot.value = 100  # type: ignore[misc]
+
+    def test_from_dict_round_trip(self) -> None:
+        """from_dict reconstructs instance from to_dict output."""
+        original = IndustryGroupSnapshot(
+            period_offset="CURRENT", value=160, letter_value="A"
+        )
+        data = original.to_dict()
+        reconstructed = IndustryGroupSnapshot.from_dict(data)
+        assert reconstructed.period_offset == "CURRENT"
+        assert reconstructed.value == 160
+        assert reconstructed.letter_value == "A"
+
+    def test_period_offset_required(self) -> None:
+        """period_offset is required (no default)."""
+        snapshot = IndustryGroupSnapshot(period_offset="P1Q_AGO")
+        assert snapshot.period_offset == "P1Q_AGO"
+        assert snapshot.value is None
+        assert snapshot.letter_value is None
+
+
+class TestHistoricalPriceStatistic:
+    """Tests for the HistoricalPriceStatistic dataclass."""
+
+    def test_frozen_enforcement(self) -> None:
+        """Frozen dataclass rejects attribute assignment."""
+        stat = HistoricalPriceStatistic(
+            period="P1Q", period_offset="P1Q_AGO", price_close=313.0
+        )
+        with pytest.raises(AttributeError):
+            stat.price_close = 100.0  # type: ignore[misc]
+
+    def test_from_dict_round_trip(self) -> None:
+        """from_dict reconstructs instance from to_dict output."""
+        original = HistoricalPriceStatistic(
+            period="P1Q",
+            period_offset="P1Q_AGO",
+            period_end_date="2025-12-31",
+            price_high_date="2025-12-20",
+            price_high=320.0,
+            price_low_date="2025-12-01",
+            price_low=310.0,
+            price_close=313.0,
+            price_percent_change=1.5,
+        )
+        data = original.to_dict()
+        reconstructed = HistoricalPriceStatistic.from_dict(data)
+        assert reconstructed.period == "P1Q"
+        assert reconstructed.period_offset == "P1Q_AGO"
+        assert reconstructed.period_end_date == "2025-12-31"
+        assert reconstructed.price_close == 313.0
+
+    def test_period_end_date_dt_property(self) -> None:
+        """period_end_date_dt parses date string correctly."""
+        stat = HistoricalPriceStatistic(period_end_date="2025-12-31")
+        dt = stat.period_end_date_dt
+        assert dt is not None
+        assert dt.year == 2025
+        assert dt.month == 12
+        assert dt.day == 31
+
+    def test_price_high_date_dt_property(self) -> None:
+        """price_high_date_dt parses date string correctly."""
+        stat = HistoricalPriceStatistic(price_high_date="2025-12-20")
+        dt = stat.price_high_date_dt
+        assert dt is not None
+        assert dt.year == 2025
+        assert dt.month == 12
+        assert dt.day == 20
+
+    def test_price_low_date_dt_property(self) -> None:
+        """price_low_date_dt parses date string correctly."""
+        stat = HistoricalPriceStatistic(price_low_date="2025-12-01")
+        dt = stat.price_low_date_dt
+        assert dt is not None
+        assert dt.year == 2025
+        assert dt.month == 12
+        assert dt.day == 1
+
+    def test_dt_properties_return_none_when_date_is_none(self) -> None:
+        """_dt properties return None when date string is None."""
+        stat = HistoricalPriceStatistic()
+        assert stat.period_end_date_dt is None
+        assert stat.price_high_date_dt is None
+        assert stat.price_low_date_dt is None
+
+
+class TestVolumeMovingAverage:
+    """Tests for the VolumeMovingAverage dataclass."""
+
+    def test_frozen_enforcement(self) -> None:
+        """Frozen dataclass rejects attribute assignment."""
+        vma = VolumeMovingAverage(value=35904177.91, period="P100D")
+        with pytest.raises(AttributeError):
+            vma.value = 0.0  # type: ignore[misc]
+
+    def test_from_dict_round_trip(self) -> None:
+        """from_dict reconstructs instance from to_dict output."""
+        original = VolumeMovingAverage(
+            value=35904177.91, period="P100D", period_offset="CURRENT"
+        )
+        data = original.to_dict()
+        reconstructed = VolumeMovingAverage.from_dict(data)
+        assert reconstructed.value == 35904177.91
+        assert reconstructed.period == "P100D"
+        assert reconstructed.period_offset == "CURRENT"
+
+    def test_all_fields_optional(self) -> None:
+        """All fields have defaults and can be omitted."""
+        vma = VolumeMovingAverage()
+        assert vma.value is None
+        assert vma.period is None
+        assert vma.period_offset is None

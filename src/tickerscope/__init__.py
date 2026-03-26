@@ -43,7 +43,9 @@ from tickerscope._models import (
     Financials,
     FundamentalData,
     Fundamentals,
+    HistoricalPriceStatistic,
     Industry,
+    IndustryGroupSnapshot,
     IpoBasePattern,
     Layout,
     LayoutColumn,
@@ -76,6 +78,7 @@ from tickerscope._models import (
     TriggeredAlert,
     TriggeredAlertList,
     TriggeredAlertTerm,
+    VolumeMovingAverage,
     WatchlistDetail,
     WatchlistEntry,
     WatchlistSymbol,
@@ -107,6 +110,7 @@ __all__ = [
     "IpoBasePattern",
     "TightArea",
     "Industry",
+    "IndustryGroupSnapshot",
     "BasicOwnership",
     "Fundamentals",
     # Chart data models
@@ -118,6 +122,7 @@ __all__ = [
     "ExchangeInfo",
     # Fundamental data models
     "FundamentalData",
+    "HistoricalPriceStatistic",
     "ReportedPeriod",
     "EstimatePeriod",
     # Quarterly financial models
@@ -158,6 +163,7 @@ __all__ = [
     "WatchlistDetail",
     "OwnershipData",
     "QuarterlyFundOwnership",
+    "VolumeMovingAverage",
     "WatchlistSummary",
     # RS rating models
     "RSRatingSnapshot",

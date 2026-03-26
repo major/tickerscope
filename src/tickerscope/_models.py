@@ -363,6 +363,54 @@ class IpoBasePattern(Pattern):
 
 
 @dataclass(frozen=True, slots=True)
+class HistoricalPriceStatistic(SerializableDataclass):
+    """A single period of historical price statistics (high/low/close)."""
+
+    period: str | None = None
+    period_offset: str | None = None
+    period_end_date: str | None = None
+    price_high_date: str | None = None
+    price_high: float | None = None
+    price_low_date: str | None = None
+    price_low: float | None = None
+    price_close: float | None = None
+    price_percent_change: float | None = None
+
+    @property
+    def period_end_date_dt(self) -> datetime.date | None:
+        """Parsed period_end_date as a date object."""
+        return parse_date(self.period_end_date)
+
+    @property
+    def price_high_date_dt(self) -> datetime.date | None:
+        """Parsed price_high_date as a date object."""
+        return parse_date(self.price_high_date)
+
+    @property
+    def price_low_date_dt(self) -> datetime.date | None:
+        """Parsed price_low_date as a date object."""
+        return parse_date(self.price_low_date)
+
+
+@dataclass(frozen=True, slots=True)
+class IndustryGroupSnapshot(SerializableDataclass):
+    """A single time snapshot of industry group rank or relative strength."""
+
+    period_offset: str
+    value: int | None = None
+    letter_value: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class VolumeMovingAverage(SerializableDataclass):
+    """A single volume moving average with period metadata."""
+
+    value: float | None = None
+    period: str | None = None
+    period_offset: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class Industry(SerializableDataclass):
     """Industry group information."""
 
