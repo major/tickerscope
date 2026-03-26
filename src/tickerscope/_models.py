@@ -100,6 +100,20 @@ class Pricing(SerializableDataclass):
     price_to_earnings_ratio_formatted: str | None = None
     pe_vs_sp500: float | None = None
     pe_vs_sp500_formatted: str | None = None
+    alpha: float | None = None
+    alpha_formatted: str | None = None
+    beta: float | None = None
+    beta_formatted: str | None = None
+    short_interest_days_to_cover: float | None = None
+    short_interest_days_to_cover_formatted: str | None = None
+    short_interest_days_to_cover_pct_change: float | None = None
+    short_interest_days_to_cover_pct_change_formatted: str | None = None
+    short_interest_volume: int | None = None
+    short_interest_volume_formatted: str | None = None
+    is_daily_blue_dot_event: bool | None = None
+    is_weekly_blue_dot_event: bool | None = None
+    pricing_start_date: str | None = None
+    pricing_end_date: str | None = None
 
     @property
     def blue_dot_daily_dates_dt(self) -> list[datetime.date | None]:
@@ -115,6 +129,14 @@ class Pricing(SerializableDataclass):
     def ant_dates_dt(self) -> list[datetime.date | None]:
         """Parsed ant_dates as a list of date objects."""
         return parse_date_list(self.ant_dates)
+
+    @property
+    def pricing_start_date_dt(self) -> datetime.date | None:
+        return parse_date(self.pricing_start_date)
+
+    @property
+    def pricing_end_date_dt(self) -> datetime.date | None:
+        return parse_date(self.pricing_end_date)
 
 
 @dataclass(frozen=True, slots=True)

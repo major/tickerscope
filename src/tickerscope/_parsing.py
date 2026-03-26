@@ -516,6 +516,34 @@ def parse_stock_response(raw: dict, symbol: str) -> StockData:
             pe_vs_sp500_formatted=_safe_value(
                 pricing_intraday.get("priceToEarningsVsSP500"), "formattedValue"
             ),
+            alpha=_safe_value(pricing_eod.get("alpha")),
+            alpha_formatted=_safe_value(pricing_eod.get("alpha"), "formattedValue"),
+            beta=_safe_value(pricing_eod.get("beta")),
+            beta_formatted=_safe_value(pricing_eod.get("beta"), "formattedValue"),
+            short_interest_days_to_cover=_safe_value(
+                pricing_eod.get("shortInterest", {}).get("daysToCover")
+            ),
+            short_interest_days_to_cover_formatted=_safe_value(
+                pricing_eod.get("shortInterest", {}).get("daysToCover"),
+                "formattedValue",
+            ),
+            short_interest_days_to_cover_pct_change=_safe_value(
+                pricing_eod.get("shortInterest", {}).get("daysToCoverPercentChange")
+            ),
+            short_interest_days_to_cover_pct_change_formatted=_safe_value(
+                pricing_eod.get("shortInterest", {}).get("daysToCoverPercentChange"),
+                "formattedValue",
+            ),
+            short_interest_volume=_safe_value(
+                pricing_eod.get("shortInterest", {}).get("volume")
+            ),
+            short_interest_volume_formatted=_safe_value(
+                pricing_eod.get("shortInterest", {}).get("volume"), "formattedValue"
+            ),
+            is_daily_blue_dot_event=pricing_eod.get("isDailyBlueDotEvent"),
+            is_weekly_blue_dot_event=pricing_eod.get("isWeeklyBlueDotEvent"),
+            pricing_start_date=_safe_value(pricing_eod.get("pricingStartDate")),
+            pricing_end_date=_safe_value(pricing_eod.get("pricingEndDate")),
         ),
         financials=Financials(
             eps_due_date=_safe_date_value(financials.get("epsDueDate")),

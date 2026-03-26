@@ -132,6 +132,30 @@ def test_parse_stock_response_valuation_ratios(stock_response) -> None:
     assert stock.pricing.pe_vs_sp500_formatted == "108.99"
 
 
+def test_parse_stock_response_alpha_beta_short_interest_etc(stock_response) -> None:
+    stock = parse_stock_response(stock_response, "TEST")
+
+    assert stock.pricing is not None
+
+    assert stock.pricing.alpha == pytest.approx(0.0085)
+    assert stock.pricing.alpha_formatted == "0.85%"
+    assert stock.pricing.beta == pytest.approx(0.0125)
+    assert stock.pricing.beta_formatted == "1.25%"
+
+    assert stock.pricing.short_interest_days_to_cover == pytest.approx(2.2)
+    assert stock.pricing.short_interest_days_to_cover_formatted == "2.20"
+    assert stock.pricing.short_interest_days_to_cover_pct_change == pytest.approx(3.3)
+    assert stock.pricing.short_interest_days_to_cover_pct_change_formatted == "3.30"
+    assert stock.pricing.short_interest_volume == 76336607
+    assert stock.pricing.short_interest_volume_formatted == "76,336,607.00"
+
+    assert stock.pricing.is_daily_blue_dot_event is None
+    assert stock.pricing.is_weekly_blue_dot_event is None
+
+    assert stock.pricing.pricing_start_date == "2004-08-19"
+    assert stock.pricing.pricing_end_date == "2026-03-19"
+
+
 def test_parse_stock_response_quarterly_earnings(stock_response) -> None:
     """Parse quarterly reported earnings from the stock fixture."""
     stock = parse_stock_response(stock_response, "TEST")
