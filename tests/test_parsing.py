@@ -110,6 +110,28 @@ def test_parse_stock_response_ma_distances(stock_response) -> None:
     assert price_changes.vs_ma200d == pytest.approx(0.1613)
 
 
+def test_parse_stock_response_valuation_ratios(stock_response) -> None:
+    """Parse valuation ratio fields from intraday statistics."""
+    stock = parse_stock_response(stock_response, "TEST")
+
+    assert stock.pricing is not None
+
+    assert stock.pricing.dividend_yield == pytest.approx(0.27906976744186046)
+    assert stock.pricing.dividend_yield_formatted == "0.28"
+    assert stock.pricing.price_to_cash_flow_ratio is None
+    assert stock.pricing.price_to_cash_flow_ratio_formatted == "N/A"
+    assert stock.pricing.forward_price_to_earnings_ratio == pytest.approx(
+        26.3529965502089
+    )
+    assert stock.pricing.forward_price_to_earnings_ratio_formatted == "26.35"
+    assert stock.pricing.price_to_sales_ratio == pytest.approx(4.35021199694168)
+    assert stock.pricing.price_to_sales_ratio_formatted == "4.35"
+    assert stock.pricing.price_to_earnings_ratio == pytest.approx(27.8445883441258)
+    assert stock.pricing.price_to_earnings_ratio_formatted == "27.84"
+    assert stock.pricing.pe_vs_sp500 == pytest.approx(108.99)
+    assert stock.pricing.pe_vs_sp500_formatted == "108.99"
+
+
 def test_parse_stock_response_quarterly_earnings(stock_response) -> None:
     """Parse quarterly reported earnings from the stock fixture."""
     stock = parse_stock_response(stock_response, "TEST")

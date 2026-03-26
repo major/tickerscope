@@ -486,6 +486,36 @@ def parse_stock_response(raw: dict, symbol: str) -> StockData:
                 vs_ma200d=_safe_value(price_pct_vs.get("VS_MA200D", {})),
             ),
             volume_percent_change_vs_50d=_safe_value(volume_pct_vs.get("VS_MA50D", {})),
+            dividend_yield=_safe_value(pricing_intraday.get("yield")),
+            dividend_yield_formatted=_safe_value(
+                pricing_intraday.get("yield"), "formattedValue"
+            ),
+            price_to_cash_flow_ratio=_safe_value(
+                pricing_intraday.get("priceToCashFlowRatio")
+            ),
+            price_to_cash_flow_ratio_formatted=_safe_value(
+                pricing_intraday.get("priceToCashFlowRatio"), "formattedValue"
+            ),
+            forward_price_to_earnings_ratio=_safe_value(
+                pricing_intraday.get("forwardPriceToEarningsRatio")
+            ),
+            forward_price_to_earnings_ratio_formatted=_safe_value(
+                pricing_intraday.get("forwardPriceToEarningsRatio"), "formattedValue"
+            ),
+            price_to_sales_ratio=_safe_value(pricing_intraday.get("priceToSalesRatio")),
+            price_to_sales_ratio_formatted=_safe_value(
+                pricing_intraday.get("priceToSalesRatio"), "formattedValue"
+            ),
+            price_to_earnings_ratio=_safe_value(
+                pricing_intraday.get("priceToEarningsRatio")
+            ),
+            price_to_earnings_ratio_formatted=_safe_value(
+                pricing_intraday.get("priceToEarningsRatio"), "formattedValue"
+            ),
+            pe_vs_sp500=_safe_value(pricing_intraday.get("priceToEarningsVsSP500")),
+            pe_vs_sp500_formatted=_safe_value(
+                pricing_intraday.get("priceToEarningsVsSP500"), "formattedValue"
+            ),
         ),
         financials=Financials(
             eps_due_date=_safe_date_value(financials.get("epsDueDate")),

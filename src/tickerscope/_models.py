@@ -88,6 +88,18 @@ class Pricing(SerializableDataclass):
     ant_dates: list[str | None]
     price_percent_changes: PricePercentChanges | None
     volume_percent_change_vs_50d: float | None
+    dividend_yield: float | None = None
+    dividend_yield_formatted: str | None = None
+    price_to_cash_flow_ratio: float | None = None
+    price_to_cash_flow_ratio_formatted: str | None = None
+    forward_price_to_earnings_ratio: float | None = None
+    forward_price_to_earnings_ratio_formatted: str | None = None
+    price_to_sales_ratio: float | None = None
+    price_to_sales_ratio_formatted: str | None = None
+    price_to_earnings_ratio: float | None = None
+    price_to_earnings_ratio_formatted: str | None = None
+    pe_vs_sp500: float | None = None
+    pe_vs_sp500_formatted: str | None = None
 
     @property
     def blue_dot_daily_dates_dt(self) -> list[datetime.date | None]:
