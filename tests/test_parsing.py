@@ -156,6 +156,19 @@ def test_parse_stock_response_alpha_beta_short_interest_etc(stock_response) -> N
     assert stock.pricing.pricing_end_date == "2026-03-19"
 
 
+def test_parse_stock_response_company_location_and_sub_type(stock_response) -> None:
+    """Parse company location fields and instrument subType (DATA_AUDIT gaps #9, #10)."""
+    stock = parse_stock_response(stock_response, "TEST")
+
+    assert stock.company is not None
+    # Location fields are absent from fixture (not queried before), so None
+    assert stock.company.city is None
+    assert stock.company.country is None
+    assert stock.company.state_province is None
+    # instrument[0].subType exists in fixture as "COMMON"
+    assert stock.company.instrument_sub_type == "COMMON"
+
+
 def test_parse_stock_response_quarterly_earnings(stock_response) -> None:
     """Parse quarterly reported earnings from the stock fixture."""
     stock = parse_stock_response(stock_response, "TEST")

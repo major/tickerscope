@@ -226,6 +226,9 @@ query OtherMarketData(
         phone
         businessDescription
         url
+        city
+        country
+        stateProvince
       }
       instrument {
         subType

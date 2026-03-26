@@ -433,6 +433,10 @@ def parse_stock_response(raw: dict, symbol: str) -> StockData:
             ipo_price_formatted=_safe_value(
                 instrument.get("ipoPrice"), "formattedValue"
             ),
+            city=company.get("city"),
+            country=company.get("country"),
+            state_province=company.get("stateProvince"),
+            instrument_sub_type=instrument.get("subType"),
         ),
         pricing=Pricing(
             market_cap=_safe_value(pricing_eod.get("marketCapitalization")),

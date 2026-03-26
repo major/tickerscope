@@ -40,6 +40,10 @@ class Company(SerializableDataclass):
     ipo_date: str | None
     ipo_price: float | None
     ipo_price_formatted: str | None
+    city: str | None = None
+    country: str | None = None
+    state_province: str | None = None
+    instrument_sub_type: str | None = None
 
     @property
     def ipo_date_dt(self) -> datetime.date | None:
