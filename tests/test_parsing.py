@@ -93,6 +93,23 @@ def test_parse_stock_response_real_fixture(stock_response) -> None:
     assert stock.pricing.ant_dates == ["2026-03-20", "2026-03-19", "2026-01-29"]
 
 
+def test_parse_stock_response_ma_distances(stock_response) -> None:
+    """Parse additional MA-distance and extra price-vs subjects."""
+    stock = parse_stock_response(stock_response, "TEST")
+
+    assert stock.pricing is not None
+    assert stock.pricing.price_percent_changes is not None
+
+    price_changes = stock.pricing.price_percent_changes
+    assert price_changes.vs_5d is None
+    assert price_changes.vs_sp500_26w == pytest.approx(0.718)
+    assert price_changes.vs_ma10d == pytest.approx(-0.0156)
+    assert price_changes.vs_ma21d == pytest.approx(-0.0191)
+    assert price_changes.vs_ma50d == pytest.approx(-0.0546)
+    assert price_changes.vs_ma150d == pytest.approx(0.0571)
+    assert price_changes.vs_ma200d == pytest.approx(0.1613)
+
+
 def test_parse_stock_response_quarterly_earnings(stock_response) -> None:
     """Parse quarterly reported earnings from the stock fixture."""
     stock = parse_stock_response(stock_response, "TEST")

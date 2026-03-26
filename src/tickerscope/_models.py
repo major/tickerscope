@@ -60,6 +60,13 @@ class PricePercentChanges(SerializableDataclass):
     vs_3m: float | None
     vs_year_high: float | None
     vs_year_low: float | None
+    vs_5d: float | None = None
+    vs_sp500_26w: float | None = None
+    vs_ma10d: float | None = None
+    vs_ma21d: float | None = None
+    vs_ma50d: float | None = None
+    vs_ma150d: float | None = None
+    vs_ma200d: float | None = None
 
 
 @dataclass(frozen=True, slots=True)
