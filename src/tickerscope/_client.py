@@ -30,6 +30,7 @@ from tickerscope._exceptions import (
 from tickerscope._models import (
     AdhocScreenResult,
     AlertSubscriptionList,
+    CatalogEntry,
     ChartData,
     ChartMarkupList,
     CoachTreeData,
@@ -131,6 +132,98 @@ def _list_coach_screen_names(nodes: list[NavTreeNode]) -> str:
 
     _collect(nodes)
     return ", ".join(sorted(set(names)))
+
+
+def _extract_leaves(nodes: list[NavTreeNode]) -> list[NavTreeLeaf]:
+    """Recursively extract all leaf nodes from a navigation tree."""
+    leaves: list[NavTreeLeaf] = []
+    for node in nodes:
+        if isinstance(node, NavTreeLeaf):
+            leaves.append(node)
+        elif isinstance(node, NavTreeFolder):
+            leaves.extend(_extract_leaves(node.children))
+    return leaves
+
+
+def _screens_to_catalog(screens: list[Screen]) -> list[CatalogEntry]:
+    """Convert user screens to catalog entries (discovery-only, not dispatchable)."""
+    return [
+        CatalogEntry(
+            name=screen.name,
+            kind="screen",
+            description=screen.description,
+        )
+        for screen in screens
+        if screen.name is not None
+    ]
+
+
+def _reports_to_catalog(reports: list[ReportInfo]) -> list[CatalogEntry]:
+    """Convert predefined reports to catalog entries."""
+    return [
+        CatalogEntry(
+            name=report.name,
+            kind="report",
+            report_id=report.original_id,
+        )
+        for report in reports
+    ]
+
+
+def _coach_tree_to_catalog(tree: CoachTreeData) -> list[CatalogEntry]:
+    """Extract catalog entries from the coach tree (screens and watchlists).
+
+    Processes both the ``.screens`` and ``.watchlists`` sub-trees and
+    returns a flat list of entries. Screen leaves are filtered to
+    ``_COACH_SCREEN_TYPES`` node types with a non-None
+    ``reference_screen_id``. Watchlist leaves must have a non-None
+    ``reference_watchlist_id`` (stored as ``str``, converted to ``int``).
+    """
+    entries: list[CatalogEntry] = []
+
+    for leaf in _extract_leaves(tree.screens):
+        if leaf.node_type not in _COACH_SCREEN_TYPES:
+            continue
+        if leaf.reference_screen_id is None:
+            continue
+        entries.append(
+            CatalogEntry(
+                name=leaf.name or "",
+                kind="coach_screen",
+                coach_screen_id=leaf.reference_screen_id,
+            )
+        )
+
+    for leaf in _extract_leaves(tree.watchlists):
+        if leaf.reference_watchlist_id is None:
+            continue
+        try:
+            watchlist_id = int(leaf.reference_watchlist_id)
+        except (ValueError, TypeError):
+            continue
+        entries.append(
+            CatalogEntry(
+                name=leaf.name or "",
+                kind="watchlist",
+                watchlist_id=watchlist_id,
+            )
+        )
+
+    return entries
+
+
+def _watchlists_to_catalog(summaries: list[WatchlistSummary]) -> list[CatalogEntry]:
+    """Convert user watchlist summaries to catalog entries, filtering None IDs."""
+    return [
+        CatalogEntry(
+            name=summary.name or "",
+            kind="watchlist",
+            description=summary.description,
+            watchlist_id=summary.id,
+        )
+        for summary in summaries
+        if summary.id is not None
+    ]
 
 
 def _today() -> date:
