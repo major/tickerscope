@@ -221,3 +221,5 @@ __marimo__/
 # Development artifacts
 other_market_data_response.json
 other_market_data_extracted.json
+DATA_AUDIT.md
+MISSING_QUERIES.md
