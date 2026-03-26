@@ -149,8 +149,8 @@ def test_parse_stock_response_alpha_beta_short_interest_etc(stock_response) -> N
     assert stock.pricing.short_interest_volume == 76336607
     assert stock.pricing.short_interest_volume_formatted == "76,336,607.00"
 
-    assert stock.pricing.is_daily_blue_dot_event is None
-    assert stock.pricing.is_weekly_blue_dot_event is None
+    assert stock.pricing.is_daily_blue_dot_event is False
+    assert stock.pricing.is_weekly_blue_dot_event is False
 
     assert stock.pricing.pricing_start_date == "2004-08-19"
     assert stock.pricing.pricing_end_date == "2026-03-19"
@@ -220,8 +220,8 @@ def test_parse_stock_response_cash_flow_per_share(stock_response) -> None:
     stock = parse_stock_response(stock_response, "TEST")
 
     assert stock.financials is not None
-    assert stock.financials.cash_flow_per_share is not None
-    assert stock.financials.cash_flow_per_share_formatted is not None
+    assert stock.financials.cash_flow_per_share == pytest.approx(13.4679476696648)
+    assert stock.financials.cash_flow_per_share_formatted == "13.47"
 
 
 def test_parse_stock_response_quarterly_earnings(stock_response) -> None:

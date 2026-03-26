@@ -620,8 +620,8 @@ def parse_stock_response(raw: dict, symbol: str) -> StockData:
             short_interest_volume_formatted=_safe_value(
                 pricing_eod.get("shortInterest", {}).get("volume"), "formattedValue"
             ),
-            is_daily_blue_dot_event=pricing_eod.get("isDailyBlueDotEvent"),
-            is_weekly_blue_dot_event=pricing_eod.get("isWeeklyBlueDotEvent"),
+            is_daily_blue_dot_event=pricing_intraday.get("isDailyBlueDotEvent"),
+            is_weekly_blue_dot_event=pricing_intraday.get("isWeeklyBlueDotEvent"),
             pricing_start_date=_safe_value(pricing_eod.get("pricingStartDate")),
             pricing_end_date=_safe_value(pricing_eod.get("pricingEndDate")),
         ),
