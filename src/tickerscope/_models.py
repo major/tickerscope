@@ -78,6 +78,7 @@ class Pricing(SerializableDataclass):
     short_interest_percent_float_formatted: str | None
     blue_dot_daily_dates: list[str | None]
     blue_dot_weekly_dates: list[str | None]
+    ant_dates: list[str | None]
     price_percent_changes: PricePercentChanges | None
     volume_percent_change_vs_50d: float | None
 
@@ -90,6 +91,11 @@ class Pricing(SerializableDataclass):
     def blue_dot_weekly_dates_dt(self) -> list[datetime.date | None]:
         """Parsed blue_dot_weekly_dates as a list of date objects."""
         return parse_date_list(self.blue_dot_weekly_dates)
+
+    @property
+    def ant_dates_dt(self) -> list[datetime.date | None]:
+        """Parsed ant_dates as a list of date objects."""
+        return parse_date_list(self.ant_dates)
 
 
 @dataclass(frozen=True, slots=True)

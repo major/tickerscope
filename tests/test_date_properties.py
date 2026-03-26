@@ -384,10 +384,11 @@ class TestPricingDtProperties:
 
     def _make_pricing(
         self,
-        daily: list[str | None] | None = None,
-        weekly: list[str | None] | None = None,
+        daily: list[str] | None = None,
+        weekly: list[str] | None = None,
+        ants: list[str] | None = None,
     ) -> Pricing:
-        """Build a Pricing instance with specified blue_dot lists."""
+        """Build a Pricing instance with specified blue_dot/ant lists."""
         return Pricing(
             market_cap=None,
             market_cap_formatted=None,
@@ -401,6 +402,7 @@ class TestPricingDtProperties:
             short_interest_percent_float_formatted=None,
             blue_dot_daily_dates=daily or [],
             blue_dot_weekly_dates=weekly or [],
+            ant_dates=ants or [],
             price_percent_changes=PricePercentChanges(
                 ytd=None,
                 mtd=None,
@@ -428,11 +430,20 @@ class TestPricingDtProperties:
         assert len(result) == 2
         assert result[0] == datetime.date(2026, 1, 8)
 
+    def test_ant_dates_dt(self) -> None:
+        """Valid ant_dates parse into date list."""
+        p = self._make_pricing(ants=["2026-03-20", "2026-03-19"])
+        result = p.ant_dates_dt
+        assert len(result) == 2
+        assert result[0] == datetime.date(2026, 3, 20)
+        assert result[1] == datetime.date(2026, 3, 19)
+
     def test_empty_lists(self) -> None:
-        """Empty blue_dot lists produce empty output lists."""
+        """Empty date lists produce empty output lists."""
         p = self._make_pricing()
         assert p.blue_dot_daily_dates_dt == []
         assert p.blue_dot_weekly_dates_dt == []
+        assert p.ant_dates_dt == []
 
     def test_to_dict_excludes_dt(self) -> None:
         """to_dict() output does NOT contain _dt keys."""
@@ -440,6 +451,7 @@ class TestPricingDtProperties:
         d = p.to_dict()
         assert "blue_dot_daily_dates_dt" not in d
         assert "blue_dot_weekly_dates_dt" not in d
+        assert "ant_dates_dt" not in d
 
 
 # ---------------------------------------------------------------------------

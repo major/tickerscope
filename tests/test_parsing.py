@@ -89,6 +89,8 @@ def test_parse_stock_response_real_fixture(stock_response) -> None:
     assert len(stock.patterns) >= 0
     assert isinstance(stock.patterns[0], CupPattern)
     assert isinstance(stock.tight_areas, list)
+    assert stock.pricing is not None
+    assert stock.pricing.ant_dates == ["2026-03-20", "2026-03-19", "2026-01-29"]
 
 
 def test_parse_stock_response_empty_market_data() -> None:

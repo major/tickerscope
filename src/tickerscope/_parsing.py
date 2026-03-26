@@ -395,6 +395,9 @@ def parse_stock_response(raw: dict, symbol: str) -> StockData:
                 _safe_value(event)
                 for event in pricing_eod.get("blueDotWeeklyEvents", [])
             ],
+            ant_dates=[
+                _safe_value(event) for event in pricing_eod.get("antEvents", [])
+            ],
             price_percent_changes=PricePercentChanges(
                 ytd=_safe_value(price_pct_vs.get("VS_YTD", {})),
                 mtd=_safe_value(price_pct_vs.get("VS_MTD", {})),

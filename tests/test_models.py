@@ -68,6 +68,7 @@ class TestStockData:
                 short_interest_percent_float_formatted=None,
                 blue_dot_daily_dates=[],
                 blue_dot_weekly_dates=[],
+                ant_dates=[],
                 price_percent_changes=PricePercentChanges(
                     ytd=None,
                     mtd=None,
