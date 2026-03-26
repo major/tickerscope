@@ -1,0 +1,21 @@
+{
+  "data": {
+    "user": {
+      "runScreen": {
+        "numberOfMatchingInstruments": 48,
+        "responseValues": [
+          [
+            {"value": "PKE", "mdItem": {"mdItemID": 431, "name": "Symbol"}},
+            {"value": "Park Aerospace Corp.", "mdItem": {"mdItemID": 410, "name": "CompanyName"}},
+            {"value": "99", "mdItem": {"mdItemID": 1, "name": "CompositeRating"}}
+          ],
+          [
+            {"value": "AAUC", "mdItem": {"mdItemID": 431, "name": "Symbol"}},
+            {"value": "Allied Gold Corp.", "mdItem": {"mdItemID": 410, "name": "CompanyName"}},
+            {"value": "99", "mdItem": {"mdItemID": 1, "name": "CompositeRating"}}
+          ]
+        ]
+      }
+    }
+  }
+}

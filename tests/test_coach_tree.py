@@ -22,7 +22,7 @@ def test_parse_coach_tree_response_returns_coach_tree_data(
     assert isinstance(result.watchlists, list)
     assert len(result.watchlists) == 2
     assert isinstance(result.screens, list)
-    assert len(result.screens) == 1
+    assert len(result.screens) == 3
 
 
 def test_watchlists_contain_folder_and_leaf(coach_tree_response) -> None:
@@ -37,14 +37,17 @@ def test_watchlists_contain_folder_and_leaf(coach_tree_response) -> None:
     assert leaves[0].name == "S&P 500"
 
 
-def test_screens_contain_folder(coach_tree_response) -> None:
-    """Screens list contains NavTreeFolder with children."""
+def test_screens_contain_folder_and_leaves(coach_tree_response) -> None:
+    """Screens list contains folders and coach screen leaves."""
     result = parse_coach_tree_response(coach_tree_response)
 
     folders = [n for n in result.screens if isinstance(n, NavTreeFolder)]
+    leaves = [n for n in result.screens if isinstance(n, NavTreeLeaf)]
     assert len(folders) == 1
-    assert folders[0].name == "William J. O'Neil"
+    assert folders[0].name == "MarketSurge Stock Screens"
     assert len(folders[0].children) == 1
+    assert len(leaves) == 2
+    assert leaves[0].name == "William J. O'Neil"
 
 
 def test_coach_leaf_dual_reference_ids(coach_tree_response) -> None:
@@ -81,7 +84,7 @@ def test_sync_client_get_coach_lists(sync_client, coach_tree_response) -> None:
 
     assert isinstance(result, CoachTreeData)
     assert len(result.watchlists) == 2
-    assert len(result.screens) == 1
+    assert len(result.screens) == 3
 
 
 @pytest.mark.asyncio
@@ -96,4 +99,4 @@ async def test_async_client_get_coach_lists(async_client, coach_tree_response) -
 
     assert isinstance(result, CoachTreeData)
     assert len(result.watchlists) == 2
-    assert len(result.screens) == 1
+    assert len(result.screens) == 3

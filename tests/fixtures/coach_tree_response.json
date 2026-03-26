@@ -25,8 +25,24 @@
       ],
       "screens": [
         {
-          "id": "sc-folder-1",
+          "id": "sc-screen-1",
           "name": "William J. O'Neil",
+          "parentId": null,
+          "type": "STOCK_SCREEN",
+          "treeType": "MSR_NAV",
+          "referenceId": "{\"screenId\": \"01KEFPH03H88ANE7DVPA15N4NS\"}"
+        },
+        {
+          "id": "sc-screen-2",
+          "name": "Warren Buffett",
+          "parentId": null,
+          "type": "STOCK_SCREEN",
+          "treeType": "MSR_NAV",
+          "referenceId": "{\"screenId\": \"01KEFPK7JG5B0PK2JBKN7GDC7F\"}"
+        },
+        {
+          "id": "sc-folder-1",
+          "name": "MarketSurge Stock Screens",
           "parentId": null,
           "type": "SYSTEM_FOLDER",
           "children": [

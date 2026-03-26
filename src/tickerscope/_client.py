@@ -35,6 +35,8 @@ from tickerscope._models import (
     CoachTreeData,
     FundamentalData,
     Layout,
+    NavTreeFolder,
+    NavTreeLeaf,
     NavTreeNode,
     OwnershipData,
     Panel,
@@ -61,6 +63,7 @@ from tickerscope._parsing import (
     parse_ownership_response,
     parse_panels_response,
     parse_rs_rating_history_response,
+    parse_run_screen_response,
     parse_screen_result_response,
     parse_screens_response,
     parse_server_time_response,
@@ -84,6 +87,7 @@ from tickerscope._queries import (
     MARKET_DATA_LAYOUTS_QUERY,
     MARKET_DATA_SCREEN_QUERY,
     NAV_TREE_QUERY,
+    RUN_SCREEN_QUERY,
     OTHER_MARKET_DATA_QUERY,
     OWNERSHIP_QUERY,
     RS_RATING_RI_PANEL_QUERY,
@@ -96,6 +100,37 @@ from tickerscope._queries import (
 _log = logging.getLogger("tickerscope")
 
 _VALID_LOOKBACKS = ("1W", "1M", "3M", "6M", "1Y", "YTD")
+
+_COACH_SCREEN_TYPES = ("STOCK_SCREEN", "FUND_SCREEN")
+
+
+def _find_coach_screen(nodes: list[NavTreeNode], name: str) -> NavTreeLeaf | None:
+    """Walk the coach tree and return the first leaf matching *name*."""
+    for node in nodes:
+        if isinstance(node, NavTreeLeaf):
+            if node.node_type in _COACH_SCREEN_TYPES and node.name == name:
+                return node
+        elif isinstance(node, NavTreeFolder):
+            found = _find_coach_screen(node.children, name)
+            if found is not None:
+                return found
+    return None
+
+
+def _list_coach_screen_names(nodes: list[NavTreeNode]) -> str:
+    """Collect display names of all coach screen leaves, comma-separated."""
+    names: list[str] = []
+
+    def _collect(items: list[NavTreeNode]) -> None:
+        for node in items:
+            if isinstance(node, NavTreeLeaf):
+                if node.node_type in _COACH_SCREEN_TYPES and node.name:
+                    names.append(node.name)
+            elif isinstance(node, NavTreeFolder):
+                _collect(node.children)
+
+    _collect(nodes)
+    return ", ".join(sorted(set(names)))
 
 
 def _today() -> date:
@@ -563,6 +598,32 @@ class BaseTickerScopeClient(ABC):
         }
 
     @staticmethod
+    def _build_run_coach_screen_payload(screen_id: str) -> dict[str, Any]:
+        """Build payload for the RunScreen query used by coach account screens.
+
+        Coach screens (e.g. "William J. O'Neil", "Warren Buffett") use a
+        different GraphQL operation than MarketDataScreen or
+        MarketDataAdhocScreen.  They require `coachAccount: true` and
+        the opaque screen ID from the CoachTree response.
+        """
+        return {
+            "operationName": "RunScreen",
+            "variables": {
+                "input": {
+                    "correlationTag": "marketsurge",
+                    "coachAccount": True,
+                    "pageSize": 1000,
+                    "resultLimit": 1000000,
+                    "screenId": screen_id,
+                    "site": "marketsurge",
+                    "skip": 0,
+                    "responseColumns": WATCHLIST_COLUMNS,
+                },
+            },
+            "query": RUN_SCREEN_QUERY,
+        }
+
+    @staticmethod
     def _build_get_fundamentals_payload(symbol: str) -> dict[str, Any]:
         return {
             "operationName": "FundermentalDataBox",
@@ -810,6 +871,23 @@ class BaseTickerScopeClient(ABC):
         """
         payload = self._build_get_watchlist_payload(report_id)
         return self._graphql_and_parse(payload, parse_watchlist_response)
+
+    def run_coach_screen(self, screen_id: str) -> Any:
+        """Run a coach account screen by its opaque screen ID.
+
+        Coach screens (e.g. "William J. O'Neil", "Warren Buffett") use
+        the RunScreen GraphQL query with ``coachAccount: true``.  The
+        screen ID comes from the CoachTree response
+        (``NavTreeLeaf.reference_screen_id``).
+
+        Args:
+            screen_id: Opaque screen ID from the CoachTree.
+
+        Returns:
+            ScreenResult with row data from the coach screen.
+        """
+        payload = self._build_run_coach_screen_payload(screen_id)
+        return self._graphql_and_parse(payload, parse_run_screen_response)
 
 
 class TickerScopeClient(BaseTickerScopeClient):
@@ -1359,3 +1437,49 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
                 f"No report found with name {name!r}. Available: {available or 'none'}"
             )
         return await self.run_report(match.original_id)
+
+    async def run_coach_screen(self, screen_id: str) -> ScreenResult:
+        """Run a coach account screen by its opaque screen ID.
+
+        Coach screens (e.g. "William J. O'Neil", "Warren Buffett") use
+        the RunScreen GraphQL query with ``coachAccount: true``.  The
+        screen ID comes from the CoachTree response
+        (``NavTreeLeaf.reference_screen_id``).
+
+        Args:
+            screen_id: Opaque screen ID from the CoachTree.
+
+        Returns:
+            ScreenResult with row data from the coach screen.
+        """
+        payload = self._build_run_coach_screen_payload(screen_id)
+        return await self._graphql_and_parse(payload, parse_run_screen_response)
+
+    async def run_coach_screen_by_name(self, name: str) -> ScreenResult:
+        """Run a coach account screen by display name.
+
+        Queries the CoachTree to resolve the name to a screen ID, then
+        runs the screen via run_coach_screen().
+
+        Args:
+            name: Display name of the coach screen
+                (e.g. "William J. O'Neil", "Warren Buffett").
+
+        Returns:
+            ScreenResult with row data from the coach screen.
+
+        Raises:
+            APIError: If no coach screen matches the given name or the
+                matching entry has no screen ID.
+        """
+        coach_data = await self.get_coach_lists()
+        leaf = _find_coach_screen(coach_data.screens, name)
+        if leaf is None:
+            available = _list_coach_screen_names(coach_data.screens)
+            raise APIError(
+                f"No coach screen found with name {name!r}. "
+                f"Available: {available or 'none'}"
+            )
+        if leaf.reference_screen_id is None:
+            raise APIError(f"Coach screen {name!r} has no screen ID in its referenceId")
+        return await self.run_coach_screen(leaf.reference_screen_id)

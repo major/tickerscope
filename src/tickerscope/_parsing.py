@@ -1115,6 +1115,41 @@ def parse_screen_result_response(raw: dict) -> ScreenResult:
     )
 
 
+def parse_run_screen_response(raw: dict) -> ScreenResult:
+    """Parse a RunScreen GraphQL response into a ScreenResult dataclass.
+
+    Coach account screens (e.g. "William J. O'Neil") use the RunScreen
+    query whose response is nested under ``data.user.runScreen`` instead
+    of ``data.marketDataScreen``.
+
+    Args:
+        raw: The raw GraphQL response dict.
+
+    Raises:
+        APIError: If the response contains GraphQL errors or data is missing.
+
+    Returns:
+        ScreenResult with row data from the coach screen.
+    """
+    _check_graphql_errors(raw, "run screen request")
+
+    screen_data = raw.get("data", {}).get("user", {}).get("runScreen")
+    if not screen_data:
+        raise APIError("No coach screen data returned")
+
+    rows: list[dict[str, str | None]] = [
+        {col.get("mdItem", {}).get("name", ""): col.get("value") for col in row_values}
+        for row_values in screen_data.get("responseValues", [])
+    ]
+
+    return ScreenResult(
+        screen_name=None,
+        elapsed_time=None,
+        num_instruments=screen_data.get("numberOfMatchingInstruments"),
+        rows=rows,
+    )
+
+
 def parse_chart_data_response(raw: dict, symbol: str) -> ChartData:
     """Parse a ChartMarketData GraphQL response into a ChartData dataclass.
 
