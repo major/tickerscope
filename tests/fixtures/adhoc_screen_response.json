@@ -1,0 +1,59 @@
+{
+  "data": {
+    "marketDataAdhocScreen": {
+      "responseValues": [
+        [
+          {"value": "T", "mdItem": {"mdItemID": 431, "name": "Symbol"}},
+          {"value": "AT&T Inc", "mdItem": {"mdItemID": 410, "name": "CompanyName"}},
+          {"value": "1", "mdItem": {"mdItemID": 999, "name": "ListRank"}},
+          {"value": "22.50", "mdItem": {"mdItemID": 100, "name": "Price"}},
+          {"value": "-0.15", "mdItem": {"mdItemID": 101, "name": "PriceNetChg"}},
+          {"value": "-0.66", "mdItem": {"mdItemID": 102, "name": "PricePctChg"}},
+          {"value": "-8.50", "mdItem": {"mdItemID": 103, "name": "PricePctOff52WHigh"}},
+          {"value": "12.5", "mdItem": {"mdItemID": 104, "name": "VolumePctChgVs50DAvgVolume"}},
+          {"value": "35000000", "mdItem": {"mdItemID": 105, "name": "VolumeAvg50Day"}},
+          {"value": "340000000", "mdItem": {"mdItemID": 106, "name": "MarketCapIntraday"}},
+          {"value": "72", "mdItem": {"mdItemID": 1, "name": "CompositeRating"}},
+          {"value": "65", "mdItem": {"mdItemID": 2, "name": "EPSRating"}},
+          {"value": "48", "mdItem": {"mdItemID": 3, "name": "RSRating"}},
+          {"value": "B+", "mdItem": {"mdItemID": 4, "name": "AccDisRating"}},
+          {"value": "C", "mdItem": {"mdItemID": 5, "name": "SMRRating"}},
+          {"value": "42", "mdItem": {"mdItemID": 6, "name": "IndustryGroupRank"}},
+          {"value": "Telecom Services", "mdItem": {"mdItemID": 7, "name": "IndustryName"}},
+          {"value": "5000000", "mdItem": {"mdItemID": 107, "name": "VolumeDollarAvg50D"}},
+          {"value": "2024-01-15", "mdItem": {"mdItemID": 108, "name": "IPODate"}},
+          {"value": "NWSE-T", "mdItem": {"mdItemID": 109, "name": "DowJonesKey"}},
+          {"value": "T", "mdItem": {"mdItemID": 110, "name": "ChartingSymbol"}},
+          {"value": "EQUITY", "mdItem": {"mdItemID": 111, "name": "DowJonesInstrumentType"}},
+          {"value": "COMMON", "mdItem": {"mdItemID": 112, "name": "DowJonesInstrumentSubType"}}
+        ],
+        [
+          {"value": "VZ", "mdItem": {"mdItemID": 431, "name": "Symbol"}},
+          {"value": "Verizon Communications", "mdItem": {"mdItemID": 410, "name": "CompanyName"}},
+          {"value": "2", "mdItem": {"mdItemID": 999, "name": "ListRank"}},
+          {"value": "41.80", "mdItem": {"mdItemID": 100, "name": "Price"}},
+          {"value": "0.25", "mdItem": {"mdItemID": 101, "name": "PriceNetChg"}},
+          {"value": "0.60", "mdItem": {"mdItemID": 102, "name": "PricePctChg"}},
+          {"value": "-5.20", "mdItem": {"mdItemID": 103, "name": "PricePctOff52WHigh"}},
+          {"value": "-3.8", "mdItem": {"mdItemID": 104, "name": "VolumePctChgVs50DAvgVolume"}},
+          {"value": "20000000", "mdItem": {"mdItemID": 105, "name": "VolumeAvg50Day"}},
+          {"value": null, "mdItem": {"mdItemID": 106, "name": "MarketCapIntraday"}},
+          {"value": "58", "mdItem": {"mdItemID": 1, "name": "CompositeRating"}},
+          {"value": "50", "mdItem": {"mdItemID": 2, "name": "EPSRating"}},
+          {"value": "35", "mdItem": {"mdItemID": 3, "name": "RSRating"}},
+          {"value": "C-", "mdItem": {"mdItemID": 4, "name": "AccDisRating"}},
+          {"value": "D", "mdItem": {"mdItemID": 5, "name": "SMRRating"}},
+          {"value": "85", "mdItem": {"mdItemID": 6, "name": "IndustryGroupRank"}},
+          {"value": "Telecom Services", "mdItem": {"mdItemID": 7, "name": "IndustryName"}},
+          {"value": null, "mdItem": {"mdItemID": 107, "name": "VolumeDollarAvg50D"}},
+          {"value": null, "mdItem": {"mdItemID": 108, "name": "IPODate"}},
+          {"value": "NWSE-VZ", "mdItem": {"mdItemID": 109, "name": "DowJonesKey"}},
+          {"value": "VZ", "mdItem": {"mdItemID": 110, "name": "ChartingSymbol"}},
+          {"value": "EQUITY", "mdItem": {"mdItemID": 111, "name": "DowJonesInstrumentType"}},
+          {"value": null, "mdItem": {"mdItemID": 112, "name": "DowJonesInstrumentSubType"}}
+        ]
+      ],
+      "errorValues": null
+    }
+  }
+}

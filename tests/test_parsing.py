@@ -607,3 +607,62 @@ class TestSafeDateValue:
     def test_non_dict_returns_none(self) -> None:
         """Non-dict input returns None (delegated to _safe_value)."""
         assert _safe_date_value("not-a-dict") is None  # type: ignore[arg-type]
+
+
+class TestAdhocScreenNewFields:
+    """Tests for expanded WatchlistEntry fields from adhoc screen response."""
+
+    def test_new_fields_parsed_from_fixture(self, adhoc_screen_response) -> None:
+        """Parse fixture populates all 7 new WatchlistEntry fields."""
+        result = parse_adhoc_screen_response(adhoc_screen_response)
+
+        assert len(result.entries) == 2
+        entry = result.entries[0]
+
+        # Existing fields still work
+        assert entry.symbol == "T"
+        assert entry.company_name == "AT&T Inc"
+        assert entry.list_rank == 1
+        assert entry.price == 22.50
+        assert entry.composite_rating == 72
+
+        # New fields (gap #12 + #15)
+        assert entry.market_cap == 340_000_000.0
+        assert entry.volume_dollar_avg_50d == 5_000_000.0
+        assert entry.ipo_date == "2024-01-15"
+        assert entry.dow_jones_key == "NWSE-T"
+        assert entry.charting_symbol == "T"
+        assert entry.instrument_type == "EQUITY"
+        assert entry.instrument_sub_type == "COMMON"
+
+    def test_new_fields_none_when_missing(self, adhoc_screen_response) -> None:
+        """New fields are None when fixture values are null."""
+        result = parse_adhoc_screen_response(adhoc_screen_response)
+
+        entry = result.entries[1]  # VZ row has nulls
+        assert entry.symbol == "VZ"
+        assert entry.market_cap is None
+        assert entry.volume_dollar_avg_50d is None
+        assert entry.ipo_date is None
+        assert entry.instrument_sub_type is None
+        # Non-null fields on second row
+        assert entry.dow_jones_key == "NWSE-VZ"
+        assert entry.charting_symbol == "VZ"
+        assert entry.instrument_type == "EQUITY"
+
+    def test_ipo_date_dt_property(self, adhoc_screen_response) -> None:
+        """WatchlistEntry.ipo_date_dt parses date string to date object."""
+        import datetime
+
+        result = parse_adhoc_screen_response(adhoc_screen_response)
+
+        entry_with_date = result.entries[0]
+        assert entry_with_date.ipo_date_dt == datetime.date(2024, 1, 15)
+
+        entry_without_date = result.entries[1]
+        assert entry_without_date.ipo_date_dt is None
+
+    def test_error_values_passthrough(self, adhoc_screen_response) -> None:
+        """AdhocScreenResult.error_values is None from fixture."""
+        result = parse_adhoc_screen_response(adhoc_screen_response)
+        assert result.error_values is None

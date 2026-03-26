@@ -665,6 +665,18 @@ class WatchlistEntry(SerializableDataclass):
     smr_rating: str | None
     industry_group_rank: int | None
     industry_name: str | None
+    market_cap: float | None = None
+    volume_dollar_avg_50d: float | None = None
+    ipo_date: str | None = None
+    dow_jones_key: str | None = None
+    charting_symbol: str | None = None
+    instrument_type: str | None = None
+    instrument_sub_type: str | None = None
+
+    @property
+    def ipo_date_dt(self) -> datetime.date | None:
+        """Parsed ipo_date as a date object."""
+        return parse_date(self.ipo_date)
 
     def _str_header(self) -> str:
         """Format header line with symbol, name, and price."""

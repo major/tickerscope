@@ -44,6 +44,7 @@ rs_rating_history_response = _json_fixture("rs_rating_history_response.json")
 server_time_response = _json_fixture("server_time_response.json")
 nav_tree_response = _json_fixture("nav_tree_response.json")
 coach_tree_response = _json_fixture("coach_tree_response.json")
+adhoc_screen_response = _json_fixture("adhoc_screen_response.json")
 
 
 # ---------------------------------------------------------------------------

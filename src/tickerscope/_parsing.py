@@ -613,6 +613,13 @@ def parse_adhoc_screen_response(raw: dict) -> AdhocScreenResult:
                 smr_rating=row.get("SMRRating"),
                 industry_group_rank=_to_int(row.get("IndustryGroupRank")),
                 industry_name=row.get("IndustryName"),
+                market_cap=_to_float(row.get("MarketCapIntraday")),
+                volume_dollar_avg_50d=_to_float(row.get("VolumeDollarAvg50D")),
+                ipo_date=row.get("IPODate"),
+                dow_jones_key=row.get("DowJonesKey"),
+                charting_symbol=row.get("ChartingSymbol"),
+                instrument_type=row.get("DowJonesInstrumentType"),
+                instrument_sub_type=row.get("DowJonesInstrumentSubType"),
             )
         )
 

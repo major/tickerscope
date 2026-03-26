@@ -43,4 +43,10 @@ WATCHLIST_COLUMNS = [
     {"name": "SMRRating"},
     {"name": "IndustryGroupRank"},
     {"name": "IndustryName"},
+    {"name": "VolumeDollarAvg50D"},
+    {"name": "IPODate"},
+    {"name": "DowJonesKey"},
+    {"name": "ChartingSymbol"},
+    {"name": "DowJonesInstrumentType"},
+    {"name": "DowJonesInstrumentSubType"},
 ]
