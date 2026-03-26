@@ -30,7 +30,9 @@ from tickerscope._exceptions import (
 from tickerscope._models import (
     AdhocScreenResult,
     AlertSubscriptionList,
+    Catalog,
     CatalogEntry,
+    CatalogResult,
     ChartData,
     ChartMarkupList,
     CoachTreeData,
@@ -1185,6 +1187,84 @@ class TickerScopeClient(BaseTickerScopeClient):
             )
         return self.run_report(match.original_id)
 
+    def get_catalog(self) -> Any:
+        """All available screens, reports, coach screens, and watchlists.
+
+        Aggregates four separate discovery APIs into a single catalog.
+        Tolerates partial failures: if one source errors, entries from
+        other sources are still returned with the error message collected.
+        Reports never fail (hardcoded constant).
+
+        Returns:
+            Catalog with all discoverable entries and any collection errors.
+        """
+        entries: list[CatalogEntry] = []
+        errors: list[str] = []
+
+        try:
+            screens = self.get_screens()
+            entries.extend(_screens_to_catalog(screens))
+        except Exception as exc:
+            errors.append(str(exc))
+
+        reports = self.get_reports()
+        entries.extend(_reports_to_catalog(reports))
+
+        try:
+            coach_tree = self.get_coach_lists()
+            entries.extend(_coach_tree_to_catalog(coach_tree))
+        except Exception as exc:
+            errors.append(str(exc))
+
+        try:
+            watchlist_summaries = self.get_watchlist_names()
+            entries.extend(_watchlists_to_catalog(watchlist_summaries))
+        except Exception as exc:
+            errors.append(str(exc))
+
+        return Catalog(entries=entries, errors=errors)
+
+    def run_catalog_entry(self, entry: CatalogEntry) -> Any:
+        """Run a catalog entry and return its result.
+
+        Dispatches to the appropriate run method based on the entry's
+        ``kind``. Screen entries are not dispatchable (user screens from
+        ``get_screens()`` cannot be directly passed to ``run_screen()``,
+        which requires fully-qualified predefined screen names).
+
+        Args:
+            entry: A CatalogEntry from ``get_catalog()``.
+
+        Returns:
+            CatalogResult wrapping the appropriate result type.
+
+        Raises:
+            NotImplementedError: If entry.kind is "screen".
+            APIError: If the entry's required ID field is None.
+        """
+        if entry.kind == "screen":
+            raise NotImplementedError(
+                "Screen entries cannot be dispatched via run_catalog_entry(). "
+                "User screens require fully-qualified predefined screen names "
+                "and parameters. Use run_screen(screen_name, parameters) directly."
+            )
+        if entry.kind == "report":
+            if entry.report_id is None:
+                raise APIError(f"Catalog entry {entry.name!r} has no report_id")
+            result = self.run_report(entry.report_id)
+            return CatalogResult(kind="report", adhoc_result=result)
+        if entry.kind == "coach_screen":
+            if entry.coach_screen_id is None:
+                raise APIError(f"Catalog entry {entry.name!r} has no coach_screen_id")
+            result = self.run_coach_screen(entry.coach_screen_id)
+            return CatalogResult(kind="coach_screen", screen_result=result)
+        if entry.kind == "watchlist":
+            if entry.watchlist_id is None:
+                raise APIError(f"Catalog entry {entry.name!r} has no watchlist_id")
+            result = self.get_watchlist(entry.watchlist_id)
+            return CatalogResult(kind="watchlist", watchlist_entries=result)
+        raise APIError(f"Unknown catalog entry kind: {entry.kind!r}")
+
 
 class AsyncTickerScopeClient(BaseTickerScopeClient):
     """Authenticated async client for the MarketSurge GraphQL API."""
@@ -1576,3 +1656,85 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         if leaf.reference_screen_id is None:
             raise APIError(f"Coach screen {name!r} has no screen ID in its referenceId")
         return await self.run_coach_screen(leaf.reference_screen_id)
+
+    async def get_catalog(self) -> Catalog:
+        """All available screens, reports, coach screens, and watchlists.
+
+        Aggregates four separate discovery APIs into a single catalog.
+        Tolerates partial failures: if one source errors, entries from
+        other sources are still returned with the error message collected.
+        Reports never fail (hardcoded constant).
+
+        Returns:
+            Catalog with all discoverable entries and any collection errors.
+        """
+        screens_result, coach_result, watchlists_result = await asyncio.gather(
+            self.get_screens(),
+            self.get_coach_lists(),
+            self.get_watchlist_names(),
+            return_exceptions=True,
+        )
+
+        entries: list[CatalogEntry] = []
+        errors: list[str] = []
+
+        if isinstance(screens_result, Exception):
+            errors.append(str(screens_result))
+        else:
+            entries.extend(_screens_to_catalog(screens_result))
+
+        reports = await self.get_reports()
+        entries.extend(_reports_to_catalog(reports))
+
+        if isinstance(coach_result, Exception):
+            errors.append(str(coach_result))
+        else:
+            entries.extend(_coach_tree_to_catalog(coach_result))
+
+        if isinstance(watchlists_result, Exception):
+            errors.append(str(watchlists_result))
+        else:
+            entries.extend(_watchlists_to_catalog(watchlists_result))
+
+        return Catalog(entries=entries, errors=errors)
+
+    async def run_catalog_entry(self, entry: CatalogEntry) -> CatalogResult:
+        """Run a catalog entry and return its result.
+
+        Dispatches to the appropriate run method based on the entry's
+        ``kind``. Screen entries are not dispatchable (user screens from
+        ``get_screens()`` cannot be directly passed to ``run_screen()``,
+        which requires fully-qualified predefined screen names).
+
+        Args:
+            entry: A CatalogEntry from ``get_catalog()``.
+
+        Returns:
+            CatalogResult wrapping the appropriate result type.
+
+        Raises:
+            NotImplementedError: If entry.kind is "screen".
+            APIError: If the entry's required ID field is None.
+        """
+        if entry.kind == "screen":
+            raise NotImplementedError(
+                "Screen entries cannot be dispatched via run_catalog_entry(). "
+                "User screens require fully-qualified predefined screen names "
+                "and parameters. Use run_screen(screen_name, parameters) directly."
+            )
+        if entry.kind == "report":
+            if entry.report_id is None:
+                raise APIError(f"Catalog entry {entry.name!r} has no report_id")
+            result = await self.run_report(entry.report_id)
+            return CatalogResult(kind="report", adhoc_result=result)
+        if entry.kind == "coach_screen":
+            if entry.coach_screen_id is None:
+                raise APIError(f"Catalog entry {entry.name!r} has no coach_screen_id")
+            result = await self.run_coach_screen(entry.coach_screen_id)
+            return CatalogResult(kind="coach_screen", screen_result=result)
+        if entry.kind == "watchlist":
+            if entry.watchlist_id is None:
+                raise APIError(f"Catalog entry {entry.name!r} has no watchlist_id")
+            result = await self.get_watchlist(entry.watchlist_id)
+            return CatalogResult(kind="watchlist", watchlist_entries=result)
+        raise APIError(f"Unknown catalog entry kind: {entry.kind!r}")
