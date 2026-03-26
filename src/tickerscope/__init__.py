@@ -84,6 +84,12 @@ from tickerscope._models import (
     WatchlistSymbol,
     WatchlistSummary,
 )
+from tickerscope._models import (
+    Catalog,
+    CatalogEntry,
+    CatalogKind,
+    CatalogResult,
+)
 
 __all__ = [
     # Clients
@@ -175,6 +181,11 @@ __all__ = [
     "ScreenSource",
     # Serialization base
     "SerializableDataclass",
+    # Catalog models
+    "CatalogKind",
+    "CatalogEntry",
+    "Catalog",
+    "CatalogResult",
     # Exceptions
     "TickerScopeError",
     "AuthenticationError",

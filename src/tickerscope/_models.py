@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import datetime
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Literal
 
 
 from tickerscope._dates import parse_date, parse_date_list, parse_datetime
@@ -1412,3 +1412,54 @@ class ChartMarkupList(SerializableDataclass):
 
     cursor_id: str | None
     markups: list[ChartMarkup]
+
+
+# Type alias for catalog entry kinds — first use of Literal in this codebase
+CatalogKind = Literal["screen", "report", "coach_screen", "watchlist"]
+
+
+@dataclass(frozen=True, slots=True)
+class CatalogEntry(SerializableDataclass):
+    """Unified entry from the stock list catalog.
+
+    Normalizes user screens, predefined reports, coach screens, and
+    watchlists into a single type. Each entry carries the identifier
+    needed to run it via ``run_catalog_entry()``.
+    """
+
+    name: str
+    kind: CatalogKind
+    description: str | None = None
+    report_id: int | None = None  # kind="report"
+    coach_screen_id: str | None = None  # kind="coach_screen"
+    watchlist_id: int | None = None  # kind="watchlist"
+
+
+@dataclass(frozen=True, slots=True)
+class Catalog(SerializableDataclass):
+    """Result of catalog discovery across all stock list sources.
+
+    Contains all discoverable entries plus any errors from sources
+    that failed during collection. Reports never fail (hardcoded),
+    so ``entries`` always includes report entries even if all API
+    calls fail.
+    """
+
+    entries: list[CatalogEntry]
+    errors: list[str]
+
+
+@dataclass(frozen=True, slots=True)
+class CatalogResult(SerializableDataclass):
+    """Result of running a catalog entry via ``run_catalog_entry()``.
+
+    Exactly one of the result fields is populated, matching the
+    ``kind`` of the entry that was run. Screen entries cannot be
+    dispatched (``run_catalog_entry()`` raises ``NotImplementedError``
+    for ``kind="screen"``).
+    """
+
+    kind: CatalogKind
+    screen_result: ScreenResult | None = None
+    adhoc_result: AdhocScreenResult | None = None
+    watchlist_entries: list[WatchlistEntry] | None = None
