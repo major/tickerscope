@@ -31,6 +31,7 @@ from tickerscope._models import (
     FundamentalData,
     Fundamentals,
     Industry,
+    IndustryGroupSnapshot,
     Layout,
     LayoutColumn,
     NavTreeFolder,
@@ -102,6 +103,39 @@ def _as_map(items: list[dict], key: str) -> dict:
         if map_key:
             result[map_key] = item
     return result
+
+
+def _extract_industry_histories(
+    industry: dict,
+) -> tuple[list[IndustryGroupSnapshot] | None, list[IndustryGroupSnapshot] | None]:
+    group_rank_history = [
+        IndustryGroupSnapshot(
+            period_offset=snap.get("periodOffset", ""),
+            value=snap.get("value"),
+        )
+        for snap in industry.get("groupRanks", [])
+    ] or None
+    group_rs_history = [
+        IndustryGroupSnapshot(
+            period_offset=snap.get("periodOffset", ""),
+            value=snap.get("value"),
+            letter_value=snap.get("letterValue"),
+        )
+        for snap in industry.get("groupRS", [])
+    ] or None
+    return group_rank_history, group_rs_history
+
+
+def _resolve_cash_flow_last_year(
+    pricing_intraday: dict, financials: dict
+) -> dict | None:
+    intraday_value = pricing_intraday.get("cashFlowPerShareLastYear")
+    if isinstance(intraday_value, dict):
+        return intraday_value
+    financials_value = financials.get("cashFlowPerShareLastYear")
+    if isinstance(financials_value, dict):
+        return financials_value
+    return None
 
 
 def _to_int(value) -> int | None:
@@ -290,6 +324,7 @@ def _build_quarterly_reported(entries: list[dict]) -> list[QuarterlyReportedPeri
             surprise_amount=_safe_value(e.get("surpriseAmount")),
             quarter_number=e.get("quarterNumber"),
             fiscal_year=e.get("fiscalYear"),
+            period=e.get("period"),
         )
         for e in entries
     ]
@@ -378,6 +413,7 @@ def parse_stock_response(raw: dict, symbol: str) -> StockData:
 
     group_rank = _first(industry.get("groupRanks", []))
     group_rs = _first(industry.get("groupRS", []))
+    group_rank_history, group_rs_history = _extract_industry_histories(industry)
 
     atr_21d = _first(pricing_eod.get("averageTrueRangePercent", []))
     price_pct_vs = _as_map(pricing_intraday.get("pricePercentChangeVs", []), "subject")
@@ -388,6 +424,7 @@ def parse_stock_response(raw: dict, symbol: str) -> StockData:
     eps_growth = _first(eps_consensus.get("growthRate", []))
     sales_growth = _first(sales_consensus.get("growthRate", []))
     profit_margin = _first(financials.get("profitMarginValues", []))
+    cash_flow_last_year = _resolve_cash_flow_last_year(pricing_intraday, financials)
 
     quarterly_financials = _build_quarterly_financials(
         eps_consensus, sales_consensus, financials
@@ -562,6 +599,10 @@ def parse_stock_response(raw: dict, symbol: str) -> StockData:
             gross_margin=_safe_value(profit_margin.get("grossMargin")),
             return_on_equity=_safe_value(profit_margin.get("returnOnEquity")),
             earnings_stability=eps_consensus.get("earningsStability"),
+            cash_flow_per_share=_safe_value(cash_flow_last_year),
+            cash_flow_per_share_formatted=_safe_value(
+                cash_flow_last_year, "formattedValue"
+            ),
         ),
         corporate_actions=CorporateActions(
             next_ex_dividend_date=_safe_value(
@@ -586,6 +627,8 @@ def parse_stock_response(raw: dict, symbol: str) -> StockData:
             sector=industry.get("sector"),
             code=industry.get("indCode"),
             number_of_stocks=industry.get("numberOfStocksInGroup"),
+            group_rank_history=group_rank_history,
+            group_rs_history=group_rs_history,
         ),
         ownership=BasicOwnership(
             funds_float_pct=_safe_value(ownership.get("fundsFloatPercentHeld")),

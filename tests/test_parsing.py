@@ -169,6 +169,30 @@ def test_parse_stock_response_company_location_and_sub_type(stock_response) -> N
     assert stock.company.instrument_sub_type == "COMMON"
 
 
+def test_parse_stock_response_industry_history(stock_response) -> None:
+    stock = parse_stock_response(stock_response, "TEST")
+
+    assert stock.industry is not None
+    assert stock.industry.group_rank_history is not None
+    assert len(stock.industry.group_rank_history) == 6
+    assert stock.industry.group_rank_history[0].period_offset == "CURRENT"
+    assert stock.industry.group_rank_history[0].value == 160
+
+    assert stock.industry.group_rs_history is not None
+    assert len(stock.industry.group_rs_history) == 6
+    assert stock.industry.group_rs_history[0].period_offset == "CURRENT"
+    assert stock.industry.group_rs_history[0].value == 20
+    assert stock.industry.group_rs_history[0].letter_value == "D"
+
+
+def test_parse_stock_response_cash_flow_per_share(stock_response) -> None:
+    stock = parse_stock_response(stock_response, "TEST")
+
+    assert stock.financials is not None
+    assert stock.financials.cash_flow_per_share is not None
+    assert stock.financials.cash_flow_per_share_formatted is not None
+
+
 def test_parse_stock_response_quarterly_earnings(stock_response) -> None:
     """Parse quarterly reported earnings from the stock fixture."""
     stock = parse_stock_response(stock_response, "TEST")
@@ -185,6 +209,7 @@ def test_parse_stock_response_quarterly_earnings(stock_response) -> None:
     assert latest.quarter_number == 4
     assert latest.fiscal_year == 2025
     assert latest.percent_surprise == 0.0703
+    assert latest.period == "P1Q"
 
 
 def test_parse_stock_response_quarterly_sales(stock_response) -> None:
@@ -200,6 +225,7 @@ def test_parse_stock_response_quarterly_sales(stock_response) -> None:
     assert latest.period_offset == "P1Q_AGO"
     assert latest.quarter_number == 4
     assert latest.fiscal_year == 2025
+    assert latest.period == "P1Q"
 
 
 def test_parse_stock_response_quarterly_eps_estimates(stock_response) -> None:

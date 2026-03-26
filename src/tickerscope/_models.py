@@ -157,6 +157,8 @@ class Financials(SerializableDataclass):
     gross_margin: float | None
     return_on_equity: float | None
     earnings_stability: int | None
+    cash_flow_per_share: float | None = None
+    cash_flow_per_share_formatted: str | None = None
 
     @property
     def eps_due_date_dt(self) -> datetime.date | None:
@@ -463,6 +465,8 @@ class Industry(SerializableDataclass):
     sector: str | None
     code: str | None
     number_of_stocks: int | None
+    group_rank_history: list[IndustryGroupSnapshot] | None = None
+    group_rs_history: list[IndustryGroupSnapshot] | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -505,6 +509,7 @@ class QuarterlyReportedPeriod(SerializableDataclass):
     surprise_amount: float | None
     quarter_number: int | None
     fiscal_year: int | None
+    period: str | None = None
 
     @property
     def period_end_date_dt(self) -> datetime.date | None:
