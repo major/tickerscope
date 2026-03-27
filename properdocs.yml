@@ -103,6 +103,12 @@ markdown_extensions:
 
 nav:
   - Home: index.md
+  - Getting Started: getting-started.md
+  - Usage:
+    - Stock Data: stock-data.md
+    - Watchlists & Screens: watchlists-and-screens.md
+    - Serialization: serialization.md
+  - Error Handling: error-handling.md
   - API Reference: reference/
 
 extra:
