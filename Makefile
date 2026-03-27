@@ -1,4 +1,4 @@
-.PHONY: lint format typecheck radon test ci
+.PHONY: lint format typecheck radon test ci docs docs-serve
 
 lint:
 	uv run ruff check src/ tests/
@@ -18,3 +18,9 @@ test:
 	uv run pytest --cov=tickerscope --cov-report=term-missing
 
 ci: lint typecheck radon test
+
+docs:
+	uv run --group docs properdocs build --strict
+
+docs-serve:
+	uv run --group docs properdocs serve

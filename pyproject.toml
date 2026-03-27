@@ -37,3 +37,11 @@ dev = [
     "ty>=0.0.24",
     "vulture>=2.15",
 ]
+docs = [
+    "properdocs>=1.6",
+    "mkdocs-material>=9.6",
+    "mkdocstrings[python]>=1.0",
+    "mkdocs-gen-files>=0.5",
+    "mkdocs-literate-nav>=0.6",
+    "mkdocs-section-index>=0.3",
+]
