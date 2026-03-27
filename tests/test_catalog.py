@@ -548,7 +548,7 @@ class TestRunCatalogEntry:
 
     def test_dispatch_report(self, sync_client):
         """kind='report' calls run_report and wraps in CatalogResult."""
-        adhoc = MagicMock(spec=AdhocScreenResult)
+        adhoc = AdhocScreenResult(entries=[], error_values=None)
         sync_client.run_report = MagicMock(return_value=adhoc)
         e = CatalogEntry(name="Bases Forming", kind="report", report_id=124)
 
@@ -557,11 +557,18 @@ class TestRunCatalogEntry:
         sync_client.run_report.assert_called_once_with(124)
         assert isinstance(result, CatalogResult)
         assert result.kind == "report"
-        assert result.adhoc_result is adhoc
+        assert result.adhoc_result is not None
+        assert result.adhoc_result.entries == []
+        assert result.total == 0
 
     def test_dispatch_coach_screen(self, sync_client):
         """kind='coach_screen' calls run_coach_screen and wraps in CatalogResult."""
-        sr = MagicMock(spec=ScreenResult)
+        sr = ScreenResult(
+            screen_name="Buffett",
+            elapsed_time=None,
+            num_instruments=0,
+            rows=[],
+        )
         sync_client.run_coach_screen = MagicMock(return_value=sr)
         e = CatalogEntry(name="Buffett", kind="coach_screen", coach_screen_id="abc123")
 
@@ -569,19 +576,23 @@ class TestRunCatalogEntry:
 
         sync_client.run_coach_screen.assert_called_once_with("abc123")
         assert result.kind == "coach_screen"
-        assert result.screen_result is sr
+        assert result.screen_result is not None
+        assert result.screen_result.screen_name == "Buffett"
+        assert result.total == 0
 
     def test_dispatch_watchlist(self, sync_client):
         """kind='watchlist' calls get_watchlist and wraps in CatalogResult."""
-        entries = [MagicMock(spec=WatchlistEntry)]
-        sync_client.get_watchlist = MagicMock(return_value=entries)
+        wl_entry = MagicMock(spec=WatchlistEntry)
+        sync_client.get_watchlist = MagicMock(return_value=[wl_entry])
         e = CatalogEntry(name="My WL", kind="watchlist", watchlist_id=99)
 
         result = sync_client.run_catalog_entry(e)
 
         sync_client.get_watchlist.assert_called_once_with(99)
         assert result.kind == "watchlist"
-        assert result.watchlist_entries is entries
+        assert len(result.watchlist_entries) == 1
+        assert result.watchlist_entries[0] is wl_entry
+        assert result.total == 1
 
     def test_report_none_id_raises(self, sync_client):
         """kind='report' with None report_id raises APIError."""
@@ -603,7 +614,7 @@ class TestRunCatalogEntry:
 
     async def test_async_dispatch_report(self, async_client):
         """Async run_catalog_entry dispatches report to run_report."""
-        adhoc = MagicMock(spec=AdhocScreenResult)
+        adhoc = AdhocScreenResult(entries=[], error_values=None)
         async_client.run_report = AsyncMock(return_value=adhoc)
         e = CatalogEntry(name="Bases Forming", kind="report", report_id=124)
 
@@ -611,7 +622,9 @@ class TestRunCatalogEntry:
 
         async_client.run_report.assert_called_once_with(124)
         assert result.kind == "report"
-        assert result.adhoc_result is adhoc
+        assert result.adhoc_result is not None
+        assert result.adhoc_result.entries == []
+        assert result.total == 0
 
 
 # ---------------------------------------------------------------------------

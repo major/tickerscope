@@ -17,39 +17,60 @@ class SerializableDataclass:
 
     __slots__ = ()
 
-    def to_dict(self, *, omit_none: bool = True) -> dict[str, Any]:
+    def to_dict(
+        self,
+        *,
+        omit_none: bool = True,
+        fields: set[str] | None = None,
+    ) -> dict[str, Any]:
         """Convert this dataclass instance to a dictionary.
 
         Args:
             omit_none: Skip top-level dataclass fields with ``None`` values when true.
+            fields: When provided, only include these field names in the output.
+                Fields not present on the dataclass are silently ignored.
+                The filter applies recursively to nested ``SerializableDataclass``
+                instances and lists of them.
 
         Returns:
             Serialized dictionary for this dataclass.
         """
         result: dict[str, Any] = {}
         for field in dataclasses.fields(self):  # type: ignore
+            if fields is not None and field.name not in fields:
+                continue
             value = getattr(self, field.name)
             if value is None and omit_none:
                 continue
-            result[field.name] = self._convert_value(value, omit_none=omit_none)
+            result[field.name] = self._convert_value(
+                value, omit_none=omit_none, fields=fields
+            )
         return result
 
-    def _convert_value(self, value: Any, *, omit_none: bool) -> Any:
+    def _convert_value(
+        self,
+        value: Any,
+        *,
+        omit_none: bool,
+        fields: set[str] | None = None,
+    ) -> Any:
         """Recursively convert nested dataclasses for dict serialization.
 
         Args:
             value: Raw field value to convert.
             omit_none: Omit top-level ``None`` values in nested dataclasses.
+            fields: When provided, only include these field names in nested
+                dataclass output.
 
         Returns:
             Converted value suitable for JSON-serializable dict output.
         """
         if isinstance(value, SerializableDataclass):
-            return value.to_dict(omit_none=omit_none)
+            return value.to_dict(omit_none=omit_none, fields=fields)
 
         if isinstance(value, list):
             return [
-                item.to_dict(omit_none=omit_none)
+                item.to_dict(omit_none=omit_none, fields=fields)
                 if isinstance(item, SerializableDataclass)
                 else item
                 for item in value
@@ -152,13 +173,19 @@ class SerializableDataclass:
         """Return true when value is a SerializableDataclass class type."""
         return isinstance(value, type) and issubclass(value, SerializableDataclass)
 
-    def to_json(self, *, omit_none: bool = True) -> str:
+    def to_json(
+        self,
+        *,
+        omit_none: bool = True,
+        fields: set[str] | None = None,
+    ) -> str:
         """Serialize this dataclass instance to JSON.
 
         Args:
             omit_none: Skip top-level dataclass fields with ``None`` values when true.
+            fields: When provided, only include these field names in the output.
 
         Returns:
             JSON string for this dataclass.
         """
-        return json.dumps(self.to_dict(omit_none=omit_none))
+        return json.dumps(self.to_dict(omit_none=omit_none, fields=fields))

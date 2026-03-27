@@ -1457,9 +1457,14 @@ class CatalogResult(SerializableDataclass):
     ``kind`` of the entry that was run. Screen entries cannot be
     dispatched (``run_catalog_entry()`` raises ``NotImplementedError``
     for ``kind="screen"``).
+
+    When pagination is applied, ``total`` reports the full count of
+    entries after filtering but before slicing, so callers can
+    determine how many results exist beyond the current page.
     """
 
     kind: CatalogKind
+    total: int | None = None
     screen_result: ScreenResult | None = None
     adhoc_result: AdhocScreenResult | None = None
     watchlist_entries: list[WatchlistEntry] | None = None

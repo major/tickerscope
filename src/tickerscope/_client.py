@@ -228,6 +228,52 @@ def _watchlists_to_catalog(summaries: list[WatchlistSummary]) -> list[CatalogEnt
     ]
 
 
+def _filter_watchlist_entries(
+    entries: list[WatchlistEntry],
+    filters: dict[str, Any],
+) -> list[WatchlistEntry]:
+    """Apply threshold and exclusion filters to watchlist entries.
+
+    Numeric keys (e.g. ``composite_rating``, ``rs_rating``) are treated
+    as minimum thresholds: only entries where the field value is not
+    ``None`` and ``>= threshold`` are kept.
+
+    The special key ``exclude_instrument_sub_type`` accepts a sequence
+    of sub-type strings to exclude (e.g. ``["BLANK_CHECK"]`` to drop
+    SPACs).
+    """
+    result = entries
+
+    exclude_sub_types = filters.get("exclude_instrument_sub_type")
+    if exclude_sub_types is not None:
+        exclude_set = set(exclude_sub_types)
+        result = [e for e in result if e.instrument_sub_type not in exclude_set]
+
+    for field_name, threshold in filters.items():
+        if field_name == "exclude_instrument_sub_type":
+            continue
+        result = [
+            e
+            for e in result
+            if (val := getattr(e, field_name, None)) is not None and val >= threshold
+        ]
+
+    return result
+
+
+def _paginate_list(
+    items: list[Any],
+    *,
+    limit: int | None,
+    offset: int | None,
+) -> list[Any]:
+    """Slice a list by offset and limit for pagination."""
+    start = offset if offset is not None else 0
+    if limit is not None:
+        return items[start : start + limit]
+    return items[start:]
+
+
 def _today() -> date:
     """Return the local calendar date."""
     return date.today()
@@ -897,13 +943,28 @@ class BaseTickerScopeClient(ABC):
         )
         return self._graphql_and_parse(payload, parse_chart_data_response, symbol)
 
-    def get_watchlist(self, list_id: int) -> Any:
+    def get_watchlist(
+        self,
+        list_id: int,
+        *,
+        limit: int | None = None,
+        offset: int | None = None,
+        filters: dict[str, Any] | None = None,
+    ) -> Any:
         """Fetch watchlist entries via a two-step symbol resolution.
 
         Watchlist IDs are 64-bit integers that overflow the GraphQL
         ``Int!`` type, so we first resolve the charting symbols via
         ``FlaggedSymbols``, then screen them via ``MarketDataAdhocScreen``
         with the ``instruments`` input.
+
+        Args:
+            list_id: Watchlist integer ID.
+            limit: Maximum number of entries to return.
+            offset: Number of entries to skip before returning results.
+            filters: Threshold and exclusion filters applied to entries
+                before pagination. Numeric keys are minimum thresholds;
+                ``exclude_instrument_sub_type`` excludes matching sub-types.
 
         Raises:
             APIError: If the watchlist is not accessible (e.g. a system
@@ -924,7 +985,10 @@ class BaseTickerScopeClient(ABC):
         if not dj_keys:
             return []
         payload = self._build_get_watchlist_by_symbols_payload(dj_keys)
-        return self._graphql_and_parse(payload, parse_watchlist_response)
+        entries = self._graphql_and_parse(payload, parse_watchlist_response)
+        if filters:
+            entries = _filter_watchlist_entries(entries, filters)
+        return _paginate_list(entries, limit=limit, offset=offset)
 
     def get_ownership(self, symbol: str) -> Any:
         payload = self._build_get_ownership_payload(symbol)
@@ -1227,6 +1291,38 @@ class TickerScopeClient(BaseTickerScopeClient):
         """
         return list(PREDEFINED_REPORTS)
 
+    def run_report(
+        self,
+        report_id: int,
+        *,
+        limit: int | None = None,
+        offset: int | None = None,
+        filters: dict[str, Any] | None = None,
+    ) -> AdhocScreenResult:
+        """Run a predefined MarketSurge report by its integer ID.
+
+        Args:
+            report_id: Integer ID of the report (e.g. 124 for Bases Forming).
+            limit: Maximum number of entries to return.
+            offset: Number of entries to skip before returning results.
+            filters: Threshold and exclusion filters applied to entries
+                before pagination.
+
+        Returns:
+            AdhocScreenResult with stock entries from the report.
+        """
+        payload = self._build_get_watchlist_payload(report_id)
+        result: AdhocScreenResult = self._graphql_and_parse(
+            payload, parse_watchlist_response
+        )
+        entries = result.entries
+        if filters:
+            entries = _filter_watchlist_entries(entries, filters)
+        entries = _paginate_list(entries, limit=limit, offset=offset)
+        if entries is not result.entries:
+            return AdhocScreenResult(entries=entries, error_values=result.error_values)
+        return result
+
     def run_report_by_name(self, name: str) -> AdhocScreenResult:
         """Run a predefined report by display name.
 
@@ -1312,7 +1408,14 @@ class TickerScopeClient(BaseTickerScopeClient):
                 pass
         return result
 
-    def run_catalog_entry(self, entry: CatalogEntry) -> Any:
+    def run_catalog_entry(
+        self,
+        entry: CatalogEntry,
+        *,
+        limit: int | None = None,
+        offset: int | None = None,
+        filters: dict[str, Any] | None = None,
+    ) -> CatalogResult:
         """Run a catalog entry and return its result.
 
         Dispatches to the appropriate run method based on the entry's
@@ -1320,11 +1423,20 @@ class TickerScopeClient(BaseTickerScopeClient):
         ``get_screens()`` cannot be directly passed to ``run_screen()``,
         which requires fully-qualified predefined screen names).
 
+        Filtering applies only to ``report`` and ``watchlist`` entries
+        (which produce ``WatchlistEntry`` objects). Coach screen entries
+        support pagination but not field-level filtering.
+
         Args:
             entry: A CatalogEntry from ``get_catalog()``.
+            limit: Maximum number of entries to return.
+            offset: Number of entries to skip before returning results.
+            filters: Threshold and exclusion filters applied before
+                pagination (reports and watchlists only).
 
         Returns:
-            CatalogResult wrapping the appropriate result type.
+            CatalogResult wrapping the appropriate result type, with
+            ``total`` set to the full count after filtering.
 
         Raises:
             NotImplementedError: If entry.kind is "screen".
@@ -1340,17 +1452,41 @@ class TickerScopeClient(BaseTickerScopeClient):
             if entry.report_id is None:
                 raise APIError(f"Catalog entry {entry.name!r} has no report_id")
             result = self.run_report(entry.report_id)
-            return CatalogResult(kind="report", adhoc_result=result)
+            entries = result.entries
+            if filters:
+                entries = _filter_watchlist_entries(entries, filters)
+            total = len(entries)
+            entries = _paginate_list(entries, limit=limit, offset=offset)
+            paginated = AdhocScreenResult(
+                entries=entries, error_values=result.error_values
+            )
+            return CatalogResult(kind="report", adhoc_result=paginated, total=total)
         if entry.kind == "coach_screen":
             if entry.coach_screen_id is None:
                 raise APIError(f"Catalog entry {entry.name!r} has no coach_screen_id")
             result = self.run_coach_screen(entry.coach_screen_id)
-            return CatalogResult(kind="coach_screen", screen_result=result)
+            total = len(result.rows)
+            rows = _paginate_list(result.rows, limit=limit, offset=offset)
+            paginated_screen = ScreenResult(
+                screen_name=result.screen_name,
+                elapsed_time=result.elapsed_time,
+                num_instruments=result.num_instruments,
+                rows=rows,
+            )
+            return CatalogResult(
+                kind="coach_screen", screen_result=paginated_screen, total=total
+            )
         if entry.kind == "watchlist":
             if entry.watchlist_id is None:
                 raise APIError(f"Catalog entry {entry.name!r} has no watchlist_id")
-            result = self.get_watchlist(entry.watchlist_id)
-            return CatalogResult(kind="watchlist", watchlist_entries=result)
+            entries = self.get_watchlist(entry.watchlist_id)
+            if filters:
+                entries = _filter_watchlist_entries(entries, filters)
+            total = len(entries)
+            entries = _paginate_list(entries, limit=limit, offset=offset)
+            return CatalogResult(
+                kind="watchlist", watchlist_entries=entries, total=total
+            )
         raise APIError(f"Unknown catalog entry kind: {entry.kind!r}")
 
 
@@ -1498,13 +1634,27 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
             errors=errors,
         )
 
-    async def get_watchlist(self, list_id: int) -> list[WatchlistEntry]:
+    async def get_watchlist(
+        self,
+        list_id: int,
+        *,
+        limit: int | None = None,
+        offset: int | None = None,
+        filters: dict[str, Any] | None = None,
+    ) -> list[WatchlistEntry]:
         """Fetch watchlist entries via a two-step symbol resolution.
 
         Watchlist IDs are 64-bit integers that overflow the GraphQL
         ``Int!`` type, so we first resolve the charting symbols via
         ``FlaggedSymbols``, then screen them via ``MarketDataAdhocScreen``
         with the ``instruments`` input.
+
+        Args:
+            list_id: Watchlist integer ID.
+            limit: Maximum number of entries to return.
+            offset: Number of entries to skip before returning results.
+            filters: Threshold and exclusion filters applied to entries
+                before pagination.
 
         Raises:
             APIError: If the watchlist is not accessible (e.g. a system
@@ -1525,7 +1675,10 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         if not dj_keys:
             return []
         payload = self._build_get_watchlist_by_symbols_payload(dj_keys)
-        return await self._graphql_and_parse(payload, parse_watchlist_response)
+        entries = await self._graphql_and_parse(payload, parse_watchlist_response)
+        if filters:
+            entries = _filter_watchlist_entries(entries, filters)
+        return _paginate_list(entries, limit=limit, offset=offset)
 
     async def get_ownership(self, symbol: str) -> OwnershipData:
         payload = self._build_get_ownership_payload(symbol)
@@ -1700,6 +1853,38 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         """
         return list(PREDEFINED_REPORTS)
 
+    async def run_report(
+        self,
+        report_id: int,
+        *,
+        limit: int | None = None,
+        offset: int | None = None,
+        filters: dict[str, Any] | None = None,
+    ) -> AdhocScreenResult:
+        """Run a predefined MarketSurge report by its integer ID.
+
+        Args:
+            report_id: Integer ID of the report (e.g. 124 for Bases Forming).
+            limit: Maximum number of entries to return.
+            offset: Number of entries to skip before returning results.
+            filters: Threshold and exclusion filters applied to entries
+                before pagination.
+
+        Returns:
+            AdhocScreenResult with stock entries from the report.
+        """
+        payload = self._build_get_watchlist_payload(report_id)
+        result: AdhocScreenResult = await self._graphql_and_parse(
+            payload, parse_watchlist_response
+        )
+        entries = result.entries
+        if filters:
+            entries = _filter_watchlist_entries(entries, filters)
+        entries = _paginate_list(entries, limit=limit, offset=offset)
+        if entries is not result.entries:
+            return AdhocScreenResult(entries=entries, error_values=result.error_values)
+        return result
+
     async def run_report_by_name(self, name: str) -> AdhocScreenResult:
         """Run a predefined report by display name.
 
@@ -1838,7 +2023,14 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         results = await asyncio.gather(*(_probe(e) for e in entries))
         return [e for e in results if e is not None]
 
-    async def run_catalog_entry(self, entry: CatalogEntry) -> CatalogResult:
+    async def run_catalog_entry(
+        self,
+        entry: CatalogEntry,
+        *,
+        limit: int | None = None,
+        offset: int | None = None,
+        filters: dict[str, Any] | None = None,
+    ) -> CatalogResult:
         """Run a catalog entry and return its result.
 
         Dispatches to the appropriate run method based on the entry's
@@ -1846,11 +2038,20 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         ``get_screens()`` cannot be directly passed to ``run_screen()``,
         which requires fully-qualified predefined screen names).
 
+        Filtering applies only to ``report`` and ``watchlist`` entries
+        (which produce ``WatchlistEntry`` objects). Coach screen entries
+        support pagination but not field-level filtering.
+
         Args:
             entry: A CatalogEntry from ``get_catalog()``.
+            limit: Maximum number of entries to return.
+            offset: Number of entries to skip before returning results.
+            filters: Threshold and exclusion filters applied before
+                pagination (reports and watchlists only).
 
         Returns:
-            CatalogResult wrapping the appropriate result type.
+            CatalogResult wrapping the appropriate result type, with
+            ``total`` set to the full count after filtering.
 
         Raises:
             NotImplementedError: If entry.kind is "screen".
@@ -1866,15 +2067,39 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
             if entry.report_id is None:
                 raise APIError(f"Catalog entry {entry.name!r} has no report_id")
             result = await self.run_report(entry.report_id)
-            return CatalogResult(kind="report", adhoc_result=result)
+            entries = result.entries
+            if filters:
+                entries = _filter_watchlist_entries(entries, filters)
+            total = len(entries)
+            entries = _paginate_list(entries, limit=limit, offset=offset)
+            paginated = AdhocScreenResult(
+                entries=entries, error_values=result.error_values
+            )
+            return CatalogResult(kind="report", adhoc_result=paginated, total=total)
         if entry.kind == "coach_screen":
             if entry.coach_screen_id is None:
                 raise APIError(f"Catalog entry {entry.name!r} has no coach_screen_id")
             result = await self.run_coach_screen(entry.coach_screen_id)
-            return CatalogResult(kind="coach_screen", screen_result=result)
+            total = len(result.rows)
+            rows = _paginate_list(result.rows, limit=limit, offset=offset)
+            paginated_screen = ScreenResult(
+                screen_name=result.screen_name,
+                elapsed_time=result.elapsed_time,
+                num_instruments=result.num_instruments,
+                rows=rows,
+            )
+            return CatalogResult(
+                kind="coach_screen", screen_result=paginated_screen, total=total
+            )
         if entry.kind == "watchlist":
             if entry.watchlist_id is None:
                 raise APIError(f"Catalog entry {entry.name!r} has no watchlist_id")
-            result = await self.get_watchlist(entry.watchlist_id)
-            return CatalogResult(kind="watchlist", watchlist_entries=result)
+            entries = await self.get_watchlist(entry.watchlist_id)
+            if filters:
+                entries = _filter_watchlist_entries(entries, filters)
+            total = len(entries)
+            entries = _paginate_list(entries, limit=limit, offset=offset)
+            return CatalogResult(
+                kind="watchlist", watchlist_entries=entries, total=total
+            )
         raise APIError(f"Unknown catalog entry kind: {entry.kind!r}")
