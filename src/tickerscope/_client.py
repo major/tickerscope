@@ -75,6 +75,7 @@ from tickerscope._parsing import (
     parse_watchlist_detail_response,
     parse_watchlists_response,
     parse_watchlist_response,
+    parse_adhoc_screen_response,
 )
 from tickerscope._queries import (
     ACTIVE_ALERTS_QUERY,
@@ -1313,7 +1314,7 @@ class TickerScopeClient(BaseTickerScopeClient):
         """
         payload = self._build_get_watchlist_payload(report_id)
         result: AdhocScreenResult = self._graphql_and_parse(
-            payload, parse_watchlist_response
+            payload, parse_adhoc_screen_response
         )
         entries = result.entries
         if filters:
@@ -1875,7 +1876,7 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         """
         payload = self._build_get_watchlist_payload(report_id)
         result: AdhocScreenResult = await self._graphql_and_parse(
-            payload, parse_watchlist_response
+            payload, parse_adhoc_screen_response
         )
         entries = result.entries
         if filters:
