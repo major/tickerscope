@@ -1282,34 +1282,35 @@ class TickerScopeClient(BaseTickerScopeClient):
 
         try:
             watchlist_summaries = self.get_watchlist_names()
-            accessible = self._filter_accessible_watchlists(watchlist_summaries)
-            entries.extend(_watchlists_to_catalog(accessible))
+            entries.extend(_watchlists_to_catalog(watchlist_summaries))
         except Exception as exc:
             errors.append(str(exc))
 
+        entries = self._filter_accessible_watchlist_entries(entries)
         return Catalog(entries=entries, errors=errors)
 
-    def _filter_accessible_watchlists(
+    def _filter_accessible_watchlist_entries(
         self,
-        summaries: list[WatchlistSummary],
-    ) -> list[WatchlistSummary]:
-        """Keep only watchlists whose symbols resolve via FlaggedSymbols.
+        entries: list[CatalogEntry],
+    ) -> list[CatalogEntry]:
+        """Remove watchlist entries whose symbols cannot be resolved.
 
         System and predefined watchlists (e.g. S&P Sectors) appear in
-        ``get_watchlist_names()`` but are not accessible through the
-        user-scoped ``FlaggedSymbols`` query.  Probing each watchlist
-        filters them out so the catalog only advertises fetchable entries.
+        both ``get_watchlist_names()`` and the coach tree but are not
+        accessible through the user-scoped ``FlaggedSymbols`` query.
+        Non-watchlist entries pass through unchanged.
         """
-        accessible: list[WatchlistSummary] = []
-        for summary in summaries:
-            if summary.id is None:
+        result: list[CatalogEntry] = []
+        for entry in entries:
+            if entry.kind != "watchlist" or entry.watchlist_id is None:
+                result.append(entry)
                 continue
             try:
-                self.get_watchlist_symbols(summary.id)
-                accessible.append(summary)
+                self.get_watchlist_symbols(entry.watchlist_id)
+                result.append(entry)
             except Exception:
                 pass
-        return accessible
+        return result
 
     def run_catalog_entry(self, entry: CatalogEntry) -> Any:
         """Run a catalog entry and return its result.
@@ -1806,34 +1807,36 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         if isinstance(watchlists_result, Exception):
             errors.append(str(watchlists_result))
         else:
-            accessible = await self._filter_accessible_watchlists(watchlists_result)
-            entries.extend(_watchlists_to_catalog(accessible))
+            entries.extend(_watchlists_to_catalog(watchlists_result))
 
+        entries = await self._filter_accessible_watchlist_entries(entries)
         return Catalog(entries=entries, errors=errors)
 
-    async def _filter_accessible_watchlists(
+    async def _filter_accessible_watchlist_entries(
         self,
-        summaries: list[WatchlistSummary],
-    ) -> list[WatchlistSummary]:
-        """Keep only watchlists whose symbols resolve via FlaggedSymbols.
+        entries: list[CatalogEntry],
+    ) -> list[CatalogEntry]:
+        """Remove watchlist entries whose symbols cannot be resolved.
 
         System and predefined watchlists (e.g. S&P Sectors) appear in
-        ``get_watchlist_names()`` but are not accessible through the
-        user-scoped ``FlaggedSymbols`` query.  Probes all watchlists in
-        parallel via ``asyncio.gather`` and filters out failures.
+        both ``get_watchlist_names()`` and the coach tree but are not
+        accessible through the user-scoped ``FlaggedSymbols`` query.
+        Non-watchlist entries pass through unchanged.  Probes run in
+        parallel via ``asyncio.gather``.
         """
-        candidates = [s for s in summaries if s.id is not None]
 
-        async def _probe(summary: WatchlistSummary) -> WatchlistSummary | None:
-            """Return the summary if its symbols resolve, else None."""
+        async def _probe(entry: CatalogEntry) -> CatalogEntry | None:
+            """Return the entry if its symbols resolve, else None."""
+            if entry.kind != "watchlist" or entry.watchlist_id is None:
+                return entry
             try:
-                await self.get_watchlist_symbols(summary.id)  # type: ignore[arg-type]
-                return summary
+                await self.get_watchlist_symbols(entry.watchlist_id)
+                return entry
             except Exception:
                 return None
 
-        results = await asyncio.gather(*(_probe(s) for s in candidates))
-        return [s for s in results if s is not None]
+        results = await asyncio.gather(*(_probe(e) for e in entries))
+        return [e for e in results if e is not None]
 
     async def run_catalog_entry(self, entry: CatalogEntry) -> CatalogResult:
         """Run a catalog entry and return its result.
