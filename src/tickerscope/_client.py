@@ -904,8 +904,22 @@ class BaseTickerScopeClient(ABC):
         ``Int!`` type, so we first resolve the charting symbols via
         ``FlaggedSymbols``, then screen them via ``MarketDataAdhocScreen``
         with the ``instruments`` input.
+
+        Raises:
+            APIError: If the watchlist is not accessible (e.g. a system
+                or predefined watchlist that only appears in the names
+                API but cannot be resolved via FlaggedSymbols).
         """
-        detail = self.get_watchlist_symbols(list_id)
+        try:
+            detail = self.get_watchlist_symbols(list_id)
+        except APIError as exc:
+            if "not found" in str(exc).lower():
+                raise APIError(
+                    f"Watchlist {list_id} is not accessible. It may be a "
+                    f"system or predefined watchlist that cannot be fetched "
+                    f"through the user API."
+                ) from exc
+            raise
         dj_keys = [item.dow_jones_key for item in detail.items if item.dow_jones_key]
         if not dj_keys:
             return []
@@ -1268,11 +1282,34 @@ class TickerScopeClient(BaseTickerScopeClient):
 
         try:
             watchlist_summaries = self.get_watchlist_names()
-            entries.extend(_watchlists_to_catalog(watchlist_summaries))
+            accessible = self._filter_accessible_watchlists(watchlist_summaries)
+            entries.extend(_watchlists_to_catalog(accessible))
         except Exception as exc:
             errors.append(str(exc))
 
         return Catalog(entries=entries, errors=errors)
+
+    def _filter_accessible_watchlists(
+        self,
+        summaries: list[WatchlistSummary],
+    ) -> list[WatchlistSummary]:
+        """Keep only watchlists whose symbols resolve via FlaggedSymbols.
+
+        System and predefined watchlists (e.g. S&P Sectors) appear in
+        ``get_watchlist_names()`` but are not accessible through the
+        user-scoped ``FlaggedSymbols`` query.  Probing each watchlist
+        filters them out so the catalog only advertises fetchable entries.
+        """
+        accessible: list[WatchlistSummary] = []
+        for summary in summaries:
+            if summary.id is None:
+                continue
+            try:
+                self.get_watchlist_symbols(summary.id)
+                accessible.append(summary)
+            except Exception:
+                pass
+        return accessible
 
     def run_catalog_entry(self, entry: CatalogEntry) -> Any:
         """Run a catalog entry and return its result.
@@ -1467,8 +1504,22 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         ``Int!`` type, so we first resolve the charting symbols via
         ``FlaggedSymbols``, then screen them via ``MarketDataAdhocScreen``
         with the ``instruments`` input.
+
+        Raises:
+            APIError: If the watchlist is not accessible (e.g. a system
+                or predefined watchlist that only appears in the names
+                API but cannot be resolved via FlaggedSymbols).
         """
-        detail = await self.get_watchlist_symbols(list_id)
+        try:
+            detail = await self.get_watchlist_symbols(list_id)
+        except APIError as exc:
+            if "not found" in str(exc).lower():
+                raise APIError(
+                    f"Watchlist {list_id} is not accessible. It may be a "
+                    f"system or predefined watchlist that cannot be fetched "
+                    f"through the user API."
+                ) from exc
+            raise
         dj_keys = [item.dow_jones_key for item in detail.items if item.dow_jones_key]
         if not dj_keys:
             return []
@@ -1755,9 +1806,34 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         if isinstance(watchlists_result, Exception):
             errors.append(str(watchlists_result))
         else:
-            entries.extend(_watchlists_to_catalog(watchlists_result))
+            accessible = await self._filter_accessible_watchlists(watchlists_result)
+            entries.extend(_watchlists_to_catalog(accessible))
 
         return Catalog(entries=entries, errors=errors)
+
+    async def _filter_accessible_watchlists(
+        self,
+        summaries: list[WatchlistSummary],
+    ) -> list[WatchlistSummary]:
+        """Keep only watchlists whose symbols resolve via FlaggedSymbols.
+
+        System and predefined watchlists (e.g. S&P Sectors) appear in
+        ``get_watchlist_names()`` but are not accessible through the
+        user-scoped ``FlaggedSymbols`` query.  Probes all watchlists in
+        parallel via ``asyncio.gather`` and filters out failures.
+        """
+        candidates = [s for s in summaries if s.id is not None]
+
+        async def _probe(summary: WatchlistSummary) -> WatchlistSummary | None:
+            """Return the summary if its symbols resolve, else None."""
+            try:
+                await self.get_watchlist_symbols(summary.id)  # type: ignore[arg-type]
+                return summary
+            except Exception:
+                return None
+
+        results = await asyncio.gather(*(_probe(s) for s in candidates))
+        return [s for s in results if s is not None]
 
     async def run_catalog_entry(self, entry: CatalogEntry) -> CatalogResult:
         """Run a catalog entry and return its result.

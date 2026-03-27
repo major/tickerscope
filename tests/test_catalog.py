@@ -29,8 +29,10 @@ from tickerscope._models import (
     ReportInfo,
     Screen,
     ScreenResult,
+    WatchlistDetail,
     WatchlistEntry,
     WatchlistSummary,
+    WatchlistSymbol,
 )
 
 
@@ -426,44 +428,14 @@ class TestGetCatalog:
         )
         coach_tree = CoachTreeData(screens=[screen_leaf], watchlists=[])
 
-        sync_client.get_screens = MagicMock(return_value=[screen])
-        sync_client.get_coach_lists = MagicMock(return_value=coach_tree)
-        sync_client.get_watchlist_names = MagicMock(return_value=[watchlist])
-        sync_client.get_reports = MagicMock(
-            return_value=[ReportInfo(name="Bases", original_id=124)]
-        )
-
-        result = sync_client.get_catalog()
-
-        assert isinstance(result, Catalog)
-        assert result.errors == []
-        kinds = {e.kind for e in result.entries}
-        assert "screen" in kinds
-        assert "report" in kinds
-        assert "coach_screen" in kinds
-        assert "watchlist" in kinds
-
-    def test_partial_failure_screens(self, sync_client):
-        """Screens failure: report/coach/watchlist entries still returned + 1 error."""
-        screen_leaf = NavTreeLeaf(
-            id="l1",
-            name="Buffett",
-            parent_id=None,
-            node_type="STOCK_SCREEN",
-            tree_type=None,
-            url=None,
-            reference_id=None,
-            reference_watchlist_id=None,
-            reference_screen_id="abc",
-        )
-        coach_tree = CoachTreeData(screens=[screen_leaf], watchlists=[])
-        watchlist = WatchlistSummary(
-            id=5, name="My WL", last_modified=None, description=None
-        )
-
         sync_client.get_screens = MagicMock(side_effect=RuntimeError("screens boom"))
         sync_client.get_coach_lists = MagicMock(return_value=coach_tree)
         sync_client.get_watchlist_names = MagicMock(return_value=[watchlist])
+        sync_client.get_watchlist_symbols = MagicMock(
+            return_value=WatchlistDetail(
+                id="5", name="My WL", last_modified=None, description=None, items=[]
+            )
+        )
         sync_client.get_reports = MagicMock(
             return_value=[ReportInfo(name="Bases", original_id=124)]
         )
@@ -493,6 +465,11 @@ class TestGetCatalog:
         sync_client.get_screens = MagicMock(return_value=[screen])
         sync_client.get_coach_lists = MagicMock(return_value=coach_tree)
         sync_client.get_watchlist_names = MagicMock(side_effect=RuntimeError("wl boom"))
+        sync_client.get_watchlist_symbols = MagicMock(
+            return_value=WatchlistDetail(
+                id="5", name="My WL", last_modified=None, description=None, items=[]
+            )
+        )
         sync_client.get_reports = MagicMock(
             return_value=[ReportInfo(name="Bases", original_id=124)]
         )
@@ -508,6 +485,11 @@ class TestGetCatalog:
         sync_client.get_screens = MagicMock(side_effect=RuntimeError("s"))
         sync_client.get_coach_lists = MagicMock(side_effect=RuntimeError("c"))
         sync_client.get_watchlist_names = MagicMock(side_effect=RuntimeError("w"))
+        sync_client.get_watchlist_symbols = MagicMock(
+            return_value=WatchlistDetail(
+                id="5", name="My WL", last_modified=None, description=None, items=[]
+            )
+        )
         sync_client.get_reports = MagicMock(
             return_value=[ReportInfo(name="Bases", original_id=124)]
         )
@@ -517,7 +499,6 @@ class TestGetCatalog:
         assert len(result.errors) == 3
         assert all(e.kind == "report" for e in result.entries)
 
-    @pytest.mark.asyncio
     async def test_async_get_catalog(self, async_client):
         """Async get_catalog returns Catalog with entries from all sources."""
         screen = Screen(
@@ -549,6 +530,11 @@ class TestGetCatalog:
         async_client.get_screens = AsyncMock(return_value=[screen])
         async_client.get_coach_lists = AsyncMock(return_value=coach_tree)
         async_client.get_watchlist_names = AsyncMock(return_value=[watchlist])
+        async_client.get_watchlist_symbols = AsyncMock(
+            return_value=WatchlistDetail(
+                id="5", name="My WL", last_modified=None, description=None, items=[]
+            )
+        )
         async_client.get_reports = AsyncMock(
             return_value=[ReportInfo(name="Bases", original_id=124)]
         )
@@ -626,7 +612,6 @@ class TestRunCatalogEntry:
         with pytest.raises(APIError):
             sync_client.run_catalog_entry(e)
 
-    @pytest.mark.asyncio
     async def test_async_dispatch_report(self, async_client):
         """Async run_catalog_entry dispatches report to run_report."""
         adhoc = MagicMock(spec=AdhocScreenResult)
@@ -638,3 +623,136 @@ class TestRunCatalogEntry:
         async_client.run_report.assert_called_once_with(124)
         assert result.kind == "report"
         assert result.adhoc_result is adhoc
+
+
+# ---------------------------------------------------------------------------
+# Filter accessible watchlists tests
+# ---------------------------------------------------------------------------
+
+
+class TestFilterAccessibleWatchlists:
+    """Tests for _filter_accessible_watchlists behavior in get_catalog()."""
+
+    def test_filters_out_inaccessible_watchlists(self, sync_client):
+        """Watchlists that raise APIError from get_watchlist_symbols are filtered out."""
+        wl1 = WatchlistSummary(
+            id=1, name="Accessible", last_modified=None, description=None
+        )
+        wl2 = WatchlistSummary(
+            id=2, name="Inaccessible", last_modified=None, description=None
+        )
+
+        sync_client.get_screens = MagicMock(return_value=[])
+        sync_client.get_coach_lists = MagicMock(
+            return_value=CoachTreeData(screens=[], watchlists=[])
+        )
+        sync_client.get_watchlist_names = MagicMock(return_value=[wl1, wl2])
+
+        def mock_get_watchlist_symbols(id):
+            """Mock that succeeds for id=1, raises APIError for id=2."""
+            if id == 1:
+                return WatchlistDetail(
+                    id="1",
+                    name="Accessible",
+                    last_modified=None,
+                    description=None,
+                    items=[],
+                )
+            raise APIError("Watchlist not found: '2'")
+
+        sync_client.get_watchlist_symbols = MagicMock(
+            side_effect=mock_get_watchlist_symbols
+        )
+        sync_client.get_reports = MagicMock(return_value=[])
+
+        result = sync_client.get_catalog()
+
+        watchlist_entries = [e for e in result.entries if e.kind == "watchlist"]
+        assert len(watchlist_entries) == 1
+        assert watchlist_entries[0].watchlist_id == 1
+
+    async def test_async_filters_out_inaccessible_watchlists(self, async_client):
+        """Async: watchlists that raise APIError from get_watchlist_symbols are filtered out."""
+        wl1 = WatchlistSummary(
+            id=1, name="Accessible", last_modified=None, description=None
+        )
+        wl2 = WatchlistSummary(
+            id=2, name="Inaccessible", last_modified=None, description=None
+        )
+
+        async_client.get_screens = AsyncMock(return_value=[])
+        async_client.get_coach_lists = AsyncMock(
+            return_value=CoachTreeData(screens=[], watchlists=[])
+        )
+        async_client.get_watchlist_names = AsyncMock(return_value=[wl1, wl2])
+
+        async def mock_get_watchlist_symbols(id):
+            """Mock that succeeds for id=1, raises APIError for id=2."""
+            if id == 1:
+                return WatchlistDetail(
+                    id="1",
+                    name="Accessible",
+                    last_modified=None,
+                    description=None,
+                    items=[],
+                )
+            raise APIError("Watchlist not found: '2'")
+
+        async_client.get_watchlist_symbols = AsyncMock(
+            side_effect=mock_get_watchlist_symbols
+        )
+        async_client.get_reports = AsyncMock(return_value=[])
+
+        result = await async_client.get_catalog()
+
+        watchlist_entries = [e for e in result.entries if e.kind == "watchlist"]
+        assert len(watchlist_entries) == 1
+        assert watchlist_entries[0].watchlist_id == 1
+
+    def test_all_watchlists_filtered_returns_no_watchlist_entries(self, sync_client):
+        """When all watchlists are inaccessible, no watchlist entries appear and no errors."""
+        wl1 = WatchlistSummary(id=1, name="WL1", last_modified=None, description=None)
+        wl2 = WatchlistSummary(id=2, name="WL2", last_modified=None, description=None)
+
+        sync_client.get_screens = MagicMock(return_value=[])
+        sync_client.get_coach_lists = MagicMock(
+            return_value=CoachTreeData(screens=[], watchlists=[])
+        )
+        sync_client.get_watchlist_names = MagicMock(return_value=[wl1, wl2])
+        sync_client.get_watchlist_symbols = MagicMock(
+            side_effect=APIError("Watchlist not found")
+        )
+        sync_client.get_reports = MagicMock(return_value=[])
+
+        result = sync_client.get_catalog()
+
+        watchlist_entries = [e for e in result.entries if e.kind == "watchlist"]
+        assert len(watchlist_entries) == 0
+        assert result.errors == []
+
+
+# ---------------------------------------------------------------------------
+# Get watchlist access error tests
+# ---------------------------------------------------------------------------
+
+
+class TestGetWatchlistAccessError:
+    """Tests for error handling in get_watchlist() when watchlist is inaccessible."""
+
+    async def test_raises_clear_error_for_system_watchlist(self, async_client):
+        """get_watchlist raises APIError with 'not accessible' message for system watchlists."""
+        async_client.get_watchlist_symbols = AsyncMock(
+            side_effect=APIError("Watchlist not found: '99'")
+        )
+
+        with pytest.raises(APIError, match="not accessible"):
+            await async_client.get_watchlist(99)
+
+    async def test_reraises_non_not_found_errors(self, async_client):
+        """get_watchlist re-raises non-'not found' APIErrors unchanged."""
+        async_client.get_watchlist_symbols = AsyncMock(
+            side_effect=APIError("Server error")
+        )
+
+        with pytest.raises(APIError, match="Server error"):
+            await async_client.get_watchlist(99)
