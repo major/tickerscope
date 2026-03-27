@@ -4,7 +4,11 @@ from __future__ import annotations
 
 import pytest
 
-from tickerscope._client import _find_coach_screen, _list_coach_screen_names
+from tickerscope._client import (
+    BaseTickerScopeClient,
+    _find_coach_screen,
+    _list_coach_screen_names,
+)
 from tickerscope._exceptions import APIError
 from tickerscope._models import NavTreeFolder, NavTreeLeaf, ScreenResult
 from tickerscope._parsing import parse_coach_tree_response, parse_run_screen_response
@@ -163,3 +167,22 @@ def test_find_coach_screen_in_real_fixture(coach_tree_response) -> None:
     assert leaf is not None
     assert leaf.name == "William J. O'Neil"
     assert leaf.reference_screen_id == "01KEFPH03H88ANE7DVPA15N4NS"
+
+
+class TestCoachScreenPayload:
+    """Tests for _build_run_coach_screen_payload static method."""
+
+    def test_includes_empty_include_source(self) -> None:
+        """Payload includes empty includeSource required by the ScreenResultInput schema."""
+        payload = BaseTickerScopeClient._build_run_coach_screen_payload("abc123")
+        assert payload["variables"]["input"]["includeSource"] == {}
+
+    def test_sets_coach_account_true(self) -> None:
+        """Payload sets coachAccount to True for coach screen dispatch."""
+        payload = BaseTickerScopeClient._build_run_coach_screen_payload("abc123")
+        assert payload["variables"]["input"]["coachAccount"] is True
+
+    def test_passes_screen_id(self) -> None:
+        """Payload passes the screen ID through to the input."""
+        payload = BaseTickerScopeClient._build_run_coach_screen_payload("xyz789")
+        assert payload["variables"]["input"]["screenId"] == "xyz789"
