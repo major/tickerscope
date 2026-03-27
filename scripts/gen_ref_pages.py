@@ -20,7 +20,9 @@ for path in sorted(src.rglob("*.py")):
     if any(skip in parts for skip in SKIP_MODULES):
         continue
 
-    if parts[-1] == "__init__":
+    is_init = parts[-1] == "__init__"
+
+    if is_init:
         parts = parts[:-1]
         if not parts:
             continue
@@ -38,7 +40,12 @@ for path in sorted(src.rglob("*.py")):
 
     with mkdocs_gen_files.open(full_doc_path, "w") as fd:
         ident = ".".join(parts)
-        fd.write(f"::: {ident}\n")
+        if is_init:
+            fd.write(f"::: {ident}\n")
+            fd.write("    options:\n")
+            fd.write("      members: false\n")
+        else:
+            fd.write(f"::: {ident}\n")
 
     mkdocs_gen_files.set_edit_path(full_doc_path, path.relative_to(root))
 
