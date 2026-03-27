@@ -32,7 +32,6 @@ from tickerscope._models import (
     WatchlistDetail,
     WatchlistEntry,
     WatchlistSummary,
-    WatchlistSymbol,
 )
 
 
@@ -402,16 +401,6 @@ class TestGetCatalog:
 
     def test_all_sources_success(self, sync_client):
         """All sources succeed: entries from all 4 kinds, errors empty."""
-        screen = Screen(
-            id="1",
-            name="Growth",
-            type=None,
-            source=None,
-            description=None,
-            filter_criteria=None,
-            created_at=None,
-            updated_at=None,
-        )
         watchlist = WatchlistSummary(
             id=5, name="My WL", last_modified=None, description=None
         )
