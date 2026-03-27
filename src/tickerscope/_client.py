@@ -621,6 +621,13 @@ class BaseTickerScopeClient(ABC):
 
     @staticmethod
     def _build_get_watchlist_payload(list_id: int) -> dict[str, Any]:
+        """Build payload for fetching list/report data by integer ID.
+
+        Only works for IDs that fit in a 32-bit integer (GraphQL ``Int!``).
+        Reports use small integer IDs and work fine.  Watchlist IDs are
+        64-bit and overflow ``Int!``; use
+        ``_build_get_watchlist_by_symbols_payload`` for those instead.
+        """
         return {
             "operationName": "MarketDataAdhocScreen",
             "variables": {
@@ -629,6 +636,37 @@ class BaseTickerScopeClient(ABC):
                 "adhocQuery": None,
                 "includeSource": {
                     "screenId": {"id": list_id, "dialect": "MS_LIST_ID"},
+                },
+                "pageSize": 1000,
+                "resultLimit": 1000000,
+                "pageSkip": 0,
+                "resultType": "RESULT_WITH_EXPRESSION_COUNTS",
+            },
+            "query": ADHOC_SCREEN_QUERY,
+        }
+
+    @staticmethod
+    def _build_get_watchlist_by_symbols_payload(
+        dow_jones_keys: list[str],
+    ) -> dict[str, Any]:
+        """Build payload for fetching watchlist data via Dow Jones keys.
+
+        Watchlist IDs are 64-bit integers that overflow the GraphQL
+        ``Int!`` type on ``screenId.id``.  This builder uses the
+        ``instruments`` field (``MDSymbolListInput``) instead, passing
+        Dow Jones keys resolved from the ``FlaggedSymbols`` query.
+        """
+        return {
+            "operationName": "MarketDataAdhocScreen",
+            "variables": {
+                "correlationTag": "marketsurge",
+                "responseColumns": WATCHLIST_COLUMNS,
+                "adhocQuery": None,
+                "includeSource": {
+                    "instruments": {
+                        "symbols": dow_jones_keys,
+                        "dialect": "DJ_KEY",
+                    },
                 },
                 "pageSize": 1000,
                 "resultLimit": 1000000,
@@ -860,7 +898,18 @@ class BaseTickerScopeClient(ABC):
         return self._graphql_and_parse(payload, parse_chart_data_response, symbol)
 
     def get_watchlist(self, list_id: int) -> Any:
-        payload = self._build_get_watchlist_payload(list_id)
+        """Fetch watchlist entries via a two-step symbol resolution.
+
+        Watchlist IDs are 64-bit integers that overflow the GraphQL
+        ``Int!`` type, so we first resolve the charting symbols via
+        ``FlaggedSymbols``, then screen them via ``MarketDataAdhocScreen``
+        with the ``instruments`` input.
+        """
+        detail = self.get_watchlist_symbols(list_id)
+        dj_keys = [item.dow_jones_key for item in detail.items if item.dow_jones_key]
+        if not dj_keys:
+            return []
+        payload = self._build_get_watchlist_by_symbols_payload(dj_keys)
         return self._graphql_and_parse(payload, parse_watchlist_response)
 
     def get_ownership(self, symbol: str) -> Any:
@@ -1412,7 +1461,18 @@ class AsyncTickerScopeClient(BaseTickerScopeClient):
         )
 
     async def get_watchlist(self, list_id: int) -> list[WatchlistEntry]:
-        payload = self._build_get_watchlist_payload(list_id)
+        """Fetch watchlist entries via a two-step symbol resolution.
+
+        Watchlist IDs are 64-bit integers that overflow the GraphQL
+        ``Int!`` type, so we first resolve the charting symbols via
+        ``FlaggedSymbols``, then screen them via ``MarketDataAdhocScreen``
+        with the ``instruments`` input.
+        """
+        detail = await self.get_watchlist_symbols(list_id)
+        dj_keys = [item.dow_jones_key for item in detail.items if item.dow_jones_key]
+        if not dj_keys:
+            return []
+        payload = self._build_get_watchlist_by_symbols_payload(dj_keys)
         return await self._graphql_and_parse(payload, parse_watchlist_response)
 
     async def get_ownership(self, symbol: str) -> OwnershipData:

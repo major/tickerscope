@@ -25,8 +25,19 @@ async def test_async_get_stock(async_client, stock_response):
 @pytest.mark.asyncio
 @respx.mock
 async def test_async_get_watchlist(async_client):
-    """Test async get_watchlist returns list of WatchlistEntry."""
-    mock_response = {
+    """Test async get_watchlist resolves symbols then screens them."""
+    symbols_response = {
+        "data": {
+            "watchlist": {
+                "id": "12345",
+                "name": "Test",
+                "lastModifiedDateUtc": None,
+                "description": None,
+                "items": [{"key": "uuid1", "dowJonesKey": "13-1234"}],
+            }
+        }
+    }
+    screen_response = {
         "data": {
             "marketDataAdhocScreen": {
                 "responseValues": [
@@ -39,7 +50,10 @@ async def test_async_get_watchlist(async_client):
         }
     }
     respx.post("https://shared-data.dowjones.io/gateway/graphql").mock(
-        return_value=httpx.Response(200, json=mock_response)
+        side_effect=[
+            httpx.Response(200, json=symbols_response),
+            httpx.Response(200, json=screen_response),
+        ]
     )
     entries = await async_client.get_watchlist(12345)
     assert len(entries) == 1

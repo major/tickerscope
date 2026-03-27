@@ -27,8 +27,19 @@ def test_get_stock_returns_stock_data(sync_client, stock_response):
 
 @respx.mock
 def test_get_watchlist_returns_entries(sync_client):
-    """Test that get_watchlist() parses GraphQL response into WatchlistEntry list."""
-    mock_response = {
+    """Test that get_watchlist() resolves symbols then screens them."""
+    symbols_response = {
+        "data": {
+            "watchlist": {
+                "id": "12345",
+                "name": "Test",
+                "lastModifiedDateUtc": None,
+                "description": None,
+                "items": [{"key": "uuid1", "dowJonesKey": "13-1234"}],
+            }
+        }
+    }
+    screen_response = {
         "data": {
             "marketDataAdhocScreen": {
                 "responseValues": [
@@ -42,7 +53,10 @@ def test_get_watchlist_returns_entries(sync_client):
         }
     }
     respx.post("https://shared-data.dowjones.io/gateway/graphql").mock(
-        return_value=httpx.Response(200, json=mock_response)
+        side_effect=[
+            httpx.Response(200, json=symbols_response),
+            httpx.Response(200, json=screen_response),
+        ]
     )
 
     entries = sync_client.get_watchlist(12345)
