@@ -33,6 +33,8 @@ marketsurge/
 | GraphQL queries | `queries/*.graphql` + `_queries.py` | Loaded via `load_query()`, constants in `_queries.py` |
 | Pagination/filtering | `_client.py` helpers | `_filter_watchlist_entries()`, `_paginate_list()` |
 | Field selection | `_serialization.py` | `to_dict(fields={"symbol", "rs_rating"})` |
+| Version | `pyproject.toml` | `version = "X.Y.Z"` |
+| User-Agent | `_auth.py` | `USER_AGENT` constant, update to match current Firefox stable |
 
 ## CODE MAP
 
@@ -84,6 +86,15 @@ make typecheck           # ty check src/
 make radon               # Fail on complexity >= C
 make ci                  # lint + typecheck + radon + test
 ```
+
+## RELEASING
+
+Version lives in `pyproject.toml`. Release workflow (`.github/workflows/release.yml`) has two paths:
+
+1. **Tag push** (preferred for manual releases): bump version in `pyproject.toml`, commit, then `git tag vX.Y.Z && git push origin vX.Y.Z`. Triggers CI, GitHub release with auto-generated notes, and PyPI publish.
+2. **`workflow_dispatch`** (automated): triggers commitizen to bump version from conventional commits, tag, release, and publish. Don't use if you already bumped the version manually.
+
+Do NOT use `workflow_dispatch` after a manual version bump in `pyproject.toml` - commitizen will conflict.
 
 ## NOTES
 
