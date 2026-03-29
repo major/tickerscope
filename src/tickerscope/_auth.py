@@ -16,7 +16,9 @@ _log = logging.getLogger("tickerscope")
 GRAPHQL_URL = "https://shared-data.dowjones.io/gateway/graphql"
 CLIENT_URL = "https://www.investors.com/client"
 DYLAN_TOKEN = "x4ckyhshg90pdq6bwf6n1voijs7r3fdk"
-USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64; rv:149.0) Gecko/20100101 Firefox/149.0"
+USER_AGENT = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:149.0) Gecko/20100101 Firefox/149.0"
+)
 
 
 def authenticate(browser: str = "firefox", timeout: float = 30.0) -> str:
