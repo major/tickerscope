@@ -1,6 +1,6 @@
 [project]
 name = "tickerscope"
-version = "0.3.0"
+version = "0.3.1"
 description = "Unofficial Python client for the MarketSurge stock research API"
 readme = "README.md"
 authors = [{ name = "Major Hayden", email = "major@mhtx.net" }]
