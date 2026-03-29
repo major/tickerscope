@@ -984,14 +984,26 @@ PREDEFINED_REPORTS: tuple[ReportInfo, ...] = (
     ReportInfo(name="Top 150 EPS Rating Stocks", original_id=1),
     ReportInfo(name="Top 150 RS Rating Stocks", original_id=3),
     ReportInfo(name="Fastest Growing Companies - Top 150", original_id=5),
+    ReportInfo(
+        name="Accumulation Distribution Rating - Stocks Moving Up", original_id=12
+    ),
+    ReportInfo(
+        name="Accumulation Distribution Rating - Stocks Moving Down", original_id=13
+    ),
+    ReportInfo(name="NYSE - Short Interest", original_id=16),
+    ReportInfo(name="NASDAQ - Short Interest", original_id=17),
+    ReportInfo(name="AMEX - Short Interest", original_id=18),
     ReportInfo(name="Top 30 EPS Rating Stocks with High Avg. Volume", original_id=26),
     ReportInfo(name="Top 30 RS Rating Stocks with High Avg. Volume", original_id=27),
     ReportInfo(name="Weekly New High Report", original_id=28),
     ReportInfo(
         name="Weekly Report of Stocks Approaching or at New High", original_id=29
     ),
+    ReportInfo(name="IBD 50 Index", original_id=37),
+    ReportInfo(name="IBD New America Index", original_id=38),
     ReportInfo(name="IBD 85-85 Index", original_id=39),
     ReportInfo(name="IBD Big Cap 20", original_id=40),
+    ReportInfo(name="197 Industry Groups", original_id=46),
     ReportInfo(name="Today's Industry Performance: NEW HIGHS", original_id=47),
     ReportInfo(name="Today's Industry Performance: NEW LOWS", original_id=48),
     ReportInfo(name="Top 25 Funds over 10 Years", original_id=50),
