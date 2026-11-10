@@ -39,9 +39,9 @@ jobs:
         run: git reset --hard ${{ github.sha }}
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
-          version: "0.13.5"
+          version: "0.13.7"
 
       - name: Install commitizen
         run: uv tool install commitizen
@@ -105,9 +105,9 @@ jobs:
           ref: ${{ needs.release.outputs.tag }}
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
-          version: "0.13.5"
+          version: "0.13.7"
 
       - name: Build package
         run: uv build
@@ -149,9 +149,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
-          version: "0.13.5"
+          version: "0.13.7"
 
       - name: Build package
         run: uv build
